@@ -1,10 +1,11 @@
 # CLAUDE.md — MishiPass
 
 Operating guide for Claude Code on this repository. This file distills the
-**MishiPass Project Constitution v1.0** (`docs/constitution.md`), which is the
-full source of truth. Where this file and the constitution ever disagree, the
-constitution wins. Where the constitution and a request disagree, **LOCKED**
-decisions win and only Carlos may revise them.
+**MishiPass Project Constitution v1.0**, which is the full source of truth and is
+maintained locally by Carlos (it is intentionally not committed to this repo).
+Where this file and the constitution ever disagree, the constitution wins. Where
+the constitution and a request disagree, **LOCKED** decisions win and only Carlos
+may revise them.
 
 ---
 
@@ -114,19 +115,21 @@ service.
   during Vet Visit mode could submit a record.
 - Dependabot monitors vulnerable dependencies (dev/security tool, not a feature).
 
-**ID format note for the security model:** the country segment in
-`MP-MX-7X3B-9K21` is cosmetic display context, not a security boundary.
-Uniqueness comes from the random segments.
+**ID format note:** the country segment in `MP-MX-7X3B-9K21` is cosmetic display
+context, not a security boundary. Uniqueness comes from the random segments.
+Document this in the security model.
 
-**Dynamic-QR clarification (README + report):** the QR is static; the Worker
-reads the current mode from D1 and returns the right interface. State this to
-pre-empt judges flagging "dynamic QR" as misleading.
+**Dynamic-QR clarification (README + security model):** the QR code itself is
+static. The Worker reads the cat's current mode from D1 and returns the
+appropriate interface; the owner changes the mode. Document this clearly so the
+"dynamic" behavior is not mistaken for a changing QR code.
 
 ---
 
 ## Your role as Claude Code (LOCKED)
 
-> Claude and ChatGPT advise. Codex and Claude Code execute. Zhanerke designs.
+> Claude and ChatGPT advise. Codex and Claude Code execute.
+> Zhanerke Askerbekova (Design Authority) designs.
 > Carlos orchestrates and decides.
 
 - You handle larger, multi-file implementation tasks **with clear specs**.
@@ -135,8 +138,8 @@ pre-empt judges flagging "dynamic QR" as misleading.
 - **Every task must be specced before you execute.** If a request is open-ended
   ("build the dashboard", "make it secure"), stop and ask for a spec.
 - You may suggest, but you do not decide design. No user-facing feature is
-  "done" without Zhanerke's approval (or Carlos marking it temporary functional
-  UI).
+  "done" without Zhanerke Askerbekova's approval (or Carlos marking it temporary
+  functional UI).
 - Carlos reviews all your output before it is committed. Carlos handles all Git
   operations.
 
@@ -164,7 +167,6 @@ mishipass/
 ├── README.md
 ├── CLAUDE.md
 ├── docs/
-│   ├── constitution.md
 │   ├── beta-1.4-report.md
 │   ├── sitemap.md
 │   ├── security-model.md
@@ -194,9 +196,9 @@ testing; exposes no internal DB ID on any public surface; shows only
 mode-appropriate info on public pages; keeps cartilla/medical data behind owner
 auth; shows medication entries as records only (no advice/reminders); routes QR
 modes correctly; enforces upload type/size/rate limits where applicable;
-respects Zhanerke's approved design on user-facing surfaces; is committed to the
-correct branch; and has related docs updated if behavior, architecture, or copy
-changed.
+respects Zhanerke Askerbekova's approved design on user-facing surfaces; is
+committed to the correct branch; and has related docs updated if behavior,
+architecture, or copy changed.
 
 For Beta 1.4, **done means judge-safe, not perfect.**
 
