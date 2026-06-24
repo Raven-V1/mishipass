@@ -1,0 +1,75 @@
+{
+  "format_version": "1.0",
+  "description": "Cross-language parity fixture for the MishiPass public ID format. The TypeScript Worker validation must accept all 'valid' entries and reject all 'invalid' entries.",
+  "pattern": "^MP-[A-Z]{2}-[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$",
+  "alphabet": "0123456789ABCDEFGHJKMNPQRSTVWXYZ",
+  "alphabet_note": "Crockford Base32. Excluded: I, L, O, U (visually ambiguous on printed tags).",
+  "canonicalization": "Public IDs are canonical UPPERCASE only. Validation rejects any lowercase, whitespace-padded, or non-ASCII value. The country code is cosmetic display context, not validated against real countries, and contributes no uniqueness or security.",
+  "country_note": "The CC segment is cosmetic display context only. It is NOT a security boundary. Uniqueness comes from the two random segments (S1, S2), not from CC.",
+  "valid": [
+    "MP-MX-7X3B-9K21",
+    "MP-US-A1B2-C3D4",
+    "MP-DE-ZZZZ-0000",
+    "MP-CA-HJKM-NPQR",
+    "MP-JP-1234-ABCD",
+    "MP-FR-TVWX-YZ89"
+  ],
+  "invalid": [
+    {
+      "value": "MP-MX-7X3B",
+      "reason": "missing second random segment"
+    },
+    {
+      "value": "MP-MX-7X3B-9K21-XTRA",
+      "reason": "extra segment appended after S2"
+    },
+    {
+      "value": "MP-mx-7X3B-9K21",
+      "reason": "country code is lowercase — CC must be A-Z"
+    },
+    {
+      "value": "MP-MX-I111-9K21",
+      "reason": "I is excluded from the Crockford Base32 alphabet"
+    },
+    {
+      "value": "MP-MX-OOO0-9K21",
+      "reason": "O is excluded from the Crockford Base32 alphabet"
+    },
+    {
+      "value": "XX-MX-7X3B-9K21",
+      "reason": "prefix is not MP"
+    },
+    {
+      "value": "MP-M1-7X3B-9K21",
+      "reason": "country code contains a digit — CC must be A-Z only"
+    },
+    {
+      "value": "MP-MX-7x3b-9k21",
+      "reason": "segment characters are lowercase — format is case-sensitive"
+    },
+    {
+      "value": "",
+      "reason": "empty string"
+    },
+    {
+      "value": " MP-MX-7X3B-9K21",
+      "reason": "leading whitespace"
+    },
+    {
+      "value": "MP-MX-7X3B-9K21 ",
+      "reason": "trailing whitespace"
+    },
+    {
+      "value": "MP-MX-7X3B9K21",
+      "reason": "missing hyphen between segments"
+    },
+    {
+      "value": "mp-mx-7x3b-9k21",
+      "reason": "lowercase, non-canonical"
+    },
+    {
+      "value": "MP-АX-7X3B-9K21",
+      "reason": "non-ASCII look-alike (Cyrillic А, U+0410) in country code"
+    }
+  ]
+}
