@@ -1,0 +1,25 @@
+# Node
+node_modules/
+dist/
+.wrangler/
+*.log
+
+# Env / secrets
+.env
+.env.*
+.dev.vars
+
+# Python tooling (tools/python)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/settings.json
+
+# Local reference material, not part of the project
+Hackathon_info/
