@@ -17,7 +17,7 @@
 5. **Mode lives on the cat.** `cats.current_mode` is the single source of truth the Worker reads on a scan. The QR is static; the response varies by this column.
 6. **Owner-controlled visibility.** Contact visibility, reward visibility, and Recovery Board publishing are explicit opt-in columns defaulting to private.
 
-> **Auth-crypto note (corrected):** PBKDF2-SHA256 via Web Crypto is natively supported with no documented API iteration cap. The current Workers CPU limit (30 s default, I/O excluded) makes OWASP-2026's 600,000 iterations comfortably reachable — the benchmark measures *login latency*, not feasibility. A server-side pepper (Worker env secret, optionally mixed via HKDF) is **optional defense-in-depth**, not a forced mitigation.
+> **Auth-crypto note (corrected):** PBKDF2-SHA256 via Web Crypto is natively supported with no documented API iteration cap. The iteration count will be selected by benchmarking on the deployment tier and recorded in the security model. If the chosen count is lower than the project target, a server-side pepper stored as a Worker secret may be added as defense-in-depth.
 
 ---
 
@@ -82,7 +82,7 @@ Crockford Base32 (`0123456789ABCDEFGHJKMNPQRSTVWXYZ`, I/L/O/U excluded). Ranges 
 Entropy (~40 bits) + per-IP rate limiting on `/c/:id`, **plus** a global rate limit and **uniform response/timing for hit vs. miss** so existence isn't leaked. Country code contributes no uniqueness. Proof-of-work is **out of scope for Beta** (over-engineering for the threat model).
 
 ## 8. Migrations
-`migrations/000_initial.sql` creates all tables and configures **foreign-key enforcement per D1's mechanism** (verify the correct D1 directive at build; do not assume runtime `PRAGMA` behaves as in vanilla SQLite). All schema changes ship as numbered migration files.
+`apps/worker/migrations/0001_initial.sql` creates all tables and uses **normal D1 foreign-key constraints; D1 enforces foreign keys by default.** All schema changes ship as numbered migration files.
 
 ## 9. Open questions for final lock
 1. **Vet session:** token-based (hash it) vs. purely mode-gated — decide and reflect in 2.7.
