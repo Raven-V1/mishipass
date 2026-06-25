@@ -1,3 +1,14 @@
 name = "mishipass-worker"
 main = "src/index.ts"
 compatibility_date = "2026-06-24"
+compatibility_flags = ["nodejs_compat"]
+
+# D1 database binding.
+# database_id below is a placeholder — replace with the real UUID from the
+# Cloudflare dashboard after running: wrangler d1 create mishipass
+# No account_id or secrets are stored here (per constitution §8 / scaffold rules).
+[[d1_databases]]
+binding = "DB"
+database_name = "mishipass"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
