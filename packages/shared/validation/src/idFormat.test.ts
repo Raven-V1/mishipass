@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { generateId, parseId, validateId } from "./idFormat.js";
+import { ALPHABET, generateId, parseId, validateId } from "./idFormat.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -93,5 +93,27 @@ describe("parseId", () => {
 
   it("throws on empty string", () => {
     expect(() => parseId("")).toThrow();
+  });
+});
+
+// -- Alphabet coverage: every ALPHABET char accepted, I/L/O/U rejected ------
+
+describe("ALPHABET coverage vs validateId regex", () => {
+  it("accepts every character in ALPHABET in each segment position", () => {
+    const chars = new Set(ALPHABET.split(""));
+    expect(chars.size).toBe(32);
+
+    for (const ch of chars) {
+      // Place the character in seg1 position 1 and seg2 position 1
+      const id = `MP-MX-${ch}000-${ch}000`;
+      expect(validateId(id)).toBe(true);
+    }
+  });
+
+  it("rejects I, L, O, and U specifically in segment positions", () => {
+    for (const excluded of ["I", "L", "O", "U"]) {
+      const id = `MP-MX-${excluded}000-${excluded}000`;
+      expect(validateId(id)).toBe(false);
+    }
   });
 });
