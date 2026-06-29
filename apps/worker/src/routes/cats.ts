@@ -42,11 +42,8 @@ export async function handleCreateCat(
   let publicId: string;
   try {
     publicId = generateId(countryCode);
-  } catch (err) {
-    return new Response(
-      err instanceof Error ? err.message : "Invalid countryCode",
-      { status: 400 }
-    );
+  } catch {
+    return new Response("Invalid countryCode", { status: 400 });
   }
 
   // Retry on UNIQUE constraint collision — up to 5 attempts.
@@ -64,9 +61,12 @@ export async function handleCreateCat(
       const qrUrl = `${publicBaseUrl}/c/${publicId}`;
       return Response.json({ publicId, qrUrl }, { status: 201 });
     } catch (err) {
+      // Known limitation: D1 does not expose structured error codes, so we
+      // match on error message substrings. If D1's wording changes, this may
+      // need updating — acceptable trade-off for a hackathon timeline.
+      const msg = err instanceof Error ? err.message.toLowerCase() : "";
       const isUniqueViolation =
-        err instanceof Error &&
-        err.message.toLowerCase().includes("unique");
+        msg.includes("unique") || msg.includes("constraint failed");
       if (!isUniqueViolation) {
         return new Response("Internal error", { status: 500 });
       }
@@ -99,7 +99,7 @@ export async function handlePublicProfile(
   if (cat.current_mode !== "active") {
     return new Response(renderUnbuiltMode(cat.name), {
       status: 200,
-      headers: { "Content-Type": "text/html;charset=UTF-8" },
+      headers: { "Content-Type": "text/html;charset=UTF-8", "X-Content-Type-Options": "nosniff" },
     });
   }
 
@@ -109,7 +109,7 @@ export async function handlePublicProfile(
     renderActiveProfile(cat.name, cat.country_code, cat.photo_r2_key, contact),
     {
       status: 200,
-      headers: { "Content-Type": "text/html;charset=UTF-8" },
+      headers: { "Content-Type": "text/html;charset=UTF-8", "X-Content-Type-Options": "nosniff" },
     }
   );
 }
@@ -121,7 +121,8 @@ function escapeHtml(s: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function renderActiveProfile(

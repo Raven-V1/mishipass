@@ -11,7 +11,14 @@ function parseCookieValue(header: string, name: string): string | null {
     if (eqIdx === -1) continue;
     const key = pair.slice(0, eqIdx).trim();
     const val = pair.slice(eqIdx + 1).trim();
-    if (key === name) return decodeURIComponent(val);
+    if (key === name) {
+      try {
+        return decodeURIComponent(val);
+      } catch {
+        // Malformed percent-encoding — treat as missing cookie.
+        return null;
+      }
+    }
   }
   return null;
 }
@@ -38,6 +45,9 @@ export async function resolveSession(
   const cookieHeader = request.headers.get("Cookie") ?? "";
   const token = parseCookieValue(cookieHeader, "session");
   if (!token) return { ownerId: null };
+
+  // Defense-in-depth: reject oversized tokens without hashing.
+  if (token.length > 256) return { ownerId: null };
 
   const tokenHash = await sha256Hex(token);
   const session = await findSessionByTokenHash(db, tokenHash);
