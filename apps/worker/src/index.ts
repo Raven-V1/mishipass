@@ -1,18 +1,29 @@
-/**
- * MishiPass Worker — minimal entrypoint.
- * Route handlers, auth, and dashboard logic are not yet implemented.
- * This stub satisfies the wrangler.toml `main` entry so the vitest
- * pool-workers environment can boot the D1 binding for integration tests.
- */
+import { resolveSession } from "./middleware/session.js";
+import { handleCreateCat, handlePublicProfile } from "./routes/cats.js";
 
 export interface Env {
   DB: D1Database;
+  /** Set via wrangler secret / .dev.vars. Example: https://mishipass.com */
+  PUBLIC_BASE_URL: string;
 }
 
+const PUBLIC_PROFILE_PATH = /^\/c\/([^/]+)$/;
+
 export default {
-  async fetch(_request: Request, _env: Env): Promise<Response> {
-    return new Response("MishiPass worker is not yet serving requests.", {
-      status: 503,
-    });
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const { method, url } = request;
+    const { pathname } = new URL(url);
+
+    if (method === "POST" && pathname === "/api/cats") {
+      const ctx = await resolveSession(request, env.DB);
+      return handleCreateCat(request, env.DB, env.PUBLIC_BASE_URL, ctx);
+    }
+
+    const profileMatch = PUBLIC_PROFILE_PATH.exec(pathname);
+    if (method === "GET" && profileMatch) {
+      return handlePublicProfile(profileMatch[1]!, env.DB);
+    }
+
+    return new Response("Not Found", { status: 404 });
   },
 };

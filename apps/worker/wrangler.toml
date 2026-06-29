@@ -3,6 +3,10 @@ main = "src/index.ts"
 compatibility_date = "2026-06-24"
 compatibility_flags = ["nodejs_compat"]
 
+# PUBLIC_BASE_URL is set via `wrangler secret put PUBLIC_BASE_URL` for production.
+# For local dev: add to .dev.vars (not committed).
+# Example: PUBLIC_BASE_URL = "https://mishipass.com"
+
 # D1 database binding.
 # database_id below is a placeholder — replace with the real UUID from the
 # Cloudflare dashboard after running: wrangler d1 create mishipass
