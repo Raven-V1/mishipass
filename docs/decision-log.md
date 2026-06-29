@@ -127,13 +127,53 @@ Alternatives considered: Scaffold the `.kiro` folder now (deferred — not neede
 unless opting into the Kiro track).
 Decided by: Carlos
 
+## 2026-06-26 — Owner authentication: session-based
+Decision: Owner accounts authenticate via session-based auth — an opaque
+session token issued on login, stored client-side in an HttpOnly cookie, with
+only its SHA-256 hash persisted server-side (`sessions.token_hash`). No JWTs,
+no third-party auth provider.
+Reason: Matches the D1 schema already built (`sessions` table: token_hash,
+owner_id FK, expires_at) and keeps revocation simple — deleting a row ends a
+session immediately, which a stateless JWT can't do without a denylist.
+Alternatives considered: JWT (rejected — revocation requires an extra
+denylist table, no real benefit at this scale). Third-party auth provider
+(rejected — adds a paid/external dependency, conflicts with the free-stack
+constraint in §5).
+Decided by: Carlos
+
+## 2026-06-26 — Frontend: React dashboard, Worker-rendered public pages
+Decision: The owner dashboard (apps/web) is a React + TypeScript SPA. Public
+QR-facing pages (Active Profile, Missing Alert, Vet form, etc.) are rendered
+directly by the TypeScript Worker as server-rendered HTML, not by the React
+app.
+Reason: Public pages need to load instantly off a phone camera scan with no
+client-side bundle — server-rendered HTML from the Worker is the right tool.
+The owner dashboard is a richer, authenticated, stateful surface where React's
+component model pays for itself.
+Alternatives considered: Single React app serving both surfaces (rejected —
+forces a JS bundle onto the public scan path, hurts the "scan and instantly
+see it" demo). Plain HTML/JS for everything (rejected — dashboard has enough
+state and interactivity that React saves real time during the build window).
+Decided by: Carlos
+
+## 2026-06-26 — Root workspace config: npm workspaces
+Decision: Use npm workspaces at the repo root (`apps/*`, `packages/*`) rather
+than a separate package manager or independent per-app installs.
+Reason: Already on Node tooling throughout (`apps/web`, `apps/worker` are both
+npm packages); workspaces let `packages/shared/validation` (e.g. the TS port
+of the ID-format contract) be imported by both without publishing or manual
+linking.
+Alternatives considered: pnpm/yarn workspaces (rejected — no added benefit
+over npm workspaces at this project's size; npm is already in use, no reason
+to add another tool). Independent installs per app, no shared package
+(rejected — would force copy-pasting the ID-format TS port between
+`apps/worker` and any future consumer).
+Decided by: Carlos
+
 ---
 
 ## Open items (not yet decided)
 
 Tracked in Constitution Section 23; each will be logged here when resolved:
 
-- Frontend framework: React vs plain HTML/CSS/JS
-- Owner authentication method
-- D1 schema field definitions
-- Root workspace config (root `package.json` workspaces + base `tsconfig.json`)
+_(All items from the initial list are now resolved — see entries above and in Constitution Section 22.)_
