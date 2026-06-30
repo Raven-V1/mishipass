@@ -21,20 +21,21 @@ const ROOT_LANDING_HTML = `<!DOCTYPE html>
   <title>MishiPass</title>
   <meta name="description" content="Privacy-first dynamic QR passport and recovery system for cats." />
   <style>
-    body{font-family:sans-serif;max-width:560px;margin:4rem auto;padding:0 1rem;color:#111}
-    h1{font-size:2rem;margin-bottom:.5rem}
-    .sub{color:#555;margin-bottom:1.5rem}
-    .tag{font-family:monospace;background:#f0f0f0;padding:2px 6px;border-radius:3px;font-size:.875rem}
-    a{color:#111}
+    body{font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:4rem auto;padding:0 1rem;color:#111;line-height:1.6}
+    h1{font-size:2.25rem;margin-bottom:0.25rem}
+    .tagline{color:#555;margin-bottom:1.5rem;font-size:1.1rem}
+    .desc{margin-bottom:1.5rem}
+    .cta{display:inline-block;padding:0.75rem 1.5rem;background:#111;color:#fff;text-decoration:none;border-radius:6px;font-size:1rem;margin-bottom:1rem}
+    .links{margin-top:1rem;font-size:0.875rem;color:#555}
+    .links a{color:#333}
   </style>
 </head>
 <body>
   <h1>MishiPass</h1>
-  <p class="sub">Privacy-first dynamic QR passport and recovery system for cats.</p>
-  <p>One permanent QR code per cat. Scan it at
-    <span class="tag">/c/MP-XX-XXXX-XXXX</span> to see the cat&rsquo;s current profile.</p>
-  <p><a href="/dashboard">Owner Dashboard &rarr;</a></p>
-  <p><a href="https://github.com/Raven-V1/mishipass">GitHub &rarr;</a></p>
+  <p class="tagline">Privacy-first dynamic QR passport and recovery system for cats.</p>
+  <p class="desc">One permanent QR per cat. The owner controls what a scan shows: Active Profile, Missing Alert, or Vet Visit. The QR never changes.</p>
+  <a class="cta" href="/dashboard">Owner Dashboard</a>
+  <div class="links"><a href="https://github.com/Raven-V1/mishipass">Source on GitHub</a></div>
 </body>
 </html>`;
 
@@ -68,6 +69,9 @@ const DASHBOARD_HTML = `<!DOCTYPE html>
     a{color:#111}
     .nav{margin-bottom:1.5rem;font-size:0.875rem}
     hr{border:none;border-top:1px solid #eee;margin:1.5rem 0}
+    .status{padding:0.5rem;border-radius:4px;margin-bottom:0.75rem;font-size:0.875rem}
+    button:disabled{opacity:0.6;cursor:not-allowed}
+    .upcoming{color:#888;font-size:0.875rem;margin-top:1rem}
   </style>
 </head>
 <body>
@@ -117,6 +121,8 @@ const DASHBOARD_HTML = `<!DOCTYPE html>
       <input type="text" id="cat-country" name="countryCode" maxlength="2" required />
       <button type="submit" class="btn-primary">Register Cat</button>
     </form>
+    <hr />
+    <p class="upcoming">Coming next: Sighting Reports, Vet Visit Mode, Digital Cartilla</p>
   </div>
 
   <script>
@@ -189,7 +195,8 @@ const DASHBOARD_HTML = `<!DOCTYPE html>
             }
             catList.innerHTML = html;
             attachCatActions();
-          });
+          })
+          .catch(function() { showMsg(createError, "Network error. Try again."); });
       }
 
       function attachCatActions() {
@@ -205,11 +212,14 @@ const DASHBOARD_HTML = `<!DOCTYPE html>
         var confirmBtns = document.querySelectorAll(".confirm-missing-btn");
         for (var i = 0; i < confirmBtns.length; i++) {
           confirmBtns[i].addEventListener("click", function() {
-            var id = this.getAttribute("data-id");
+            var btn = this;
+            var id = btn.getAttribute("data-id");
             var fields = document.getElementById("missing-fields-" + id);
             var city = fields.querySelector(".missing-city").value;
             var area = fields.querySelector(".missing-area").value;
             var reward = fields.querySelector(".missing-reward").value;
+            btn.disabled = true;
+            btn.textContent = "Working...";
             fetch("/api/cats/" + encodeURIComponent(id) + "/missing", {
               method: "POST",
               credentials: "same-origin",
@@ -217,14 +227,19 @@ const DASHBOARD_HTML = `<!DOCTYPE html>
               body: JSON.stringify({ city: city || null, area: area || null, rewardAmount: reward || null, rewardVisible: reward ? 1 : 0 })
             }).then(function(r) {
               if (r.ok) loadCats();
-            });
+              btn.disabled = false;
+              btn.textContent = "Confirm Missing";
+            }).catch(function() { btn.disabled = false; btn.textContent = "Confirm Missing"; showMsg(createError, "Network error. Try again."); });
           });
         }
 
         var activeBtns = document.querySelectorAll(".switch-active-btn");
         for (var i = 0; i < activeBtns.length; i++) {
           activeBtns[i].addEventListener("click", function() {
-            var id = this.getAttribute("data-id");
+            var btn = this;
+            var id = btn.getAttribute("data-id");
+            btn.disabled = true;
+            btn.textContent = "Working...";
             fetch("/api/cats/" + encodeURIComponent(id) + "/active", {
               method: "POST",
               credentials: "same-origin",
@@ -232,7 +247,9 @@ const DASHBOARD_HTML = `<!DOCTYPE html>
               body: JSON.stringify({})
             }).then(function(r) {
               if (r.ok) loadCats();
-            });
+              btn.disabled = false;
+              btn.textContent = "Switch to Active";
+            }).catch(function() { btn.disabled = false; btn.textContent = "Switch to Active"; showMsg(createError, "Network error. Try again."); });
           });
         }
       }
@@ -242,15 +259,20 @@ const DASHBOARD_HTML = `<!DOCTYPE html>
         hideMsg(loginError);
         var email = document.getElementById("login-email").value;
         var password = document.getElementById("login-password").value;
+        var btn = loginForm.querySelector("button[type=submit]");
+        btn.disabled = true;
+        btn.textContent = "Working...";
         fetch("/api/auth/login", {
           method: "POST",
           credentials: "same-origin",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: email, password: password })
         }).then(function(r) {
+          btn.disabled = false;
+          btn.textContent = "Login";
           if (r.ok) { showDash(); }
           else { return r.json().then(function(d) { showMsg(loginError, d.error || "Login failed"); }); }
-        });
+        }).catch(function() { btn.disabled = false; btn.textContent = "Login"; showMsg(loginError, "Network error. Try again."); });
       });
 
       registerForm.addEventListener("submit", function(e) {
@@ -259,15 +281,20 @@ const DASHBOARD_HTML = `<!DOCTYPE html>
         hideMsg(registerSuccess);
         var email = document.getElementById("register-email").value;
         var password = document.getElementById("register-password").value;
+        var btn = registerForm.querySelector("button[type=submit]");
+        btn.disabled = true;
+        btn.textContent = "Working...";
         fetch("/api/auth/register", {
           method: "POST",
           credentials: "same-origin",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: email, password: password })
         }).then(function(r) {
+          btn.disabled = false;
+          btn.textContent = "Register";
           if (r.ok) { showMsg(registerSuccess, "Registered. You can now log in."); }
           else { return r.json().then(function(d) { showMsg(registerError, d.error || "Registration failed"); }); }
-        });
+        }).catch(function() { btn.disabled = false; btn.textContent = "Register"; showMsg(registerError, "Network error. Try again."); });
       });
 
       createCatForm.addEventListener("submit", function(e) {
@@ -275,22 +302,27 @@ const DASHBOARD_HTML = `<!DOCTYPE html>
         hideMsg(createError);
         var name = document.getElementById("cat-name").value;
         var countryCode = document.getElementById("cat-country").value.toUpperCase();
+        var btn = createCatForm.querySelector("button[type=submit]");
+        btn.disabled = true;
+        btn.textContent = "Working...";
         fetch("/api/cats", {
           method: "POST",
           credentials: "same-origin",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name: name, countryCode: countryCode })
         }).then(function(r) {
+          btn.disabled = false;
+          btn.textContent = "Register Cat";
           if (r.ok) { createCatForm.reset(); loadCats(); }
           else { return r.text().then(function(t) { showMsg(createError, t || "Could not register cat"); }); }
-        });
+        }).catch(function() { btn.disabled = false; btn.textContent = "Register Cat"; showMsg(createError, "Network error. Try again."); });
       });
 
       logoutBtn.addEventListener("click", function() {
         fetch("/api/auth/logout", {
           method: "POST",
           credentials: "same-origin"
-        }).then(function() { showAuth(); });
+        }).then(function() { showAuth(); }).catch(function() { showAuth(); });
       });
 
       // Initial load: check auth state
