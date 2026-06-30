@@ -204,6 +204,26 @@ dependency decision on 2026-06-29 due to breaking-change risk with the
 current Cloudflare Workers test tooling).
 Decided by: Carlos
 
+## [2026-06-29] — Workers.dev subdomain rename deferred to custom domain
+Decision: Keep the production Worker on the default workers.dev subdomain
+(mishipass.carlosvelazquez354.workers.dev) for now. Do not retry the
+account-level workers.dev subdomain rename.
+Reason: An attempted rename to a non-identifying subdomain did not save at
+the account level despite the dashboard appearing to accept it. Cloudflare's
+own documentation recommends production Workers use a Custom Domain rather
+than the workers.dev subdomain regardless, since workers.dev is intended for
+personal/hobby use. Pursuing a custom domain (which would also fully resolve
+the naming concern) is a better long-term fix than retrying the subdomain
+rename, and is deferred to a later polish pass given current time
+constraints on Day 6 of the coding period.
+Alternatives considered: Retrying the dashboard subdomain change repeatedly
+(rejected — already attempted, did not save, and further attempts would
+consume time needed for Day 6 catch-up feature work). Purchasing a custom
+domain immediately (deferred — not a hackathon blocker, can be added any
+time before submission without code changes beyond updating
+PUBLIC_BASE_URL and adding a custom_domain route).
+Decided by: Carlos
+
 ---
 
 ## Open items (not yet decided)
