@@ -181,7 +181,20 @@ const DASHBOARD_HTML = `<!DOCTYPE html>
               html += "<h3>" + escHtml(c.name) + "</h3>";
               html += '<p class="cat-meta">ID: ' + escHtml(c.publicId) + " | Mode: " + escHtml(c.currentMode) + "</p>";
               html += '<p><a href="/c/' + encodeURIComponent(c.publicId) + '">View public profile</a></p>';
-              html += '<p class="cat-meta"><a href="/api/cats/' + encodeURIComponent(c.publicId) + '/contact" target="_blank">Contact settings (JSON)</a></p>';
+              html += '<div class="cat-actions">';
+              html += '<button class="btn-secondary contact-toggle-btn" data-id="' + escHtml(c.publicId) + '">Contact &amp; Privacy</button>';
+              html += '<div class="mode-fields hidden" id="contact-panel-' + escHtml(c.publicId) + '">';
+              html += '<label>Contact mode</label>';
+              html += '<select class="contact-mode-select" style="width:100%;padding:0.4rem;margin-bottom:0.5rem;border:1px solid #ccc;border-radius:4px">';
+              html += '<option value="none">Hidden</option>';
+              html += '<option value="relay">Relay (contact form)</option>';
+              html += '<option value="phone">Public phone</option>';
+              html += '</select>';
+              html += '<input type="text" class="contact-phone" placeholder="Phone (if phone mode)" maxlength="30" />';
+              html += '<button class="btn-primary contact-save-btn" data-id="' + escHtml(c.publicId) + '">Save contact settings</button>';
+              html += '<span class="contact-status" style="font-size:0.8rem;margin-left:0.5rem"></span>';
+              html += '</div>';
+              html += '</div>';
               html += '<div class="cat-actions">';
               if (c.currentMode === "missing") {
                 html += '<button class="btn-primary switch-active-btn" data-id="' + escHtml(c.publicId) + '">Switch to Active</button>';
@@ -254,6 +267,53 @@ const DASHBOARD_HTML = `<!DOCTYPE html>
               btn.disabled = false;
               btn.textContent = "Switch to Active";
             }).catch(function() { btn.disabled = false; btn.textContent = "Switch to Active"; showMsg(createError, "Network error. Try again."); });
+          });
+        }
+
+        var contactToggles = document.querySelectorAll(".contact-toggle-btn");
+        for (var i = 0; i < contactToggles.length; i++) {
+          contactToggles[i].addEventListener("click", function() {
+            var id = this.getAttribute("data-id");
+            var panel = document.getElementById("contact-panel-" + id);
+            if (panel.classList.contains("hidden")) {
+              panel.classList.remove("hidden");
+              fetch("/api/cats/" + encodeURIComponent(id) + "/contact", { credentials: "same-origin" })
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                  var sel = panel.querySelector(".contact-mode-select");
+                  var phone = panel.querySelector(".contact-phone");
+                  if (sel) sel.value = d.contact_mode || "none";
+                  if (phone) phone.value = d.public_phone || "";
+                })
+                .catch(function() {});
+            } else {
+              panel.classList.add("hidden");
+            }
+          });
+        }
+
+        var contactSaveBtns = document.querySelectorAll(".contact-save-btn");
+        for (var i = 0; i < contactSaveBtns.length; i++) {
+          contactSaveBtns[i].addEventListener("click", function() {
+            var btn = this;
+            var id = btn.getAttribute("data-id");
+            var panel = document.getElementById("contact-panel-" + id);
+            var mode = panel.querySelector(".contact-mode-select").value;
+            var phone = panel.querySelector(".contact-phone").value;
+            var status = panel.querySelector(".contact-status");
+            btn.disabled = true;
+            btn.textContent = "Saving...";
+            fetch("/api/cats/" + encodeURIComponent(id) + "/contact", {
+              method: "POST",
+              credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ contact_mode: mode, public_phone: phone || null })
+            }).then(function(r) {
+              btn.disabled = false;
+              btn.textContent = "Save contact settings";
+              if (r.ok) { status.textContent = "Saved"; status.style.color = "#060"; }
+              else { status.textContent = "Error saving"; status.style.color = "#c00"; }
+            }).catch(function() { btn.disabled = false; btn.textContent = "Save contact settings"; status.textContent = "Network error"; status.style.color = "#c00"; });
           });
         }
       }
