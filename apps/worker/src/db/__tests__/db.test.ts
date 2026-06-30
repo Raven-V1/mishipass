@@ -167,12 +167,12 @@ describe("cats — public profile", () => {
     });
 
     // Explicitly assert internal fields are absent.
-    expect((profile as Record<string, unknown>)["id"]).toBeUndefined();
-    expect((profile as Record<string, unknown>)["owner_id"]).toBeUndefined();
+    expect((profile as unknown as Record<string, unknown>)["id"]).toBeUndefined();
+    expect((profile as unknown as Record<string, unknown>)["owner_id"]).toBeUndefined();
     // Cartilla tables have no columns on this object; confirming via spot-checks.
-    expect((profile as Record<string, unknown>)["password_hash"]).toBeUndefined();
-    expect((profile as Record<string, unknown>)["vet_visits"]).toBeUndefined();
-    expect((profile as Record<string, unknown>)["medications"]).toBeUndefined();
+    expect((profile as unknown as Record<string, unknown>)["password_hash"]).toBeUndefined();
+    expect((profile as unknown as Record<string, unknown>)["vet_visits"]).toBeUndefined();
+    expect((profile as unknown as Record<string, unknown>)["medications"]).toBeUndefined();
   });
 
   it("returns null for unknown public_id", async () => {
@@ -186,8 +186,8 @@ describe("cats — public profile", () => {
     const cats = await listCatsForOwner(env.DB, ownerId);
     expect(cats).toHaveLength(2);
     for (const cat of cats) {
-      expect((cat as Record<string, unknown>)["id"]).toBeUndefined();
-      expect((cat as Record<string, unknown>)["owner_id"]).toBeUndefined();
+      expect((cat as unknown as Record<string, unknown>)["id"]).toBeUndefined();
+      expect((cat as unknown as Record<string, unknown>)["owner_id"]).toBeUndefined();
     }
   });
 
@@ -320,8 +320,8 @@ describe("missing_alerts", () => {
     expect(board).toHaveLength(1);
     expect(board[0]!.public_id).toBe(PUBLIC_ID_A);
     // Internal ids must not be present.
-    expect((board[0] as Record<string, unknown>)["id"]).toBeUndefined();
-    expect((board[0] as Record<string, unknown>)["owner_id"]).toBeUndefined();
+    expect((board[0] as unknown as Record<string, unknown>)["id"]).toBeUndefined();
+    expect((board[0] as unknown as Record<string, unknown>)["owner_id"]).toBeUndefined();
   });
 });
 
@@ -347,7 +347,7 @@ describe("sighting_reports", () => {
     expect(ownerReports[0]!.message).toBe("Saw near the park");
     expect(ownerReports[0]!.location_text).toBe("Parque Sauzal");
     // reporter_ip_hash must not appear in the owner view.
-    expect((ownerReports[0] as Record<string, unknown>)["reporter_ip_hash"]).toBeUndefined();
+    expect((ownerReports[0] as unknown as Record<string, unknown>)["reporter_ip_hash"]).toBeUndefined();
 
     const nonOwnerReports = await listSightingReportsForOwner(env.DB, PUBLIC_ID_A, ownerB);
     expect(nonOwnerReports).toHaveLength(0);
@@ -375,8 +375,8 @@ describe("vet_sessions", () => {
     expect(session!.status).toBe("active");
     expect(session!.expires_at).toBe(FUTURE);
     // Internal ids absent.
-    expect((session as Record<string, unknown>)["id"]).toBeUndefined();
-    expect((session as Record<string, unknown>)["cat_id"]).toBeUndefined();
+    expect((session as unknown as Record<string, unknown>)["id"]).toBeUndefined();
+    expect((session as unknown as Record<string, unknown>)["cat_id"]).toBeUndefined();
   });
 });
 
@@ -400,7 +400,7 @@ describe("cartilla — vet_visits", () => {
     expect(ownerVisits).toHaveLength(1);
     expect(ownerVisits[0]!.vet_or_clinic_name).toBe("Clínica Felina Norte");
     // cat_id must not be exposed.
-    expect((ownerVisits[0] as Record<string, unknown>)["cat_id"]).toBeUndefined();
+    expect((ownerVisits[0] as unknown as Record<string, unknown>)["cat_id"]).toBeUndefined();
 
     const nonOwnerVisits = await listVetVisits(env.DB, PUBLIC_ID_A, ownerB);
     expect(nonOwnerVisits).toHaveLength(0);
@@ -432,7 +432,7 @@ describe("cartilla — vaccines", () => {
     const ownerVaccines = await listVaccines(env.DB, PUBLIC_ID_A, ownerA);
     expect(ownerVaccines).toHaveLength(1);
     expect(ownerVaccines[0]!.vaccine_name).toBe("Tricat");
-    expect((ownerVaccines[0] as Record<string, unknown>)["cat_id"]).toBeUndefined();
+    expect((ownerVaccines[0] as unknown as Record<string, unknown>)["cat_id"]).toBeUndefined();
 
     expect(await listVaccines(env.DB, PUBLIC_ID_A, ownerB)).toHaveLength(0);
   });
@@ -456,11 +456,11 @@ describe("cartilla — medications (documentation only)", () => {
     expect(meds).toHaveLength(1);
     expect(meds[0]!.medication_name).toBe("Amoxicillin");
     // Confirm no advice/dosage-calc columns exist on the returned object.
-    expect((meds[0] as Record<string, unknown>)["cat_id"]).toBeUndefined();
-    expect((meds[0] as Record<string, unknown>)["reminder_at"]).toBeUndefined();
-    expect((meds[0] as Record<string, unknown>)["next_dose"]).toBeUndefined();
-    expect((meds[0] as Record<string, unknown>)["interaction_check"]).toBeUndefined();
-    expect((meds[0] as Record<string, unknown>)["refill_at"]).toBeUndefined();
+    expect((meds[0] as unknown as Record<string, unknown>)["cat_id"]).toBeUndefined();
+    expect((meds[0] as unknown as Record<string, unknown>)["reminder_at"]).toBeUndefined();
+    expect((meds[0] as unknown as Record<string, unknown>)["next_dose"]).toBeUndefined();
+    expect((meds[0] as unknown as Record<string, unknown>)["interaction_check"]).toBeUndefined();
+    expect((meds[0] as unknown as Record<string, unknown>)["refill_at"]).toBeUndefined();
 
     expect(await listMedications(env.DB, PUBLIC_ID_A, ownerB)).toHaveLength(0);
   });
