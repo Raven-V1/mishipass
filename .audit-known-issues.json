@@ -1,1 +1,1 @@
-["@cloudflare/vitest-pool-workers", "vitest", "wrangler", "devalue", "undici", "vite", "ws"]
+["@cloudflare/vitest-pool-workers","@vitest/mocker","devalue","esbuild","miniflare","undici","vite","vite-node","vitest","wrangler","ws"]
