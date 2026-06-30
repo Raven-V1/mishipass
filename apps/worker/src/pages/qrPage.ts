@@ -1,5 +1,5 @@
 import { validateId } from "@mishipass/shared-validation";
-import { getCatPublicProfile } from "../db/index.js";
+import { getCatForOwner } from "../db/index.js";
 import { escapeHtml, htmlResponse } from "../utils/html.js";
 import type { RequestContext } from "../middleware/session.js";
 
@@ -17,7 +17,7 @@ export async function handleQrPage(
     return new Response("Not Found", { status: 404 });
   }
 
-  const cat = await getCatPublicProfile(db, publicId);
+  const cat = await getCatForOwner(db, publicId, ctx.ownerId);
   if (!cat) {
     return new Response("Not Found", { status: 404 });
   }
@@ -56,7 +56,7 @@ export async function handleQrPage(
     <h2>${safeName}</h2>
     <div class="id">${safeId}</div>
     <div class="url">${safeUrl}</div>
-    <p class="note">Generate a QR image from the URL above using any QR code generator.</p>
+    <p class="note">Print this card or use the URL above with any QR code generator to create a scannable tag.</p>
   </div>
   <button class="print-btn" onclick="window.print()">Print QR Card</button>
 </body>
