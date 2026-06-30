@@ -64,6 +64,15 @@ export async function handleCreateCat(
 
   const { name, countryCode } = body as { name: string; countryCode: string };
 
+  // Extract optional expanded fields
+  const b = body as Record<string, unknown>;
+  const sex = typeof b["sex"] === "string" ? b["sex"].slice(0, 20) : null;
+  const birthDate = typeof b["birthDate"] === "string" ? b["birthDate"].slice(0, 30) : null;
+  const colorMarkings = typeof b["colorMarkings"] === "string" ? b["colorMarkings"].slice(0, 200) : null;
+  const breedMix = typeof b["breedMix"] === "string" ? b["breedMix"].slice(0, 100) : null;
+  const weight = typeof b["weight"] === "string" ? b["weight"].slice(0, 30) : null;
+  const notes = typeof b["notes"] === "string" ? b["notes"].slice(0, 500) : null;
+
   let publicId: string;
   try {
     publicId = generateId(countryCode);
@@ -82,6 +91,12 @@ export async function handleCreateCat(
         country_code: countryCode,
         photo_r2_key: null,
         current_mode: "active",
+        sex,
+        birth_date: birthDate,
+        color_markings: colorMarkings,
+        breed_mix: breedMix,
+        weight,
+        notes,
       });
       const qrUrl = `${publicBaseUrl}/c/${publicId}`;
       return Response.json({ publicId, qrUrl }, { status: 201 });
@@ -136,7 +151,12 @@ export async function handlePublicProfile(
   const effectiveContact = contact ?? { contact_mode: "relay" as const, public_phone: null };
 
   return new Response(
-    renderActiveProfile(cat.name, cat.country_code, cat.photo_r2_key, effectiveContact),
+    renderActiveProfile(cat.name, cat.country_code, cat.photo_r2_key, effectiveContact, {
+      sex: cat.sex,
+      color_markings: cat.color_markings,
+      breed_mix: cat.breed_mix,
+      weight: cat.weight,
+    }),
     {
       status: 200,
       headers: { "Content-Type": "text/html;charset=UTF-8", "X-Content-Type-Options": "nosniff" },
@@ -226,7 +246,8 @@ function renderActiveProfile(
   name: string,
   countryCode: string,
   photoR2Key: string | null,
-  contact: ContactSettingsPublicView
+  contact: ContactSettingsPublicView,
+  catView: { sex: string | null; color_markings: string | null; breed_mix: string | null; weight: string | null },
 ): string {
   const safeName = escapeHtml(name);
   const safeCountry = escapeHtml(countryCode);
@@ -243,6 +264,21 @@ function renderActiveProfile(
     contactSection = `<p class="contact-info">Contact the owner through MishiPass</p>`;
   }
 
+  // Expanded fields
+  let detailLines = "";
+  if (catView.sex) {
+    detailLines += `<p class="detail">Sex: ${escapeHtml(catView.sex)}</p>`;
+  }
+  if (catView.color_markings) {
+    detailLines += `<p class="detail">Color / Markings: ${escapeHtml(catView.color_markings)}</p>`;
+  }
+  if (catView.breed_mix) {
+    detailLines += `<p class="detail">Breed / Mix: ${escapeHtml(catView.breed_mix)}</p>`;
+  }
+  if (catView.weight) {
+    detailLines += `<p class="detail">Weight: ${escapeHtml(catView.weight)}</p>`;
+  }
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -255,6 +291,7 @@ function renderActiveProfile(
     .badge { display: inline-block; background: #eee; padding: 2px 8px; border-radius: 4px; font-size: 0.875rem; vertical-align: middle; }
     .photo img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; display: block; margin: 1rem 0; }
     .photo-placeholder { width: 120px; height: 120px; background: #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 1rem 0; }
+    .detail { margin: 0.25rem 0; font-size: 0.95rem; color: #333; }
     .contact-btn { display: inline-block; margin-top: 1rem; padding: 0.75rem 1.5rem; background: #333; color: #fff; text-decoration: none; border-radius: 6px; font-size: 1rem; }
     .contact-info { margin-top: 1rem; color: #555; font-size: 0.95rem; }
   </style>
@@ -262,6 +299,7 @@ function renderActiveProfile(
 <body>
   <h1>${safeName} <span class="badge">${safeCountry}</span></h1>
   ${photoSection}
+  ${detailLines}
   ${contactSection}
 </body>
 </html>`;
