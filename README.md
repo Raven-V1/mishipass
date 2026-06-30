@@ -2,7 +2,9 @@
 
 MishiPass is a privacy-first dynamic QR passport and recovery system for cats.
 
-Public site: https://raven-v1.github.io/mishipass/
+Production public URL: https://raven-v1.github.io/mishipass/
+
+The configured Cloudflare Worker root redirects to the production public URL. The Worker remains the QR/API runtime for dynamic mode routing and D1-backed data access.
 
 ## Public-Facing Overview
 
