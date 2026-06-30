@@ -14,6 +14,8 @@ export interface Env {
   DB: D1Database;
   /** Set via wrangler secret / .dev.vars. Example: https://mishipass.com */
   PUBLIC_BASE_URL: string;
+  /** HMAC secret for hashing reporter IPs. Set via wrangler secret. */
+  SIGHTING_IP_HMAC_SECRET?: string;
 }
 
 // Route patterns
@@ -122,7 +124,7 @@ export default {
         return handleSightingForm(id, env.DB);
       }
       if (method === "POST") {
-        return handleSightingSubmit(id, request, env.DB);
+        return handleSightingSubmit(id, request, env.DB, env.SIGHTING_IP_HMAC_SECRET);
       }
     }
 
