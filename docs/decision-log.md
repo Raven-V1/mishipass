@@ -305,6 +305,18 @@ not guarantees. The distinction matters especially in a judge-facing security
 model.
 Decided by: Project Owner
 
+## [2026-06-30] — Day 1-6 closure cleanup
+Decision: Complete remaining Day 1-6 gaps before starting Day 7 Vet Visit.
+Changes: Remove public GitHub repo link from Worker root page. Add
+authenticated contact/privacy settings routes (GET/POST
+/api/cats/:publicId/contact). Sync documentation.
+Reason: Cleanup items blocking Day 7 readiness. Root page should not expose
+repository structure publicly. Owner needs to control contact visibility before
+the missing-mode public page is fully useful.
+Alternatives considered: Deferring contact settings to Day 7 (rejected -- it is
+a Day 5-6 item per Constitution Section 19 and missing mode needs it).
+Decided by: Project Owner
+
 ---
 
 ## Open items (not yet decided)

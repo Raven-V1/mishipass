@@ -65,6 +65,12 @@ describe("worker fetch routes", () => {
     expect(body).not.toContain("/c/MP");
   });
 
+  it("root page does not contain GitHub link", async () => {
+    const res = await worker.fetch(new Request("https://example.com/"), fakeEnv);
+    const body = await res.text();
+    expect(body).not.toContain("github.com");
+  });
+
   it("GET /c/invalid still returns not found", async () => {
     const res = await worker.fetch(new Request("https://example.com/c/invalid"), fakeEnv);
 
