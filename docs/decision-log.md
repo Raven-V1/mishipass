@@ -170,6 +170,24 @@ to add another tool). Independent installs per app, no shared package
 `apps/worker` and any future consumer).
 Decided by: Carlos
 
+## [2026-06-29] — Dependency: @cloudflare/vitest-pool-workers major-version upgrade deferred
+Decision: Hold @cloudflare/vitest-pool-workers at 0.5.30. Major upgrade to 0.16.20 deferred.
+Reason: Upgrade requires breaking changes incompatible with current Cloudflare Workers test tooling. Package is a dev-only dependency with no production surface in the deployed Worker.
+Alternatives considered: npm audit fix --force rejected due to risk of breaking miniflare and vitest-pool-workers integration.
+Decided by: Carlos
+
+## [2026-06-29] — Dependency: vitest major-version upgrade deferred
+Decision: Hold vitest at 2.1.9. Major upgrade to 4.1.9 deferred.
+Reason: Upgrade requires breaking changes incompatible with current Cloudflare Workers test tooling. Package is a dev-only dependency with no production surface in the deployed Worker.
+Alternatives considered: npm audit fix --force rejected due to risk of breaking miniflare and vitest-pool-workers integration.
+Decided by: Carlos
+
+## [2026-06-29] — Dependency: wrangler major-version upgrade deferred
+Decision: Hold wrangler at 3.114.17. Major upgrade to 4.105.0 deferred.
+Reason: Upgrade requires breaking changes incompatible with current Cloudflare Workers test tooling. Package is a dev-only dependency with no production surface in the deployed Worker.
+Alternatives considered: npm audit fix --force rejected due to risk of breaking miniflare and vitest-pool-workers integration.
+Decided by: Carlos
+
 ---
 
 ## Open items (not yet decided)
