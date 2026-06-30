@@ -32,7 +32,7 @@ beforeAll(async () => {
   // Hash "testpass123" using the same algorithm as auth.ts
   const password = "testpass123";
   const salt = crypto.getRandomValues(new Uint8Array(16));
-  const iterations = 600_000;
+  const iterations = 100_000;
 
   const keyMaterial = await crypto.subtle.importKey(
     "raw",
