@@ -1,7 +1,7 @@
 import type { VetSessionInsert, VetSessionRow } from "../types.js";
 
 // TODO (Day 7 — §9 open items q1/q2):
-// Before implementing vet session expiry or token enforcement, Carlos must
+// Before implementing vet session expiry or token enforcement, the Project Owner must
 // decide and log in docs/decision-log.md:
 //   q1: Is vet access token-based (hash the token, mirror sessions.token_hash)
 //       or purely mode-gated (token_hash nullable, known Beta limitation)?
