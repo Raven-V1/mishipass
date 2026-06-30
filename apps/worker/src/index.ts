@@ -1,6 +1,7 @@
 import { resolveSession } from "./middleware/session.js";
 import { handleLogin, handleLogout, handleRegister } from "./routes/auth.js";
 import { handleCreateCat, handleListCats, handlePublicProfile } from "./routes/cats.js";
+import { handleGetContactSettings, handleUpsertContactSettings } from "./routes/contactSettings.js";
 import { handleSwitchToActive, handleSwitchToMissing } from "./routes/missingAlerts.js";
 import { handleSightingForm, handleSightingSubmit, handleListSightingsForOwner } from "./routes/sightingReports.js";
 
@@ -15,6 +16,7 @@ const SIGHTING_PATH = /^\/c\/([^/]+)\/sighting$/;
 const SIGHTINGS_API_PATH = /^\/api\/cats\/([^/]+)\/sightings$/;
 const CAT_MISSING_PATH = /^\/api\/cats\/([^/]+)\/missing$/;
 const CAT_ACTIVE_PATH = /^\/api\/cats\/([^/]+)\/active$/;
+const CONTACT_SETTINGS_PATH = /^\/api\/cats\/([^/]+)\/contact$/;
 
 const ROOT_LANDING_HTML = `<!DOCTYPE html>
 <html lang="en">
@@ -29,8 +31,6 @@ const ROOT_LANDING_HTML = `<!DOCTYPE html>
     .tagline{color:#555;margin-bottom:1.5rem;font-size:1.1rem}
     .desc{margin-bottom:1.5rem}
     .cta{display:inline-block;padding:0.75rem 1.5rem;background:#111;color:#fff;text-decoration:none;border-radius:6px;font-size:1rem;margin-bottom:1rem}
-    .links{margin-top:1rem;font-size:0.875rem;color:#555}
-    .links a{color:#333}
   </style>
 </head>
 <body>
@@ -38,7 +38,6 @@ const ROOT_LANDING_HTML = `<!DOCTYPE html>
   <p class="tagline">Privacy-first dynamic QR passport and recovery system for cats.</p>
   <p class="desc">One permanent QR per cat. The owner controls what a scan shows: Active Profile, Missing Alert, or Vet Visit. The QR never changes.</p>
   <a class="cta" href="/dashboard">Owner Dashboard</a>
-  <div class="links"><a href="https://github.com/Raven-V1/mishipass">Source on GitHub</a></div>
 </body>
 </html>`;
 
@@ -182,6 +181,7 @@ const DASHBOARD_HTML = `<!DOCTYPE html>
               html += "<h3>" + escHtml(c.name) + "</h3>";
               html += '<p class="cat-meta">ID: ' + escHtml(c.publicId) + " | Mode: " + escHtml(c.currentMode) + "</p>";
               html += '<p><a href="/c/' + encodeURIComponent(c.publicId) + '">View public profile</a></p>';
+              html += '<p class="cat-meta"><a href="/api/cats/' + encodeURIComponent(c.publicId) + '/contact" target="_blank">Contact settings (JSON)</a></p>';
               html += '<div class="cat-actions">';
               if (c.currentMode === "missing") {
                 html += '<button class="btn-primary switch-active-btn" data-id="' + escHtml(c.publicId) + '">Switch to Active</button>';
@@ -388,6 +388,17 @@ export default {
     if (method === "POST" && activeMatch) {
       const ctx = await resolveSession(request, env.DB);
       return handleSwitchToActive(request, activeMatch[1]!, env.DB, ctx);
+    }
+
+    const contactMatch = CONTACT_SETTINGS_PATH.exec(pathname);
+    if (contactMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      if (method === "GET") {
+        return handleGetContactSettings(contactMatch[1]!, env.DB, ctx);
+      }
+      if (method === "POST") {
+        return handleUpsertContactSettings(contactMatch[1]!, request, env.DB, ctx);
+      }
     }
 
     if (method === "GET" && pathname === "/api/cats") {
