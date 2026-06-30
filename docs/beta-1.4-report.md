@@ -48,7 +48,7 @@ instructions; testing credentials if required.)*
 
 ## 7. Team and credits
 
-Carlos Velazquez — project owner and orchestrator.
+Project Owner — project owner and orchestrator.
 Zhanerke Askerbekova — Design Authority.
 
 *(Expand with role detail at finalization.)*
