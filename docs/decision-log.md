@@ -274,6 +274,37 @@ Rewriting Git history immediately (deferred — destructive and requires separat
 explicit approval).
 Decided by: Project Owner
 
+## [2026-06-30] — Return frontend plan to Constitution path
+Decision: Stop pursuing GitHub Pages as the app or frontend host. MishiPass
+returns to the Constitution path: Cloudflare Worker remains production runtime,
+D1 remains database, R2 remains file storage, Python remains tooling only, and
+public QR mode routing remains Worker-based. The Worker root now serves a minimal
+product landing page directly instead of redirecting to GitHub Pages. GitHub Pages,
+if still enabled, is a temporary static landing only and must not expose
+implementation structure or be expanded.
+Reason: Hosting the dashboard on GitHub Pages creates architecture drift,
+cross-origin auth and CORS complexity, and conflicts with the Beta stack rule
+(§5). The Project Owner decided to recover schedule by returning to the original
+Cloudflare-centred plan.
+Alternatives considered: GitHub Pages dashboard (rejected — cross-origin
+auth/CORS/CSRF complexity and privacy leakage through API host exposure).
+Continuing the GitHub Pages detour (rejected — worsens schedule drift). Custom
+domain (deferred — not needed for Beta under the current cost constraint).
+Decided by: Project Owner
+
+## [2026-06-30] — Status language rule: "implemented" requires manual verification
+Decision: No feature or control in any project document may be described as
+"implemented" based solely on code existence or passing unit tests. Until a
+feature is manually verified working end-to-end (against a local stack or the
+production deployment), use "backend/API exists, not manually verified" or
+equivalent language. This corrects several entries in docs/security-model.md
+that were written as "implemented" during the Day 6 build pass before manual
+verification was possible.
+Reason: Security controls and features that are coded but not verified are risks,
+not guarantees. The distinction matters especially in a judge-facing security
+model.
+Decided by: Project Owner
+
 ---
 
 ## Open items (not yet decided)
