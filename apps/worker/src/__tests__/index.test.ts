@@ -124,4 +124,18 @@ describe("GET /dashboard", () => {
       expect(body).not.toContain(term);
     }
   });
+
+  it("does not contain raw Contact settings JSON link", async () => {
+    const res = await worker.fetch(new Request("https://example.com/dashboard"), fakeEnv);
+    const body = await res.text();
+    expect(body).not.toContain("Contact settings (JSON)");
+  });
+
+  it("contains Contact and Privacy UI controls", async () => {
+    const res = await worker.fetch(new Request("https://example.com/dashboard"), fakeEnv);
+    const body = await res.text();
+    expect(body).toContain("Contact &amp; Privacy");
+    expect(body).toContain("contact-mode-select");
+    expect(body).toContain("Save contact settings");
+  });
 });
