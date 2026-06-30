@@ -2,6 +2,7 @@ import { resolveSession } from "./middleware/session.js";
 import { handleLogin, handleLogout, handleRegister } from "./routes/auth.js";
 import { handleCreateCat, handleListCats, handlePublicProfile } from "./routes/cats.js";
 import { handleSwitchToActive, handleSwitchToMissing } from "./routes/missingAlerts.js";
+import { handleSightingForm, handleSightingSubmit, handleListSightingsForOwner } from "./routes/sightingReports.js";
 
 export interface Env {
   DB: D1Database;
@@ -10,6 +11,8 @@ export interface Env {
 }
 
 const PUBLIC_PROFILE_PATH = /^\/c\/([^/]+)$/;
+const SIGHTING_PATH = /^\/c\/([^/]+)\/sighting$/;
+const SIGHTINGS_API_PATH = /^\/api\/cats\/([^/]+)\/sightings$/;
 const CAT_MISSING_PATH = /^\/api\/cats\/([^/]+)\/missing$/;
 const CAT_ACTIVE_PATH = /^\/api\/cats\/([^/]+)\/active$/;
 
@@ -182,6 +185,7 @@ const DASHBOARD_HTML = `<!DOCTYPE html>
               html += '<div class="cat-actions">';
               if (c.currentMode === "missing") {
                 html += '<button class="btn-primary switch-active-btn" data-id="' + escHtml(c.publicId) + '">Switch to Active</button>';
+                html += '<p class="cat-meta"><a href="/api/cats/' + encodeURIComponent(c.publicId) + '/sightings" target="_blank">View sighting reports</a></p>';
               } else {
                 html += '<button class="btn-warn switch-missing-btn" data-id="' + escHtml(c.publicId) + '">Switch to Missing</button>';
                 html += '<div class="mode-fields hidden" id="missing-fields-' + escHtml(c.publicId) + '">';
@@ -271,7 +275,7 @@ const DASHBOARD_HTML = `<!DOCTYPE html>
           btn.disabled = false;
           btn.textContent = "Login";
           if (r.ok) { showDash(); }
-          else { return r.json().then(function(d) { showMsg(loginError, d.error || "Login failed"); }); }
+          else { return r.text().then(function(t) { try { var d = JSON.parse(t); showMsg(loginError, d.error || "Login failed"); } catch(e) { showMsg(loginError, "Error " + r.status + ": " + (t || "Login failed")); } }); }
         }).catch(function() { btn.disabled = false; btn.textContent = "Login"; showMsg(loginError, "Network error. Try again."); });
       });
 
@@ -293,7 +297,7 @@ const DASHBOARD_HTML = `<!DOCTYPE html>
           btn.disabled = false;
           btn.textContent = "Register";
           if (r.ok) { showMsg(registerSuccess, "Registered. You can now log in."); }
-          else { return r.json().then(function(d) { showMsg(registerError, d.error || "Registration failed"); }); }
+          else { return r.text().then(function(t) { try { var d = JSON.parse(t); showMsg(registerError, d.error || "Registration failed"); } catch(e) { showMsg(registerError, "Error " + r.status + ": " + (t || "Registration failed")); } }); }
         }).catch(function() { btn.disabled = false; btn.textContent = "Register"; showMsg(registerError, "Network error. Try again."); });
       });
 
@@ -394,6 +398,23 @@ export default {
     if (method === "POST" && pathname === "/api/cats") {
       const ctx = await resolveSession(request, env.DB);
       return handleCreateCat(request, env.DB, env.PUBLIC_BASE_URL, ctx);
+    }
+
+    const sightingMatch = SIGHTING_PATH.exec(pathname);
+    if (sightingMatch) {
+      const id = sightingMatch[1]!;
+      if (method === "GET") {
+        return handleSightingForm(id, env.DB);
+      }
+      if (method === "POST") {
+        return handleSightingSubmit(id, request, env.DB);
+      }
+    }
+
+    const sightingsApiMatch = SIGHTINGS_API_PATH.exec(pathname);
+    if (method === "GET" && sightingsApiMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleListSightingsForOwner(sightingsApiMatch[1]!, env.DB, ctx);
     }
 
     const profileMatch = PUBLIC_PROFILE_PATH.exec(pathname);
