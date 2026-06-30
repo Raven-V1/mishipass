@@ -1,5 +1,5 @@
 import { validateId } from "@mishipass/shared-validation";
-import { getCatPublicProfile } from "../db/index.js";
+import { getCatForOwner } from "../db/index.js";
 import { getCountryName } from "../data/countries.js";
 import { escapeHtml, htmlResponse } from "../utils/html.js";
 import type { RequestContext } from "../middleware/session.js";
@@ -18,7 +18,7 @@ export async function handleCatDetail(
     return new Response("Not Found", { status: 404 });
   }
 
-  const cat = await getCatPublicProfile(db, publicId);
+  const cat = await getCatForOwner(db, publicId, ctx.ownerId);
   if (!cat) {
     return new Response("Not Found", { status: 404 });
   }

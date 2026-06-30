@@ -1,5 +1,5 @@
 import { validateId } from "@mishipass/shared-validation";
-import { getCatPublicProfile, listSightingReportsForOwner } from "../db/index.js";
+import { getCatForOwner, listSightingReportsForOwner } from "../db/index.js";
 import { escapeHtml, htmlResponse } from "../utils/html.js";
 import type { RequestContext } from "../middleware/session.js";
 
@@ -16,7 +16,7 @@ export async function handleSightingInbox(
     return new Response("Not Found", { status: 404 });
   }
 
-  const cat = await getCatPublicProfile(db, publicId);
+  const cat = await getCatForOwner(db, publicId, ctx.ownerId);
   if (!cat) {
     return new Response("Not Found", { status: 404 });
   }

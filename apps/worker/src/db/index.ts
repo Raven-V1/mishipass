@@ -43,6 +43,7 @@ export {
 
 // Cats
 export {
+  getCatForOwner,
   getCatPublicProfile,
   insertCat,
   listCatsForOwner,
