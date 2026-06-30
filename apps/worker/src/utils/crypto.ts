@@ -22,13 +22,16 @@ export async function sha256Hex(value: string): Promise<string> {
  * Hash a password with PBKDF2-SHA256.
  *
  * Returns the PHC-style string:
- *   $pbkdf2-sha256$600000$<base64-salt>$<base64-hash>
+ *   $pbkdf2-sha256$100000$<base64-salt>$<base64-hash>
  *
- * Salt: 16 random bytes. Iterations: 600000. Derived key: 32 bytes.
+ * Salt: 16 random bytes. Iterations: 100000. Derived key: 32 bytes.
+ * Note: 600000 iterations exceeded Cloudflare Worker CPU time limits.
+ * 100000 is the practical maximum for the Workers runtime while still
+ * providing strong key-stretching. Documented in decision-log.md.
  */
 export async function hashPassword(password: string): Promise<string> {
   const salt = crypto.getRandomValues(new Uint8Array(16));
-  const iterations = 600_000;
+  const iterations = 100_000;
 
   const keyMaterial = await crypto.subtle.importKey(
     "raw",

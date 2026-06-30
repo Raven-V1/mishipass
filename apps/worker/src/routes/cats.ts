@@ -159,7 +159,7 @@ async function handlePublicMissingProfile(
     });
   }
 
-  return new Response(renderMissingProfile(catName, alert), {
+  return new Response(renderMissingProfile(catName, alert, publicId), {
     status: 200,
     headers: { "Content-Type": "text/html;charset=UTF-8", "X-Content-Type-Options": "nosniff" },
   });
@@ -179,6 +179,7 @@ function escapeHtml(s: string): string {
 function renderMissingProfile(
   name: string,
   alert: MissingAlertPublicView,
+  publicId?: string,
 ): string {
   const safeName = escapeHtml(name);
   const safeCity = alert.city ? escapeHtml(alert.city) : null;
@@ -190,6 +191,10 @@ function renderMissingProfile(
     const safeReward = escapeHtml(alert.reward_amount);
     rewardSection = `<p class="reward">Reward: ${safeReward}</p>`;
   }
+
+  const sightingLink = publicId
+    ? `<p><a href="/c/${escapeHtml(publicId)}/sighting">Report a sighting</a></p>`
+    : "";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -211,6 +216,7 @@ function renderMissingProfile(
   ${safeArea ? `<p class="detail">Area: ${safeArea}</p>` : ""}
   ${safeLastSeen ? `<p class="detail">Last seen: ${safeLastSeen}</p>` : ""}
   ${rewardSection}
+  ${sightingLink}
 </body>
 </html>`;
 }
