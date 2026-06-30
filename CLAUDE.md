@@ -50,6 +50,20 @@ categories, reword or remove it before writing or building it.
 **Cost constraint:** stack stays free or near-free. No paid service is added
 without the Project Owner's explicit decision.
 
+### GitHub Pages — operational rule (Day 7 correction)
+
+GitHub Pages is **not** the app path, owner dashboard host, or product sitemap host.
+It exists only as a temporary static public landing page and must not be expanded.
+
+Do not:
+- add API routing, authentication, or D1/R2 access to GitHub Pages
+- serve the owner dashboard from GitHub Pages
+- add cross-origin auth or CORS headers to support a GitHub Pages frontend
+- expand `site/` beyond a single static HTML landing page
+
+All QR routing, API behavior, authentication, D1 access, R2 storage, and dashboard
+logic remain exclusively on the Cloudflare Worker/D1/R2 stack.
+
 ### Python role (LOCKED)
 
 Python is an identity and tooling layer only. It defines ID formats, generates

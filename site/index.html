@@ -23,7 +23,6 @@
   <main>
     <section class="intro" aria-labelledby="intro-title">
       <div class="intro-copy">
-        <p class="eyebrow">Public-facing Beta overview</p>
         <h1 id="intro-title">MishiPass</h1>
         <p class="lede">Privacy-first dynamic QR passport and recovery system for cats.</p>
         <p class="support">One permanent QR. Different mode when the cat needs it.</p>
@@ -50,7 +49,7 @@
           <li>
             <span>01</span>
             <strong>Register cat</strong>
-            <p>Create an owner-controlled record in the configured Worker backend.</p>
+            <p>Create a permanent record for your cat.</p>
           </li>
           <li>
             <span>02</span>
@@ -91,7 +90,7 @@
           <p>Owner-controlled privacy is built into the public route model.</p>
         </div>
         <ul class="privacy-list">
-          <li>No internal database IDs on public pages.</li>
+          <li>No internal IDs on public pages.</li>
           <li>Owner controls contact visibility.</li>
           <li>Medical/cartilla data remains private.</li>
           <li>Medication entries remain documentation-only records.</li>
@@ -99,19 +98,6 @@
       </div>
     </section>
 
-    <section class="section-inner runtime" aria-labelledby="runtime-title">
-      <h2 id="runtime-title">Runtime Boundary</h2>
-      <p>
-        The public site is hosted on GitHub Pages. The QR/API runtime is handled
-        by a TypeScript Cloudflare Worker with D1.
-      </p>
-      <p class="route-pattern">Public QR route pattern: <code>/c/MP-XX-XXXX-XXXX</code></p>
-      <div class="links" aria-label="Project links">
-        <a href="https://github.com/Raven-V1/mishipass">GitHub repository</a>
-        <a href="https://github.com/Raven-V1/mishipass/blob/main/docs/security-model.md">Security model</a>
-        <a href="https://github.com/Raven-V1/mishipass/blob/main/README.md">README</a>
-      </div>
-    </section>
   </main>
 </body>
 </html>

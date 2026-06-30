@@ -12,16 +12,40 @@ export interface Env {
 const PUBLIC_PROFILE_PATH = /^\/c\/([^/]+)$/;
 const CAT_MISSING_PATH = /^\/api\/cats\/([^/]+)\/missing$/;
 const CAT_ACTIVE_PATH = /^\/api\/cats\/([^/]+)\/active$/;
-const PUBLIC_SITE_URL = "https://raven-v1.github.io/mishipass/";
 
-function redirectToPublicSite(): Response {
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: PUBLIC_SITE_URL,
-      "X-Content-Type-Options": "nosniff",
-    },
-  });
+const ROOT_LANDING_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MishiPass</title>
+  <meta name="description" content="Privacy-first dynamic QR passport and recovery system for cats." />
+  <style>
+    body{font-family:sans-serif;max-width:560px;margin:4rem auto;padding:0 1rem;color:#111}
+    h1{font-size:2rem;margin-bottom:.5rem}
+    .sub{color:#555;margin-bottom:1.5rem}
+    .tag{font-family:monospace;background:#f0f0f0;padding:2px 6px;border-radius:3px;font-size:.875rem}
+    a{color:#111}
+  </style>
+</head>
+<body>
+  <h1>MishiPass</h1>
+  <p class="sub">Privacy-first dynamic QR passport and recovery system for cats.</p>
+  <p>One permanent QR code per cat. Scan it at
+    <span class="tag">/c/MP-XX-XXXX-XXXX</span> to see the cat&rsquo;s current profile.</p>
+  <p><a href="https://github.com/Raven-V1/mishipass">GitHub &rarr;</a></p>
+</body>
+</html>`;
+
+function handleRootLanding(method: string): Response {
+  const headers = {
+    "Content-Type": "text/html;charset=UTF-8",
+    "X-Content-Type-Options": "nosniff",
+  };
+  if (method === "HEAD") {
+    return new Response(null, { status: 200, headers });
+  }
+  return new Response(ROOT_LANDING_HTML, { status: 200, headers });
 }
 
 export default {
@@ -30,7 +54,7 @@ export default {
     const { pathname } = new URL(url);
 
     if ((method === "GET" || method === "HEAD") && pathname === "/") {
-      return redirectToPublicSite();
+      return handleRootLanding(method);
     }
 
     if (method === "POST" && pathname === "/api/auth/register") {
