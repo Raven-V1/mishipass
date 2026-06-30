@@ -13,14 +13,14 @@ Format:
 Decision: [what was decided]
 Reason: [why]
 Alternatives considered: [what was rejected and why]
-Decided by: Carlos
+Decided by: Project Owner
 ```
 
 ---
 
 ## 2026-06-24 — Project license: proprietary, all rights reserved
-Decision: License the repository as proprietary "all rights reserved" (Carlos
-Velazquez and Zhanerke Askerbekova), with a limited clause granting hackathon
+Decision: License the repository as proprietary "all rights reserved" (Project
+Owner and Zhanerke Askerbekova), with a limited clause granting hackathon
 organisers and judges permission to access, run, and test the project solely for
 judging.
 Reason: MishiPass is intended to continue as a product beyond the hackathon; the
@@ -29,22 +29,22 @@ access and run the project, which the limited clause satisfies.
 Alternatives considered: MIT (rejected — permits unrestricted reuse of a product
 the team intends to continue). No license / silence (rejected — ambiguous, and
 could appear to contradict the judge-access requirement).
-Decided by: Carlos
+Decided by: Project Owner
 
 ## 2026-06-24 — Constitution kept local, not committed to the public repo
-Decision: The full Project Constitution is maintained locally by Carlos and is
-not committed to the public GitHub repository. CLAUDE.md references it as the
+Decision: The full Project Constitution is maintained locally by the Project
+Owner and is not committed to the public GitHub repository. CLAUDE.md references it as the
 local source of truth.
 Reason: The repository is public. The constitution contains internal strategy and
 language that frames how judge questions are anticipated; publishing it shifts
-framing from "what was built" to internal planning. Judge-facing explanations
+framing from "what was built" to internal planning. Public-facing explanations
 (static-QR clarification, ID-enumeration note) live in the README and security
 model instead, written for judges.
 Alternatives considered: Commit the full constitution for transparency (rejected —
 exposes internal framing). Commit a sanitized constitution (deferred — CLAUDE.md
 already carries the operational subset). Move it to an in-repo "internal" folder
 (rejected — anything in a public repo is public).
-Decided by: Carlos
+Decided by: Project Owner
 
 ## 2026-06-24 — CLAUDE.md added to the repository (addition to locked Section 12)
 Decision: Add a sanitized CLAUDE.md operating guide at the repo root, though it is
@@ -54,18 +54,18 @@ improves alignment. It is a distillation of the constitution with judge-percepti
 language removed.
 Alternatives considered: Rely only on the local constitution (rejected — agents do
 not read local-only files automatically).
-Decided by: Carlos
+Decided by: Project Owner
 
 ## 2026-06-24 — Attribution: Zhanerke Askerbekova named in full
-Decision: Zhanerke Askerbekova is named by full name and title (Design Authority),
+Decision: Zhanerke Askerbekova is named by legal identity and title (Design Authority),
 as an integral team member and co-owner, in all documentation and deliverables
-where attribution is appropriate, alongside Carlos Velazquez.
+where attribution is appropriate, alongside Project Owner.
 Reason: She is integral to the team and the design authority; attribution should
 reflect that consistently across public-facing materials.
 Alternatives considered: First-name-only references as in the original
 Constitution Section 8 (rejected — incomplete attribution for a public repo and
 co-owner).
-Decided by: Carlos
+Decided by: Project Owner
 
 ## 2026-06-24 — Public ID format contract confirmed
 Decision: The public ID format is `MP-<CC>-<S1>-<S2>` — CC a 2-letter cosmetic
@@ -79,7 +79,7 @@ ambiguous characters on printed tags; 40 bits is infeasible to brute-force.
 Alternatives considered: Sequential/internal IDs (rejected — enumerable, leak
 internal state). Longer opaque random strings (rejected — worse to read off a
 printed tag).
-Decided by: Carlos
+Decided by: Project Owner
 
 ## 2026-06-24 — IDs are canonical uppercase; strict validation
 Decision: Public IDs are canonical uppercase only. `validate_id` and `parse_id`
@@ -91,7 +91,7 @@ avoids ambiguous public URLs. Silent normalization in one implementation but not
 the other is a parity footgun.
 Alternatives considered: Lenient generation that uppercases input (rejected —
 creates two normalization rules that can diverge across languages).
-Decided by: Carlos
+Decided by: Project Owner
 
 ## 2026-06-24 — Country code remains cosmetic (not security or uniqueness)
 Decision: The country segment remains cosmetic display context only. It is not a
@@ -103,7 +103,7 @@ load-bearing would weaken the privacy-first posture.
 Alternatives considered: Using the country code as part of security/uniqueness
 (considered on Day 1 and rejected — no security benefit, negligible uniqueness
 benefit, privacy cost). Reaffirms locked Section 7.
-Decided by: Carlos
+Decided by: Project Owner
 
 ## 2026-06-24 — Uniqueness and enumeration defenses assigned to the data/Worker layer
 Decision: ID uniqueness is guaranteed by a `UNIQUE` constraint on the public-ID
@@ -116,7 +116,7 @@ cannot. Rate limiting, not the country code, is the correct enumeration defense.
 Alternatives considered: Increasing entropy to 60 bits (deferred — unnecessary at
 Beta scale and would change the locked 4-char segment format). Relying on random
 generation alone for uniqueness (rejected — no guarantee).
-Decided by: Carlos
+Decided by: Project Owner
 
 ## 2026-06-24 — Kiro track participation paused
 Decision: Kiro-track work is paused for now. The scaffold omits the optional
@@ -125,7 +125,7 @@ Reason: Initial setup is focused on core repo and tooling; the Kiro opt-in is
 optional and reversible before the deadline.
 Alternatives considered: Scaffold the `.kiro` folder now (deferred — not needed
 unless opting into the Kiro track).
-Decided by: Carlos
+Decided by: Project Owner
 
 ## 2026-06-26 — Owner authentication: session-based
 Decision: Owner accounts authenticate via session-based auth — an opaque
@@ -139,7 +139,7 @@ Alternatives considered: JWT (rejected — revocation requires an extra
 denylist table, no real benefit at this scale). Third-party auth provider
 (rejected — adds a paid/external dependency, conflicts with the free-stack
 constraint in §5).
-Decided by: Carlos
+Decided by: Project Owner
 
 ## 2026-06-26 — Frontend: React dashboard, Worker-rendered public pages
 Decision: The owner dashboard (apps/web) is a React + TypeScript SPA. Public
@@ -154,7 +154,7 @@ Alternatives considered: Single React app serving both surfaces (rejected —
 forces a JS bundle onto the public scan path, hurts the "scan and instantly
 see it" demo). Plain HTML/JS for everything (rejected — dashboard has enough
 state and interactivity that React saves real time during the build window).
-Decided by: Carlos
+Decided by: Project Owner
 
 ## 2026-06-26 — Root workspace config: npm workspaces
 Decision: Use npm workspaces at the repo root (`apps/*`, `packages/*`) rather
@@ -168,25 +168,25 @@ over npm workspaces at this project's size; npm is already in use, no reason
 to add another tool). Independent installs per app, no shared package
 (rejected — would force copy-pasting the ID-format TS port between
 `apps/worker` and any future consumer).
-Decided by: Carlos
+Decided by: Project Owner
 
 ## [2026-06-29] — Dependency: @cloudflare/vitest-pool-workers major-version upgrade deferred
 Decision: Hold @cloudflare/vitest-pool-workers at 0.5.30. Major upgrade to 0.16.20 deferred.
 Reason: Upgrade requires breaking changes incompatible with current Cloudflare Workers test tooling. Package is a dev-only dependency with no production surface in the deployed Worker.
 Alternatives considered: npm audit fix --force rejected due to risk of breaking miniflare and vitest-pool-workers integration.
-Decided by: Carlos
+Decided by: Project Owner
 
 ## [2026-06-29] — Dependency: vitest major-version upgrade deferred
 Decision: Hold vitest at 2.1.9. Major upgrade to 4.1.9 deferred.
 Reason: Upgrade requires breaking changes incompatible with current Cloudflare Workers test tooling. Package is a dev-only dependency with no production surface in the deployed Worker.
 Alternatives considered: npm audit fix --force rejected due to risk of breaking miniflare and vitest-pool-workers integration.
-Decided by: Carlos
+Decided by: Project Owner
 
 ## [2026-06-29] — Dependency: wrangler major-version upgrade deferred
 Decision: Hold wrangler at 3.114.17. Major upgrade to 4.105.0 deferred.
 Reason: Upgrade requires breaking changes incompatible with current Cloudflare Workers test tooling. Package is a dev-only dependency with no production surface in the deployed Worker.
 Alternatives considered: npm audit fix --force rejected due to risk of breaking miniflare and vitest-pool-workers integration.
-Decided by: Carlos
+Decided by: Project Owner
 
 ## [2026-06-29] — D1 migration tooling: use d1 execute --file, not migrations apply
 Decision: Apply D1 migrations to the remote database using
@@ -202,40 +202,34 @@ Alternatives considered: Removing trigger blocks from migrations (rejected
 schema). Upgrading to Wrangler 4 (deferred — already logged as a separate
 dependency decision on 2026-06-29 due to breaking-change risk with the
 current Cloudflare Workers test tooling).
-Decided by: Carlos
+Decided by: Project Owner
 
-## [2026-06-29] — Workers.dev subdomain rename deferred to custom domain
-Decision: Keep the production Worker on the default workers.dev subdomain
-(mishipass.carlosvelazquez354.workers.dev) for now. Do not retry the
-account-level workers.dev subdomain rename.
-Reason: An attempted rename to a non-identifying subdomain did not save at
-the account level despite the dashboard appearing to accept it. Cloudflare's
-own documentation recommends production Workers use a Custom Domain rather
-than the workers.dev subdomain regardless, since workers.dev is intended for
-personal/hobby use. Pursuing a custom domain (which would also fully resolve
-the naming concern) is a better long-term fix than retrying the subdomain
-rename, and is deferred to a later polish pass given current time
-constraints on Day 6 of the coding period.
-Alternatives considered: Retrying the dashboard subdomain change repeatedly
-(rejected — already attempted, did not save, and further attempts would
-consume time needed for Day 6 catch-up feature work). Purchasing a custom
-domain immediately (deferred — not a hackathon blocker, can be added any
-time before submission without code changes beyond updating
-PUBLIC_BASE_URL and adding a custom_domain route).
-Decided by: Carlos
+## [2026-06-29] — Default Cloudflare Worker runtime hostname rename deferred
+Decision: Keep the production Worker on its configured Cloudflare Worker runtime
+hostname for now. Do not retry an account-level runtime hostname rename.
+Reason: An attempted rename to a non-identifying hostname did not save at the
+account level despite the dashboard appearing to accept it. Cloudflare's own
+documentation recommends production Workers use a custom domain rather than the
+default runtime hostname. A public site or custom domain is a better long-term
+fix than retrying the account-level hostname rename.
+Alternatives considered: Retrying the dashboard hostname change repeatedly
+(rejected — already attempted, did not save, and further attempts would consume
+time needed for feature work). Purchasing a custom domain immediately (rejected
+for Beta — not needed under the current cost constraint).
+Decided by: Project Owner
 
-## [2026-06-30] — Production Worker root route returns judge-safe landing page
-Decision: Add a static Worker-rendered `GET /` landing page for MishiPass.
+## [2026-06-30] — Production Worker root redirects to public site
+Decision: Redirect `GET /` and `HEAD /` on the Cloudflare Worker runtime to the
+public GitHub Pages site.
 Reason: The production Worker root previously returned `404 Not Found`, which
-is not acceptable for judge review. The new root page describes MishiPass as a
-privacy-first dynamic QR passport and recovery system for cats, references the
-public `/c/MP-XX-XXXX-XXXX` route format, and exposes no owner full name,
-email, exact address, internal database ID, dashboard data, or private cat
-records.
-Alternatives considered: Leaving root as 404 (rejected — poor judge and
-smoke-test behavior). Adding a separate frontend app (rejected — unnecessary
-for this correction cycle and outside the current Worker runtime path).
-Decided by: Carlos
+is not acceptable for public project review. After moving public presentation to
+GitHub Pages, the Worker root should act as a clean redirect while `/api/...`
+and `/c/:publicId` remain on the Worker runtime.
+Alternatives considered: Leaving root as 404 (rejected — poor public
+entry-point and smoke-test behavior). Keeping the Worker root as the main public
+landing page (rejected — the default runtime hostname is not the preferred public
+project URL).
+Decided by: Project Owner
 
 ## [2026-06-30] — Dependency audit allowlist includes transitive test-tooling packages
 Decision: Expand `.audit-known-issues.json` to include transitive packages
@@ -246,11 +240,39 @@ and transitive vulnerable packages. The additional entries are part of the same
 dev/test tooling chain already deferred and do not add production Worker
 runtime exposure.
 Alternatives considered: Blocking the production root fix on a major
-test-tooling upgrade (rejected — the root 404 fix is judge-facing and the audit
+test-tooling upgrade (rejected — the root 404 fix is public-facing and the audit
 packages remain development tooling). Ignoring the extra audit keys without
 documenting them (rejected — future audits should be explicit and
 reproducible).
-Decided by: Carlos
+Decided by: Project Owner
+
+## [2026-06-30] — Public site moves to GitHub Pages
+Decision: Use GitHub Pages as the public-facing MishiPass landing site while
+keeping Cloudflare Workers as the QR/API runtime.
+Reason: The public site should use a clean project URL that does not expose the
+project owner's individual Cloudflare account subdomain. GitHub Pages is
+sufficient for static public presentation, while QR routing, API behavior,
+authentication, and D1 access remain on the locked Cloudflare Worker runtime.
+Alternatives considered: Keeping the Worker root as the public landing page
+(rejected — the default runtime hostname exposes an individual account subdomain).
+Buying a custom domain (rejected — not needed for Beta and not aligned with the
+current cost constraint). Moving runtime behavior to GitHub Pages (rejected —
+GitHub Pages is static hosting and cannot replace Worker + D1 mode routing).
+Decided by: Project Owner
+
+## [2026-06-30] — Personal identifier cleanup policy
+Decision: Keep the Project Owner's legal name only where it has a clear legal or
+formal credit purpose, such as the LICENSE. Use Raven-V1 for GitHub account
+references and role-based labels elsewhere.
+Reason: The public repository and app should avoid exposing personal identity
+details in application output, docs, tests, examples, and public site copy. The
+LICENSE remains an appropriate place for formal ownership attribution.
+Alternatives considered: Removing the legal name from every file including
+LICENSE (rejected — legal attribution may be appropriate there). Keeping the
+legal name throughout docs and tests (rejected — unnecessary exposure).
+Rewriting Git history immediately (deferred — destructive and requires separate
+explicit approval).
+Decided by: Project Owner
 
 ---
 

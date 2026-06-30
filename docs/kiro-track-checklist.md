@@ -28,7 +28,7 @@ The decision log (`docs/decision-log.md`, 2026-06-24) currently records:
 > **Kiro track participation paused** — the scaffold omits the optional
 > `.kiro` folder; it can be added if the team opts back in before submission.
 
-That decision predates the work below. Carlos should decide explicitly
+That decision predates the work below. the Project Owner should decide explicitly
 whether to log a follow-up decision opting back in — this checklist doesn't
 make that call, it just tracks the evidence in case the answer is yes.
 
@@ -44,7 +44,7 @@ For the record, in case the write-up draws on it:
 - Kiro made a small, separately-scoped docs correction to
   `docs/feature-specs/d1-schema.md` (tightened wording on PBKDF2 iteration
   claims and a stale migration filename).
-- With Carlos's one-time explicit authorization, Kiro committed, pushed,
+- With the Project Owner's one-time explicit authorization, Kiro committed, pushed,
   opened PR #6 (`feature/d1-access-layer` into `dev`), squash-merged it, and
   applied branch protection to `main` (require 1 approving review, no force
   pushes, no deletions).
@@ -54,7 +54,7 @@ spec/steering/hooks workflow — worth knowing before drafting the write-up,
 since judges may distinguish "used Kiro's IDE features" from "used Kiro as a
 terminal agent for scoped corrections."
 
-## Open question for Carlos
+## Open question for the Project Owner
 
 If the team opts in, decide which framing the write-up uses:
 
@@ -68,7 +68,7 @@ If the team opts in, decide which framing the write-up uses:
 
 Either is fine under the rules (the write-up just needs to be honest about
 what happened) — this is a positioning decision, not a build decision, so
-it doesn't need the full Claude/ChatGPT alignment loop. Carlos decides and,
+it doesn't need the full Claude/ChatGPT alignment loop. the Project Owner decides and,
 if opting in, logs it in `docs/decision-log.md`.
 
 ## Checklist (fill in before submission, not now)
