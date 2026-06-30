@@ -10,6 +10,7 @@
 export type {
   CatInsert,
   CatMode,
+  CatOwnerView,
   CatPublicView,
   ContactMode,
   ContactSettingsPublicView,
