@@ -57,7 +57,7 @@ not read local-only files automatically).
 Decided by: Project Owner
 
 ## 2026-06-24 — Attribution: Zhanerke Askerbekova named in full
-Decision: Zhanerke Askerbekova is named by full name and title (Design Authority),
+Decision: Zhanerke Askerbekova is named by legal identity and title (Design Authority),
 as an integral team member and co-owner, in all documentation and deliverables
 where attribution is appropriate, alongside Project Owner.
 Reason: She is integral to the team and the design authority; attribution should
@@ -250,14 +250,28 @@ Decided by: Project Owner
 Decision: Use GitHub Pages as the public-facing MishiPass landing site while
 keeping Cloudflare Workers as the QR/API runtime.
 Reason: The public site should use a clean project URL that does not expose the
-project owner's personal Cloudflare account subdomain. GitHub Pages is
+project owner's individual Cloudflare account subdomain. GitHub Pages is
 sufficient for static public presentation, while QR routing, API behavior,
 authentication, and D1 access remain on the locked Cloudflare Worker runtime.
 Alternatives considered: Keeping the Worker root as the public landing page
-(rejected — the default runtime hostname exposes a personal account subdomain).
+(rejected — the default runtime hostname exposes an individual account subdomain).
 Buying a custom domain (rejected — not needed for Beta and not aligned with the
 current cost constraint). Moving runtime behavior to GitHub Pages (rejected —
 GitHub Pages is static hosting and cannot replace Worker + D1 mode routing).
+Decided by: Project Owner
+
+## [2026-06-30] — Personal identifier cleanup policy
+Decision: Keep the Project Owner's legal name only where it has a clear legal or
+formal credit purpose, such as the LICENSE. Use Raven-V1 for GitHub account
+references and role-based labels elsewhere.
+Reason: The public repository and app should avoid exposing personal identity
+details in application output, docs, tests, examples, and public site copy. The
+LICENSE remains an appropriate place for formal ownership attribution.
+Alternatives considered: Removing the legal name from every file including
+LICENSE (rejected — legal attribution may be appropriate there). Keeping the
+legal name throughout docs and tests (rejected — unnecessary exposure).
+Rewriting Git history immediately (deferred — destructive and requires separate
+explicit approval).
 Decided by: Project Owner
 
 ---

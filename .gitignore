@@ -5,6 +5,7 @@ dist/
 *.log
 audit-current.json
 audit-*.json
+.sensitive-terms.local.txt
 
 # Env / secrets
 .env

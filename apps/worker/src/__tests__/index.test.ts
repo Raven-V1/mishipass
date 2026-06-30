@@ -7,11 +7,12 @@ const fakeEnv: Env = {
 };
 
 const PUBLIC_SITE_URL = "https://raven-v1.github.io/mishipass/";
-const FORBIDDEN_PERSONAL_TERMS = [
-  `Carlos ${"Velazquez"}`,
-  `Carlos ${"Erick"}`,
-  `carlos${"velazquez"}354`,
-  `mishipass.carlos${"velazquez"}354.${"workers"}.dev`,
+const FORBIDDEN_PUBLIC_TERMS = [
+  "owner legal identity",
+  "owner@example.com",
+  "personal-account-subdomain",
+  "personal-worker-url",
+  "internal database ID",
 ];
 
 describe("worker fetch routes", () => {
@@ -35,7 +36,7 @@ describe("worker fetch routes", () => {
     const body = await res.text();
     const exposedText = `${res.headers.get("Location") ?? ""}\n${body}`;
 
-    for (const term of FORBIDDEN_PERSONAL_TERMS) {
+    for (const term of FORBIDDEN_PUBLIC_TERMS) {
       expect(exposedText).not.toContain(term);
     }
     expect(exposedText).not.toContain("owner_id");
