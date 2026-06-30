@@ -4,9 +4,33 @@ import {
   getContactSettingsPublic,
   getMissingAlertPublic,
   insertCat,
+  listCatsForOwner,
 } from "../db/index.js";
 import type { ContactSettingsPublicView, MissingAlertPublicView } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
+
+// ── GET /api/cats ───────────────────────────────────────────────────────────
+
+export async function handleListCats(
+  db: D1Database,
+  publicBaseUrl: string,
+  ctx: RequestContext,
+): Promise<Response> {
+  if (ctx.ownerId === null) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  const cats = await listCatsForOwner(db, ctx.ownerId);
+  const result = cats.map((cat) => ({
+    publicId: cat.public_id,
+    name: cat.name,
+    countryCode: cat.country_code,
+    currentMode: cat.current_mode,
+    qrUrl: `${publicBaseUrl}/c/${cat.public_id}`,
+  }));
+
+  return Response.json(result, { status: 200 });
+}
 
 // ── POST /api/cats ──────────────────────────────────────────────────────────
 
