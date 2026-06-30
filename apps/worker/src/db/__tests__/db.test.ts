@@ -157,18 +157,24 @@ describe("cats — public profile", () => {
     const profile = await getCatPublicProfile(env.DB, PUBLIC_ID_A);
     expect(profile).not.toBeNull();
 
-    // Only these five columns should be present.
+    // Only these public columns should be present.
     expect(profile).toEqual({
       public_id: PUBLIC_ID_A,
       name: "Mishi",
       country_code: "MX",
       photo_r2_key: null,
       current_mode: "active",
+      sex: null,
+      birth_date: null,
+      color_markings: null,
+      breed_mix: null,
+      weight: null,
     });
 
     // Explicitly assert internal fields are absent.
     expect((profile as unknown as Record<string, unknown>)["id"]).toBeUndefined();
     expect((profile as unknown as Record<string, unknown>)["owner_id"]).toBeUndefined();
+    expect((profile as unknown as Record<string, unknown>)["notes"]).toBeUndefined();
     // Cartilla tables have no columns on this object; confirming via spot-checks.
     expect((profile as unknown as Record<string, unknown>)["password_hash"]).toBeUndefined();
     expect((profile as unknown as Record<string, unknown>)["vet_visits"]).toBeUndefined();

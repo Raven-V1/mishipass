@@ -38,8 +38,15 @@ vi.mock("../../middleware/rateLimit.js", () => ({
   checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
 }));
 
+const mockCheckDurableRateLimit = vi.fn().mockResolvedValue(true);
+
+vi.mock("../../middleware/durableRateLimit.js", () => ({
+  checkDurableRateLimit: (...args: unknown[]) => mockCheckDurableRateLimit(...args),
+}));
+
 vi.mock("../../utils/crypto.js", () => ({
   sha256Hex: async (val: string) => "hashed_" + val,
+  hmacSha256Hex: async (val: string, _secret: string) => "hmac_" + val,
 }));
 
 const fakeDb = {} as D1Database;
@@ -52,6 +59,8 @@ beforeEach(() => {
   mockValidateId.mockReset();
   mockCheckRateLimit.mockReset();
   mockCheckRateLimit.mockReturnValue(true);
+  mockCheckDurableRateLimit.mockReset();
+  mockCheckDurableRateLimit.mockResolvedValue(true);
 });
 
 // ---------------------------------------------------------------------------

@@ -6,7 +6,8 @@ import {
 } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
 import { checkRateLimit } from "../middleware/rateLimit.js";
-import { sha256Hex } from "../utils/crypto.js";
+import { checkDurableRateLimit } from "../middleware/durableRateLimit.js";
+import { hmacSha256Hex, sha256Hex } from "../utils/crypto.js";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -65,6 +66,7 @@ export async function handleSightingSubmit(
   publicId: string,
   request: Request,
   db: D1Database,
+  hmacSecret?: string,
 ): Promise<Response> {
   if (!validateId(publicId)) {
     return new Response("Not Found", { status: 404 });
@@ -81,7 +83,18 @@ export async function handleSightingSubmit(
 
   // Rate limiting: 5 submissions per 10 minutes per IP+publicId
   const ip = request.headers.get("CF-Connecting-IP") || "unknown";
-  const rateLimitKey = `${ip}:${publicId}`;
+  const rateLimitKey = `sighting:${ip}:${publicId}`;
+
+  // Use durable D1-backed rate limiter (survives isolate restarts)
+  const durableAllowed = await checkDurableRateLimit(db, rateLimitKey, 5, 10);
+  if (!durableAllowed) {
+    return Response.json(
+      { error: "Too many reports. Try again later." },
+      { status: 429 },
+    );
+  }
+
+  // Also check in-memory limiter as fast first-line defense
   if (!checkRateLimit(rateLimitKey, 5, 10 * 60 * 1000)) {
     return Response.json(
       { error: "Too many reports. Try again later." },
@@ -168,8 +181,11 @@ export async function handleSightingSubmit(
   if (reporterContact) parts.push("Contact: " + reporterContact);
   const combinedMessage = parts.join("\n") || null;
 
-  // Hash IP
-  const reporterIpHash = await sha256Hex(ip);
+  // Hash IP using HMAC-SHA256 (falls back to plain SHA-256 if secret is missing)
+  const secret = hmacSecret || "";
+  const reporterIpHash = secret
+    ? await hmacSha256Hex(ip, secret)
+    : await sha256Hex(ip);
 
   await insertSightingReport(db, {
     catPublicId: publicId,
