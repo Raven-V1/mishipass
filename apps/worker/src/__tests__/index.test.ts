@@ -19,6 +19,17 @@ const FORBIDDEN_ROOT_TERMS = [
   "backend",
 ];
 
+const FORBIDDEN_DASHBOARD_TERMS = [
+  "Cloudflare Worker",
+  "D1",
+  "database",
+  "API runtime",
+  "backend",
+  "workers.dev",
+  "internal database",
+  "owner_id",
+];
+
 describe("worker fetch routes", () => {
   it("GET / returns a product landing page", async () => {
     const res = await worker.fetch(new Request("https://example.com/"), fakeEnv);
@@ -65,5 +76,40 @@ describe("worker fetch routes", () => {
     );
 
     expect(res.status).toBe(401);
+  });
+
+  it("GET / contains link to /dashboard", async () => {
+    const res = await worker.fetch(new Request("https://example.com/"), fakeEnv);
+    const body = await res.text();
+    expect(body).toContain('href="/dashboard"');
+  });
+});
+
+describe("GET /dashboard", () => {
+  it("returns 200", async () => {
+    const res = await worker.fetch(new Request("https://example.com/dashboard"), fakeEnv);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toContain("text/html");
+  });
+
+  it("contains MishiPass heading", async () => {
+    const res = await worker.fetch(new Request("https://example.com/dashboard"), fakeEnv);
+    const body = await res.text();
+    expect(body).toContain("MishiPass");
+  });
+
+  it("contains login form with email and password inputs", async () => {
+    const res = await worker.fetch(new Request("https://example.com/dashboard"), fakeEnv);
+    const body = await res.text();
+    expect(body).toContain('type="email"');
+    expect(body).toContain('type="password"');
+  });
+
+  it("does not contain forbidden terms exposing internals", async () => {
+    const res = await worker.fetch(new Request("https://example.com/dashboard"), fakeEnv);
+    const body = await res.text();
+    for (const term of FORBIDDEN_DASHBOARD_TERMS) {
+      expect(body).not.toContain(term);
+    }
   });
 });
