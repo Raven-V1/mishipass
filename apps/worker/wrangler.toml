@@ -1,4 +1,4 @@
-name = "mishipass-worker"
+name = "mishipass"
 main = "src/index.ts"
 compatibility_date = "2026-06-24"
 compatibility_flags = ["nodejs_compat"]
@@ -14,5 +14,5 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "mishipass"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "e1053d77-cf51-4a18-b217-ddecc3de2a16"
 migrations_dir = "migrations"
