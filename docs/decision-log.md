@@ -188,6 +188,22 @@ Reason: Upgrade requires breaking changes incompatible with current Cloudflare W
 Alternatives considered: npm audit fix --force rejected due to risk of breaking miniflare and vitest-pool-workers integration.
 Decided by: Carlos
 
+## [2026-06-29] — D1 migration tooling: use d1 execute --file, not migrations apply
+Decision: Apply D1 migrations to the remote database using
+`wrangler d1 execute mishipass --remote --file=migrations/<file>.sql`
+instead of `wrangler d1 migrations apply mishipass --remote`.
+Reason: Wrangler 3.114.17's migration runner splits the SQL file on
+semicolons before execution. This breaks any migration containing a
+BEGIN...END trigger block, since the semicolons inside the trigger body
+are misinterpreted as statement boundaries. `wrangler d1 execute --file`
+sends the file as a single batch and does not have this problem.
+Alternatives considered: Removing trigger blocks from migrations (rejected
+— triggers are needed for enforcement logic already written into the
+schema). Upgrading to Wrangler 4 (deferred — already logged as a separate
+dependency decision on 2026-06-29 due to breaking-change risk with the
+current Cloudflare Workers test tooling).
+Decided by: Carlos
+
 ---
 
 ## Open items (not yet decided)
