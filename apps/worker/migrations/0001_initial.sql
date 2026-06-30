@@ -5,6 +5,13 @@
 -- required. Future table-rebuild migrations may use PRAGMA defer_foreign_keys
 -- only when needed.
 
+-- NOTE: If this or any future migration file contains a trigger with a
+-- BEGIN...END block, apply it with:
+--   wrangler d1 execute <db-name> --remote --file=migrations/<this-file>.sql
+-- NOT with `wrangler d1 migrations apply`, which splits on every semicolon
+-- and breaks on the semicolons inside the trigger body. See decision-log.md,
+-- entry dated 2026-06-29, for the full explanation.
+
 -- ── owners ──────────────────────────────────────────────────────────────────
 -- Credential store. Internal `id` is NEVER serialized to any client response.
 -- email stored lowercased by the application layer before insert.
