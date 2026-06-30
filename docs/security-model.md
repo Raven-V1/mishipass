@@ -163,8 +163,10 @@ security pass for controlled compatibility verification, and are tracked in
 
 ### CISA Secure by Design pledge mapping
 
-**Goal 1 — MFA:** Owner authentication is not yet implemented. **(WIP — Day 13:**
-MFA support will be evaluated as part of choosing the auth method.**)**
+**Goal 1 — MFA:** Owner authentication backend exists (PBKDF2-SHA256 password
+hash, opaque session token, HttpOnly cookie — see `apps/worker/src/routes/auth.ts`).
+MFA is not implemented and is deferred to V2. Manual production verification
+of the auth routes is pending.
 
 **Goal 2 — Default passwords:** MishiPass does not ship default or hardcoded
 credentials. `wrangler.toml` uses a placeholder `database_id`; all secrets are
@@ -176,9 +178,9 @@ internal database PKs are never serialized to any client response, eliminating
 IDOR as a class on this surface; HTML output is routed through a centralized
 `escapeHtml` helper to mitigate XSS (developers must call it explicitly on new
 routes); TypeScript with CI-enforced `tsc --noEmit` mitigates type-shape and
-null-reference errors at merge time. D1 repository queries are intended to use
-prepared statements with bound parameters; this is **pending source
-verification** before being claimed as a completed control.
+null-reference errors at merge time. D1 repository queries use prepared
+statements with bound parameters throughout `apps/worker/src/db/repositories/`
+(source-confirmed Day 7 — no string concatenation in any query path).
 
 **Goal 4 — Security patches:** Non-breaking patches applied Day 6. Major-version
 upgrades are deferred with decision-log entries and tracked in
@@ -209,27 +211,27 @@ keeping a living control-status table (Section 8) updated at each milestone.
 
 ## 8. Secure development lifecycle control status
 
-Day 6 of 14 coding days.
+Day 7 of 14 coding days.
 
 | Control | Implementation | Status |
 |---|---|---|
-| Type safety — worker, web, shared | `tsc --noEmit` per workspace | Implemented locally; CI enforcement pending commit |
-| Ambient type declarations | `apps/worker/src/types/cloudflare-test.d.ts` | Implemented |
-| Test gate — shared-validation | 33 Vitest tests passing | Implemented locally |
-| Test gate — worker | 44 Vitest tests across 3 files passing | Implemented locally |
-| Dependency audit allowlist | `.audit-known-issues.json` | Implemented; pending commit |
-| CI workflow | `.github/workflows/ci.yml` | Written; pending commit and first run |
-| Secret scan | Working-tree regex scan, Day 6 | Verified, no committed credentials found |
-| Branch protection on main | — | **Unverified — confirm in GitHub repository settings** |
+| Type safety — worker, web, shared | `tsc --noEmit` per workspace | CI-enforced on all PRs and pushes |
+| Ambient type declarations | `apps/worker/src/types/cloudflare-test.d.ts` | Backend/API exists, not manually verified vs prod |
+| Test gate — shared-validation | 33 Vitest tests | Backend/API exists, not manually verified vs prod |
+| Test gate — worker | Vitest across route, middleware, db test files | Backend/API exists, not manually verified vs prod |
+| Dependency audit allowlist | `.audit-known-issues.json` | Active — CI gate blocks new high/critical findings |
+| CI workflow | `.github/workflows/ci.yml` | Active — running on all PRs and pushes to dev and main |
+| Secret scan | Repository-wide regex scan, Day 6 | No committed credentials found at time of scan |
+| Branch protection on main | Require 1 review; no force-push; no delete | Active — applied Day 6; status-check enforcement is off (CI runs but does not block) |
 | Dependabot | npm and pip, weekly | Active |
-| XSS mitigation | `escapeHtml` helper, must be called explicitly per route | Implemented; not automatic for future routes |
-| IDOR mitigation | No internal PKs in any client response | Implemented |
-| Session length guard | 256-character maximum before hashing | Implemented |
-| Parameterized D1 queries | Prepared statements, bound parameters | **Pending source verification** |
-| UNIQUE constraint + retry | D1 schema constraint, Worker retry on collision | Implemented; pending verification on a deployed instance |
-| Per-IP rate limiting on `/c/` | — | Planned, not yet implemented |
-| Sighting-report upload validation | — | Planned, no routes exist yet |
-| Owner auth model | — | Not yet implemented; method undecided |
+| XSS mitigation | `escapeHtml` helper, must be called explicitly per route | Backend/API exists — helper present; not automatic for future routes |
+| IDOR mitigation | No internal PKs in any client response | Backend/API exists, not manually verified vs prod |
+| Session length guard | 256-character maximum before hashing | Backend/API exists, not manually verified vs prod |
+| Parameterized D1 queries | `.prepare(...).bind(...)` throughout `src/db/repositories/` | Source-confirmed Day 7 — no string concatenation in any query path |
+| UNIQUE constraint + retry | D1 schema constraint, Worker retry on collision | Backend/API exists, not manually verified vs prod |
+| Per-IP rate limiting on `/c/` | — | Missing — planned |
+| Sighting-report upload validation | — | Missing — no sighting routes exist yet |
+| Owner auth backend | PBKDF2-SHA256, opaque session token, HttpOnly cookie | Backend/API exists, not manually verified vs prod |
 | Aikido security scan | — | Scheduled for Day 13 |
 
 ---

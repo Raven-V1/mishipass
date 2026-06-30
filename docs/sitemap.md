@@ -4,10 +4,15 @@ Derived from Constitution Section 20 (LOCKED). This is the planned information
 architecture for Beta 1.4. Optional modes are built only after all must-build
 work is complete and public-ready.
 
+**Hosting note (Day 7 correction):** All surfaces below are served by the
+Cloudflare Worker/D1/R2 stack. GitHub Pages (`site/`) is a temporary static
+landing page only — it is not a sitemap surface, not the app, and must not
+host any of the routes listed here. See decision-log [2026-06-30] for rationale.
+
 ```
 MishiPass
-├── Public Website
-│   ├── Landing Page
+├── Public Website        ← Worker-rendered HTML on all routes
+│   ├── Landing Page      ← Worker root (GET /) — minimal product page
 │   ├── Public Cat Profile
 │   │   ├── Active Profile View
 │   │   ├── Missing Alert View

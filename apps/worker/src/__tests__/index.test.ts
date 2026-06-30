@@ -6,43 +6,46 @@ const fakeEnv: Env = {
   PUBLIC_BASE_URL: "https://mishipass.example.com",
 };
 
-const PUBLIC_SITE_URL = "https://raven-v1.github.io/mishipass/";
-const FORBIDDEN_PUBLIC_TERMS = [
+const FORBIDDEN_ROOT_TERMS = [
   "owner legal identity",
   "owner@example.com",
   "personal-account-subdomain",
   "personal-worker-url",
   "internal database ID",
+  "Cloudflare Worker",
+  "D1",
+  "database",
+  "API runtime",
+  "backend",
 ];
 
 describe("worker fetch routes", () => {
-  it("GET / redirects to the public-facing MishiPass site", async () => {
+  it("GET / returns a product landing page", async () => {
     const res = await worker.fetch(new Request("https://example.com/"), fakeEnv);
 
-    expect(res.status).toBe(302);
-    expect(res.headers.get("Location")).toBe(PUBLIC_SITE_URL);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toContain("text/html");
+    const body = await res.text();
+    expect(body).toContain("MishiPass");
   });
 
-  it("HEAD / redirects to the public-facing MishiPass site without a body", async () => {
+  it("HEAD / returns 200 with no body", async () => {
     const res = await worker.fetch(new Request("https://example.com/", { method: "HEAD" }), fakeEnv);
 
-    expect(res.status).toBe(302);
-    expect(res.headers.get("Location")).toBe(PUBLIC_SITE_URL);
+    expect(res.status).toBe(200);
     expect(await res.text()).toBe("");
   });
 
-  it("root redirect does not expose owner identity, private data, or personal runtime URL", async () => {
+  it("root landing page does not expose owner identity, stack internals, or private data", async () => {
     const res = await worker.fetch(new Request("https://example.com/"), fakeEnv);
     const body = await res.text();
-    const exposedText = `${res.headers.get("Location") ?? ""}\n${body}`;
 
-    for (const term of FORBIDDEN_PUBLIC_TERMS) {
-      expect(exposedText).not.toContain(term);
+    for (const term of FORBIDDEN_ROOT_TERMS) {
+      expect(body).not.toContain(term);
     }
-    expect(exposedText).not.toContain("owner_id");
-    expect(exposedText).not.toContain("dashboard");
-    expect(exposedText).not.toContain("private cat data");
-    expect(exposedText).not.toMatch(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
+    expect(body).not.toContain("owner_id");
+    expect(body).not.toContain("private cat data");
+    expect(body).not.toMatch(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
   });
 
   it("GET /c/invalid still returns not found", async () => {
