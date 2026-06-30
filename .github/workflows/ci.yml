@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck - apps/worker
+        run: npx tsc --noEmit --project apps/worker/tsconfig.json
+
+      - name: Typecheck - apps/web
+        run: npx tsc --noEmit --project apps/web/tsconfig.json
+
+      - name: Typecheck - shared-validation
+        run: npx tsc --noEmit --project packages/shared/validation/tsconfig.json
+
+      - name: Tests - shared-validation
+        run: npm test --workspace=@mishipass/shared-validation
+
+      - name: Tests - worker
+        run: npm test --workspace=mishipass-worker
+
+      - name: Dependency audit
+        run: |
+          npm audit --json --workspaces > /tmp/audit.json || true
+          node -e "
+          const fs = require('fs');
+          const audit = JSON.parse(fs.readFileSync('/tmp/audit.json', 'utf8'));
+          const known = JSON.parse(fs.readFileSync('.audit-known-issues.json', 'utf8'));
+          const vulns = audit.vulnerabilities || {};
+          const newFindings = Object.entries(vulns)
+            .filter(([, v]) => v.severity === 'high' || v.severity === 'critical')
+            .filter(([name]) => !known.includes(name));
+          if (newFindings.length > 0) {
+            console.error('New high or critical vulnerability detected:');
+            newFindings.forEach(([name, v]) => console.error('  -', name, v.severity, v.via[0]?.url || ''));
+            process.exit(1);
+          }
+          const deferred = Object.keys(vulns).filter(name => known.includes(name));
+          if (deferred.length > 0) {
+            console.log('Known deferred vulnerabilities present (see docs/decision-log.md):', deferred.join(', '));
+          }
+          console.log('Audit passed: no new high or critical vulnerabilities found.');
+          "
