@@ -125,10 +125,22 @@ describe("GET /dashboard", () => {
     }
   });
 
-  it("does not contain raw Contact settings JSON link", async () => {
+  it("does not contain raw JSON links for sighting reports", async () => {
     const res = await worker.fetch(new Request("https://example.com/dashboard"), fakeEnv);
     const body = await res.text();
-    expect(body).not.toContain("Contact settings (JSON)");
+    expect(body).not.toContain("View sighting reports");
+    // The dashboard JS uses /api/cats for fetch calls, but should not expose
+    // /api/cats/.../sightings as a direct user-facing link
+    expect(body).not.toContain('target="_blank">View sighting reports</a>');
+  });
+
+  it("contains country select dropdown", async () => {
+    const res = await worker.fetch(new Request("https://example.com/dashboard"), fakeEnv);
+    const body = await res.text();
+    expect(body).toContain('<select id="cat-country"');
+    expect(body).toContain("Select country...");
+    expect(body).toContain('value="MX"');
+    expect(body).toContain("Mexico (MX)");
   });
 
   it("contains Contact and Privacy UI controls", async () => {
@@ -137,5 +149,41 @@ describe("GET /dashboard", () => {
     expect(body).toContain("Contact &amp; Privacy");
     expect(body).toContain("contact-mode-select");
     expect(body).toContain("Save contact settings");
+  });
+
+  it("does not contain .toUpperCase() in submit handler", async () => {
+    const res = await worker.fetch(new Request("https://example.com/dashboard"), fakeEnv);
+    const body = await res.text();
+    expect(body).not.toContain(".toUpperCase()");
+  });
+});
+
+describe("dashboard sub-routes (unauthenticated)", () => {
+  it("GET /dashboard/cats/MP-MX-0000-0000 redirects without auth", async () => {
+    const res = await worker.fetch(
+      new Request("https://example.com/dashboard/cats/MP-MX-0000-0000"),
+      fakeEnv,
+    );
+    // Should redirect to /dashboard
+    expect(res.status).toBe(302);
+    expect(res.headers.get("Location")).toContain("/dashboard");
+  });
+
+  it("GET /dashboard/cats/MP-MX-0000-0000/qr redirects without auth", async () => {
+    const res = await worker.fetch(
+      new Request("https://example.com/dashboard/cats/MP-MX-0000-0000/qr"),
+      fakeEnv,
+    );
+    expect(res.status).toBe(302);
+    expect(res.headers.get("Location")).toContain("/dashboard");
+  });
+
+  it("GET /dashboard/cats/MP-MX-0000-0000/sightings redirects without auth", async () => {
+    const res = await worker.fetch(
+      new Request("https://example.com/dashboard/cats/MP-MX-0000-0000/sightings"),
+      fakeEnv,
+    );
+    expect(res.status).toBe(302);
+    expect(res.headers.get("Location")).toContain("/dashboard");
   });
 });
