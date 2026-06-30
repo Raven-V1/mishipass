@@ -317,6 +317,22 @@ Alternatives considered: Deferring contact settings to Day 7 (rejected -- it is
 a Day 5-6 item per Constitution Section 19 and missing mode needs it).
 Decided by: Project Owner
 
+## [2026-06-30] — Pre-Day-7 closure and docs sync
+Decision: Sync all project documentation to observed pre-Day-7 status before
+starting Vet Visit. Owner-scoped dashboard access enforced (PR #37/#38).
+Migration 0002 (expanded cat fields) remains pending until Project Owner
+explicitly approves application. Reporter IP hashing remains SHA-256 placeholder
+(SIGHTING_IP_HMAC_SECRET does not exist). Worker-rendered dashboard is the
+canonical Beta dashboard; apps/web React is deferred. QR page is a printable URL
+card, not a generated QR image. Vet Visit, cartilla, Recovery Board, and WhatsApp
+card are planned but not built.
+Reason: Docs must not overclaim. Features that are not production-verified must
+not be listed as working. Security posture is honest about current limitations.
+Alternatives considered: Leaving docs out of sync (rejected -- misleading for
+judges and future agents). Applying migration 0002 without explicit approval
+(rejected -- schema changes to production require Project Owner decision).
+Decided by: Project Owner
+
 ---
 
 ## Open items (not yet decided)
