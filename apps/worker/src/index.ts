@@ -1,6 +1,7 @@
 import { resolveSession } from "./middleware/session.js";
 import { handleLogin, handleLogout, handleRegister } from "./routes/auth.js";
 import { handleCreateCat, handlePublicProfile } from "./routes/cats.js";
+import { handleSwitchToActive, handleSwitchToMissing } from "./routes/missingAlerts.js";
 
 export interface Env {
   DB: D1Database;
@@ -9,6 +10,8 @@ export interface Env {
 }
 
 const PUBLIC_PROFILE_PATH = /^\/c\/([^/]+)$/;
+const CAT_MISSING_PATH = /^\/api\/cats\/([^/]+)\/missing$/;
+const CAT_ACTIVE_PATH = /^\/api\/cats\/([^/]+)\/active$/;
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -23,6 +26,18 @@ export default {
     }
     if (method === "POST" && pathname === "/api/auth/logout") {
       return handleLogout(request, env.DB);
+    }
+
+    const missingMatch = CAT_MISSING_PATH.exec(pathname);
+    if (method === "POST" && missingMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleSwitchToMissing(request, missingMatch[1]!, env.DB, env.PUBLIC_BASE_URL, ctx);
+    }
+
+    const activeMatch = CAT_ACTIVE_PATH.exec(pathname);
+    if (method === "POST" && activeMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleSwitchToActive(request, activeMatch[1]!, env.DB, ctx);
     }
 
     if (method === "POST" && pathname === "/api/cats") {

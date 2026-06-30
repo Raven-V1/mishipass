@@ -15,11 +15,13 @@ import type { RequestContext } from "../../middleware/session.js";
 const mockInsertCat = vi.fn();
 const mockGetCatPublicProfile = vi.fn();
 const mockGetContactSettingsPublic = vi.fn();
+const mockGetMissingAlertPublic = vi.fn();
 
 vi.mock("../../db/index.js", () => ({
   insertCat: (...args: unknown[]) => mockInsertCat(...args),
   getCatPublicProfile: (...args: unknown[]) => mockGetCatPublicProfile(...args),
   getContactSettingsPublic: (...args: unknown[]) => mockGetContactSettingsPublic(...args),
+  getMissingAlertPublic: (...args: unknown[]) => mockGetMissingAlertPublic(...args),
 }));
 
 let mockGenerateIdCallCount = 0;
@@ -46,6 +48,7 @@ beforeEach(() => {
   mockInsertCat.mockReset();
   mockGetCatPublicProfile.mockReset();
   mockGetContactSettingsPublic.mockReset();
+  mockGetMissingAlertPublic.mockReset();
   mockGenerateId.mockReset();
   mockValidateId.mockReset();
   mockGenerateIdCallCount = 0;
@@ -135,7 +138,7 @@ describe("handlePublicProfile", () => {
       name: "Luna",
       country_code: "MX",
       photo_r2_key: null,
-      current_mode: "missing",
+      current_mode: "vet",
     });
     const res = await handlePublicProfile("MP-MX-0000-0001", fakeDb);
     expect(res.status).toBe(200);
