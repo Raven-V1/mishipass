@@ -59,6 +59,12 @@ describe("worker fetch routes", () => {
     expect(body).not.toMatch(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
   });
 
+  it("root landing page does not disclose route patterns", async () => {
+    const res = await worker.fetch(new Request("https://example.com/"), fakeEnv);
+    const body = await res.text();
+    expect(body).not.toContain("/c/MP");
+  });
+
   it("GET /c/invalid still returns not found", async () => {
     const res = await worker.fetch(new Request("https://example.com/c/invalid"), fakeEnv);
 
