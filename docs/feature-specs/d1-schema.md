@@ -1,9 +1,9 @@
 # MishiPass — D1 Schema Specification
 
-**Status:** DRAFT v0.2 — incorporates §10 council review (ChatGPT alignment + DeepSeek security). Still pending Carlos's final lock.
+**Status:** DRAFT v0.2 — incorporates §10 council review (ChatGPT alignment + DeepSeek security). Still pending the Project Owner's final lock.
 **Date:** June 25, 2026 (Day 2, coding period)
 **Target path:** `docs/feature-specs/d1-schema.md`
-**Authored by:** Claude (Architect), for review by **Carlos Velazquez** (Project Owner & Orchestrator) and **Zhanerke Askerbekova** (Design Authority).
+**Authored by:** Claude (Architect), for review by **Project Owner** (Project Owner & Orchestrator) and **Zhanerke Askerbekova** (Design Authority).
 **Depends on:** owner auth method (session-based recommendation, cleared by the loop). The PBKDF2 iteration constant is set by benchmark, not in this schema.
 
 ---
@@ -36,7 +36,7 @@
 
 ### 2.4 `contact_settings` (1:1 with cat)
 `id` PK · `cat_id` UNIQUE FK→`cats(id)` ON DELETE CASCADE · `contact_mode` TEXT NOT NULL DEFAULT 'relay' (relay|phone|none) · `public_phone` TEXT (served only if mode='phone').
-> Owner full name / exact address are **not columns** here (§7).
+> owner legal identity / exact address are **not columns** here (§7).
 
 ### 2.5 `missing_alerts` (1:1 with cat)
 `id` PK · `cat_id` UNIQUE FK→`cats(id)` ON DELETE CASCADE · `last_seen_at` · `city` · `area` · `reward_amount` TEXT · `reward_visible` INTEGER NOT NULL DEFAULT 0 · `recovery_board_opt_in` INTEGER NOT NULL DEFAULT 0 · `activated_at`.
@@ -92,4 +92,4 @@ Entropy (~40 bits) + per-IP rate limiting on `/c/:id`, **plus** a global rate li
 
 ---
 
-*Draft for review. Finalize only after Carlos's decision, then log in `docs/decision-log.md` and commit.*
+*Draft for review. Finalize only after the Project Owner's decision, then log in `docs/decision-log.md` and commit.*

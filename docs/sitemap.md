@@ -2,7 +2,7 @@
 
 Derived from Constitution Section 20 (LOCKED). This is the planned information
 architecture for Beta 1.4. Optional modes are built only after all must-build
-work is complete and judge-safe.
+work is complete and public-ready.
 
 ```
 MishiPass

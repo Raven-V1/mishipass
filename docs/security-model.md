@@ -81,7 +81,7 @@ changes the mode. The QR never changes.
 ## 3. Privacy principles (from locked Section 7)
 
 - Owner controls contact visibility; default is the MishiPass relay form.
-- No owner full name or exact address is shown publicly.
+- No owner legal identity or exact address is shown publicly.
 - Medical and cartilla data is private — owner dashboard only.
 - Medication entries are never shown on any public QR profile in any mode.
   They are documentation-only records: MishiPass does not recommend

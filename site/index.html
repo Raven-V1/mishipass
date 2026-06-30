@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MishiPass</title>
+  <meta
+    name="description"
+    content="MishiPass is a privacy-first dynamic QR passport and recovery system for cats."
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="MishiPass home">MishiPass</a>
+    <nav aria-label="Primary">
+      <a href="#modes">Modes</a>
+      <a href="#privacy">Privacy</a>
+      <a href="https://github.com/Raven-V1/mishipass">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="intro" aria-labelledby="intro-title">
+      <div class="intro-copy">
+        <p class="eyebrow">Public-facing Beta overview</p>
+        <h1 id="intro-title">MishiPass</h1>
+        <p class="lede">Privacy-first dynamic QR passport and recovery system for cats.</p>
+        <p class="support">One permanent QR. Different mode when the cat needs it.</p>
+      </div>
+
+      <div class="tag-visual" aria-label="MishiPass QR route preview">
+        <div class="tag-hole"></div>
+        <div class="qr-grid" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <p class="tag-label">/c/MP-XX-XXXX-XXXX</p>
+      </div>
+    </section>
+
+    <section class="band" aria-labelledby="how-title">
+      <div class="section-inner">
+        <h2 id="how-title">How It Works</h2>
+        <ol class="steps">
+          <li>
+            <span>01</span>
+            <strong>Register cat</strong>
+            <p>Create an owner-controlled record in the configured Worker backend.</p>
+          </li>
+          <li>
+            <span>02</span>
+            <strong>Generate permanent ID</strong>
+            <p>Use one public MishiPass ID and QR route for the cat.</p>
+          </li>
+          <li>
+            <span>03</span>
+            <strong>Switch active mode</strong>
+            <p>The same QR route resolves to the current mode when scanned.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section-inner" id="modes" aria-labelledby="modes-title">
+      <h2 id="modes-title">Beta Modes</h2>
+      <div class="mode-grid">
+        <article>
+          <h3>Active Profile</h3>
+          <p>A simple public profile with mode-appropriate, owner-approved contact visibility.</p>
+        </article>
+        <article>
+          <h3>Missing Alert</h3>
+          <p>A recovery-focused public view with last-seen context and optional reward visibility.</p>
+        </article>
+        <article>
+          <h3>Vet Visit</h3>
+          <p>A controlled visit workflow for temporary records, while medical/cartilla data stays private.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="band" id="privacy" aria-labelledby="privacy-title">
+      <div class="section-inner split">
+        <div>
+          <h2 id="privacy-title">Privacy Model</h2>
+          <p>Owner-controlled privacy is built into the public route model.</p>
+        </div>
+        <ul class="privacy-list">
+          <li>No internal database IDs on public pages.</li>
+          <li>Owner controls contact visibility.</li>
+          <li>Medical/cartilla data remains private.</li>
+          <li>Medication entries remain documentation-only records.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section-inner runtime" aria-labelledby="runtime-title">
+      <h2 id="runtime-title">Runtime Boundary</h2>
+      <p>
+        The public site is hosted on GitHub Pages. The QR/API runtime is handled
+        by a TypeScript Cloudflare Worker with D1.
+      </p>
+      <p class="route-pattern">Public QR route pattern: <code>/c/MP-XX-XXXX-XXXX</code></p>
+      <div class="links" aria-label="Project links">
+        <a href="https://github.com/Raven-V1/mishipass">GitHub repository</a>
+        <a href="https://github.com/Raven-V1/mishipass/blob/main/docs/security-model.md">Security model</a>
+        <a href="https://github.com/Raven-V1/mishipass/blob/main/README.md">README</a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
