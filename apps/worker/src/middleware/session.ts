@@ -1,11 +1,12 @@
 import { findSessionByTokenHash } from "../db/index.js";
+import { sha256Hex } from "../utils/crypto.js";
 
 export interface RequestContext {
   /** Internal owner ID, attached if the session cookie is valid. Never expose in responses. */
   ownerId: number | null;
 }
 
-function parseCookieValue(header: string, name: string): string | null {
+export function parseCookieValue(header: string, name: string): string | null {
   for (const pair of header.split(";")) {
     const eqIdx = pair.indexOf("=");
     if (eqIdx === -1) continue;
@@ -23,16 +24,6 @@ function parseCookieValue(header: string, name: string): string | null {
   return null;
 }
 
-async function sha256Hex(value: string): Promise<string> {
-  const buf = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(value)
-  );
-  return Array.from(new Uint8Array(buf))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
 /**
  * Read the session cookie, hash it, and look it up in D1.
  * Returns { ownerId } — null if cookie is absent, invalid, or expired.
@@ -40,7 +31,7 @@ async function sha256Hex(value: string): Promise<string> {
  */
 export async function resolveSession(
   request: Request,
-  db: D1Database
+  db: D1Database,
 ): Promise<RequestContext> {
   const cookieHeader = request.headers.get("Cookie") ?? "";
   const token = parseCookieValue(cookieHeader, "session");
