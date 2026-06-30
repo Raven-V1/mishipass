@@ -92,6 +92,16 @@ function buildDashboardHtml(): string {
         <option value="">Select country...</option>
         ${countryOptions}
       </select>
+      <label for="cat-sex">Sex</label>
+      <select id="cat-sex" name="sex" style="width:100%;padding:0.5rem;border:1px solid #ccc;border-radius:4px;margin-bottom:0.75rem">
+        <option value="">Unknown</option>
+        <option value="female">Female</option>
+        <option value="male">Male</option>
+      </select>
+      <label for="cat-color">Color / Markings</label>
+      <input type="text" id="cat-color" name="colorMarkings" maxlength="200" />
+      <label for="cat-breed">Breed / Mix</label>
+      <input type="text" id="cat-breed" name="breedMix" maxlength="100" />
       <button type="submit" class="btn-primary">Register Cat</button>
     </form>
     <hr />
@@ -339,14 +349,21 @@ function buildDashboardHtml(): string {
         hideMsg(createError);
         var name = document.getElementById("cat-name").value;
         var countryCode = document.getElementById("cat-country").value;
+        var sex = document.getElementById("cat-sex").value;
+        var colorMarkings = document.getElementById("cat-color").value;
+        var breedMix = document.getElementById("cat-breed").value;
         var btn = createCatForm.querySelector("button[type=submit]");
         btn.disabled = true;
         btn.textContent = "Working...";
+        var payload = { name: name, countryCode: countryCode };
+        if (sex) payload.sex = sex;
+        if (colorMarkings) payload.colorMarkings = colorMarkings;
+        if (breedMix) payload.breedMix = breedMix;
         fetch("/api/cats", {
           method: "POST",
           credentials: "same-origin",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: name, countryCode: countryCode })
+          body: JSON.stringify(payload)
         }).then(function(r) {
           btn.disabled = false;
           btn.textContent = "Register Cat";

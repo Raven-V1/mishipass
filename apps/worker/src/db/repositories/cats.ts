@@ -1,4 +1,4 @@
-import type { CatInsert, CatMode, CatPublicView } from "../types.js";
+import type { CatInsert, CatMode, CatOwnerView, CatPublicView } from "../types.js";
 
 /**
  * Insert a new cat.
@@ -13,8 +13,8 @@ export async function insertCat(
 ): Promise<void> {
   await db
     .prepare(
-      `INSERT INTO cats (public_id, owner_id, name, country_code, photo_r2_key, current_mode)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO cats (public_id, owner_id, name, country_code, photo_r2_key, current_mode, sex, birth_date, color_markings, breed_mix, weight, notes)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .bind(
       data.public_id,
@@ -23,6 +23,12 @@ export async function insertCat(
       data.country_code,
       data.photo_r2_key ?? null,
       data.current_mode ?? "active",
+      data.sex ?? null,
+      data.birth_date ?? null,
+      data.color_markings ?? null,
+      data.breed_mix ?? null,
+      data.weight ?? null,
+      data.notes ?? null,
     )
     .run();
 }
@@ -30,28 +36,29 @@ export async function insertCat(
 /**
  * Look up a cat by public_id, verified to belong to the given owner.
  * Returns null if the cat does not exist or is not owned by this owner.
- * Used for owner dashboard pages where the public ID is known from the URL
- * but ownership must be confirmed before rendering private details.
+ * Includes notes (private owner-only field).
  */
 export async function getCatForOwner(
   db: D1Database,
   publicId: string,
   ownerId: number,
-): Promise<CatPublicView | null> {
+): Promise<CatOwnerView | null> {
   return db
     .prepare(
-      `SELECT public_id, name, country_code, photo_r2_key, current_mode
+      `SELECT public_id, name, country_code, photo_r2_key, current_mode,
+              sex, birth_date, color_markings, breed_mix, weight, notes
        FROM cats
        WHERE public_id = ? AND owner_id = ?`,
     )
     .bind(publicId, ownerId)
-    .first<CatPublicView>();
+    .first<CatOwnerView>();
 }
 
 /**
  * Public cat lookup — used on every QR scan.
  * Returns only whitelisted public columns. No internal id, no owner_id,
  * no cartilla data, no contact settings (fetch separately if needed for mode).
+ * Does NOT include notes (private to owner).
  * Returns null if no cat with that public_id exists.
  */
 export async function getCatPublicProfile(
@@ -60,7 +67,8 @@ export async function getCatPublicProfile(
 ): Promise<CatPublicView | null> {
   return db
     .prepare(
-      `SELECT public_id, name, country_code, photo_r2_key, current_mode
+      `SELECT public_id, name, country_code, photo_r2_key, current_mode,
+              sex, birth_date, color_markings, breed_mix, weight
        FROM cats
        WHERE public_id = ?`,
     )
@@ -79,7 +87,8 @@ export async function listCatsForOwner(
 ): Promise<CatPublicView[]> {
   const result = await db
     .prepare(
-      `SELECT public_id, name, country_code, photo_r2_key, current_mode
+      `SELECT public_id, name, country_code, photo_r2_key, current_mode,
+              sex, birth_date, color_markings, breed_mix, weight
        FROM cats
        WHERE owner_id = ?
        ORDER BY created_at ASC`,

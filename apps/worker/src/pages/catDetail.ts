@@ -1,5 +1,6 @@
 import { validateId } from "@mishipass/shared-validation";
 import { getCatForOwner } from "../db/index.js";
+import type { CatOwnerView } from "../db/index.js";
 import { getCountryName } from "../data/countries.js";
 import { escapeHtml, htmlResponse } from "../utils/html.js";
 import type { RequestContext } from "../middleware/session.js";
