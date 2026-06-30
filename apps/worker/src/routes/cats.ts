@@ -133,9 +133,10 @@ export async function handlePublicProfile(
   }
 
   const contact = await getContactSettingsPublic(db, publicId);
+  const effectiveContact = contact ?? { contact_mode: "relay" as const, public_phone: null };
 
   return new Response(
-    renderActiveProfile(cat.name, cat.country_code, cat.photo_r2_key, contact),
+    renderActiveProfile(cat.name, cat.country_code, cat.photo_r2_key, effectiveContact),
     {
       status: 200,
       headers: { "Content-Type": "text/html;charset=UTF-8", "X-Content-Type-Options": "nosniff" },
@@ -225,7 +226,7 @@ function renderActiveProfile(
   name: string,
   countryCode: string,
   photoR2Key: string | null,
-  contact: ContactSettingsPublicView | null
+  contact: ContactSettingsPublicView
 ): string {
   const safeName = escapeHtml(name);
   const safeCountry = escapeHtml(countryCode);
@@ -235,14 +236,11 @@ function renderActiveProfile(
     : `<div class="photo-placeholder" aria-label="No photo yet">🐱</div>`;
 
   let contactSection = "";
-  if (contact) {
-    if (contact.contact_mode === "phone" && contact.public_phone) {
-      const safePhone = escapeHtml(contact.public_phone);
-      contactSection = `<a class="contact-btn" href="tel:${safePhone}">📞 Call owner</a>`;
-    } else if (contact.contact_mode === "relay") {
-      // Relay form endpoint is built in a later task.
-      contactSection = `<a class="contact-btn" href="#contact">✉️ Contact owner</a>`;
-    }
+  if (contact.contact_mode === "phone" && contact.public_phone) {
+    const safePhone = escapeHtml(contact.public_phone);
+    contactSection = `<a class="contact-btn" href="tel:${safePhone}">📞 Call owner</a>`;
+  } else if (contact.contact_mode === "relay") {
+    contactSection = `<p class="contact-info">Contact the owner through MishiPass</p>`;
   }
 
   return `<!DOCTYPE html>
@@ -258,6 +256,7 @@ function renderActiveProfile(
     .photo img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; display: block; margin: 1rem 0; }
     .photo-placeholder { width: 120px; height: 120px; background: #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 1rem 0; }
     .contact-btn { display: inline-block; margin-top: 1rem; padding: 0.75rem 1.5rem; background: #333; color: #fff; text-decoration: none; border-radius: 6px; font-size: 1rem; }
+    .contact-info { margin-top: 1rem; color: #555; font-size: 0.95rem; }
   </style>
 </head>
 <body>
