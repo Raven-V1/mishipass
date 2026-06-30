@@ -81,6 +81,16 @@ export interface CatPublicView {
   country_code: string;
   photo_r2_key: string | null;
   current_mode: CatMode;
+  sex: string | null;
+  birth_date: string | null;
+  color_markings: string | null;
+  breed_mix: string | null;
+  weight: string | null;
+}
+
+/** Shape returned for owner-only views. Includes notes (private). */
+export interface CatOwnerView extends CatPublicView {
+  notes: string | null;
 }
 
 export interface CatInsert {
@@ -90,6 +100,12 @@ export interface CatInsert {
   country_code: string;
   photo_r2_key?: string | null;
   current_mode?: CatMode;
+  sex?: string | null;
+  birth_date?: string | null;
+  color_markings?: string | null;
+  breed_mix?: string | null;
+  weight?: string | null;
+  notes?: string | null;
 }
 
 // ── contact_settings ──────────────────────────────────────────────────────────
