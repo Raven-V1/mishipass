@@ -2,9 +2,10 @@ import { generateId, validateId } from "@mishipass/shared-validation";
 import {
   getCatPublicProfile,
   getContactSettingsPublic,
+  getMissingAlertPublic,
   insertCat,
 } from "../db/index.js";
-import type { ContactSettingsPublicView } from "../db/index.js";
+import type { ContactSettingsPublicView, MissingAlertPublicView } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
 
 // ── POST /api/cats ──────────────────────────────────────────────────────────
@@ -96,6 +97,10 @@ export async function handlePublicProfile(
     return new Response("Not Found", { status: 404 });
   }
 
+  if (cat.current_mode === "missing") {
+    return handlePublicMissingProfile(publicId, cat.name, db);
+  }
+
   if (cat.current_mode !== "active") {
     return new Response(renderUnbuiltMode(cat.name), {
       status: 200,
@@ -114,6 +119,28 @@ export async function handlePublicProfile(
   );
 }
 
+// ── GET /c/:publicId — missing mode ─────────────────────────────────────────
+
+async function handlePublicMissingProfile(
+  publicId: string,
+  catName: string,
+  db: D1Database,
+): Promise<Response> {
+  const alert = await getMissingAlertPublic(db, publicId);
+  if (!alert) {
+    // Shouldn't happen if current_mode is missing, but defensive fallback.
+    return new Response(renderUnbuiltMode(catName), {
+      status: 200,
+      headers: { "Content-Type": "text/html;charset=UTF-8", "X-Content-Type-Options": "nosniff" },
+    });
+  }
+
+  return new Response(renderMissingProfile(catName, alert), {
+    status: 200,
+    headers: { "Content-Type": "text/html;charset=UTF-8", "X-Content-Type-Options": "nosniff" },
+  });
+}
+
 // ── HTML renderers ──────────────────────────────────────────────────────────
 
 function escapeHtml(s: string): string {
@@ -123,6 +150,45 @@ function escapeHtml(s: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function renderMissingProfile(
+  name: string,
+  alert: MissingAlertPublicView,
+): string {
+  const safeName = escapeHtml(name);
+  const safeCity = alert.city ? escapeHtml(alert.city) : null;
+  const safeArea = alert.area ? escapeHtml(alert.area) : null;
+  const safeLastSeen = alert.last_seen_at ? escapeHtml(alert.last_seen_at) : null;
+
+  let rewardSection = "";
+  if (alert.reward_amount !== null) {
+    const safeReward = escapeHtml(alert.reward_amount);
+    rewardSection = `<p class="reward">Reward: ${safeReward}</p>`;
+  }
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${safeName} — Missing — MishiPass</title>
+  <style>
+    body { font-family: sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { margin-bottom: 0.25rem; }
+    .status { display: inline-block; background: #fdd; color: #900; padding: 2px 8px; border-radius: 4px; font-size: 0.875rem; font-weight: bold; }
+    .detail { margin: 0.5rem 0; }
+    .reward { margin-top: 1rem; padding: 0.5rem; background: #ffe; border: 1px solid #cc0; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>${safeName} <span class="status">MISSING</span></h1>
+  ${safeCity ? `<p class="detail">City: ${safeCity}</p>` : ""}
+  ${safeArea ? `<p class="detail">Area: ${safeArea}</p>` : ""}
+  ${safeLastSeen ? `<p class="detail">Last seen: ${safeLastSeen}</p>` : ""}
+  ${rewardSection}
+</body>
+</html>`;
 }
 
 function renderActiveProfile(
