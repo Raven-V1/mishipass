@@ -224,6 +224,34 @@ time before submission without code changes beyond updating
 PUBLIC_BASE_URL and adding a custom_domain route).
 Decided by: Carlos
 
+## [2026-06-30] — Production Worker root route returns judge-safe landing page
+Decision: Add a static Worker-rendered `GET /` landing page for MishiPass.
+Reason: The production Worker root previously returned `404 Not Found`, which
+is not acceptable for judge review. The new root page describes MishiPass as a
+privacy-first dynamic QR passport and recovery system for cats, references the
+public `/c/MP-XX-XXXX-XXXX` route format, and exposes no owner full name,
+email, exact address, internal database ID, dashboard data, or private cat
+records.
+Alternatives considered: Leaving root as 404 (rejected — poor judge and
+smoke-test behavior). Adding a separate frontend app (rejected — unnecessary
+for this correction cycle and outside the current Worker runtime path).
+Decided by: Carlos
+
+## [2026-06-30] — Dependency audit allowlist includes transitive test-tooling packages
+Decision: Expand `.audit-known-issues.json` to include transitive packages
+reported by `npm audit` under the already-deferred Cloudflare Workers / Vitest
+/ Wrangler test-tooling chain.
+Reason: `npm audit --json --workspaces` reports package keys for both direct
+and transitive vulnerable packages. The additional entries are part of the same
+dev/test tooling chain already deferred and do not add production Worker
+runtime exposure.
+Alternatives considered: Blocking the production root fix on a major
+test-tooling upgrade (rejected — the root 404 fix is judge-facing and the audit
+packages remain development tooling). Ignoring the extra audit keys without
+documenting them (rejected — future audits should be explicit and
+reproducible).
+Decided by: Carlos
+
 ---
 
 ## Open items (not yet decided)
