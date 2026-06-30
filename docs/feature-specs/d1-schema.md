@@ -1,9 +1,9 @@
 # MishiPass — D1 Schema Specification
 
-**Status:** DRAFT v0.2 — incorporates §10 council review (ChatGPT alignment + DeepSeek security). Still pending Carlos's final lock.
+**Status:** DRAFT v0.2 — incorporates §10 council review (ChatGPT alignment + DeepSeek security). Still pending the Project Owner's final lock.
 **Date:** June 25, 2026 (Day 2, coding period)
 **Target path:** `docs/feature-specs/d1-schema.md`
-**Authored by:** Claude (Architect), for review by **Carlos Velazquez** (Project Owner & Orchestrator) and **Zhanerke Askerbekova** (Design Authority).
+**Authored by:** Claude (Architect), for review by **Project Owner** (Project Owner & Orchestrator) and **Zhanerke Askerbekova** (Design Authority).
 **Depends on:** owner auth method (session-based recommendation, cleared by the loop). The PBKDF2 iteration constant is set by benchmark, not in this schema.
 
 ---
@@ -92,4 +92,4 @@ Entropy (~40 bits) + per-IP rate limiting on `/c/:id`, **plus** a global rate li
 
 ---
 
-*Draft for review. Finalize only after Carlos's decision, then log in `docs/decision-log.md` and commit.*
+*Draft for review. Finalize only after the Project Owner's decision, then log in `docs/decision-log.md` and commit.*

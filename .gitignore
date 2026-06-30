@@ -3,6 +3,8 @@ node_modules/
 dist/
 .wrangler/
 *.log
+audit-current.json
+audit-*.json
 
 # Env / secrets
 .env

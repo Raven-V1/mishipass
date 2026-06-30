@@ -6,28 +6,42 @@ const fakeEnv: Env = {
   PUBLIC_BASE_URL: "https://mishipass.example.com",
 };
 
+const PUBLIC_SITE_URL = "https://raven-v1.github.io/mishipass/";
+const FORBIDDEN_PERSONAL_TERMS = [
+  `Carlos ${"Velazquez"}`,
+  `Carlos ${"Erick"}`,
+  `carlos${"velazquez"}354`,
+  `mishipass.carlos${"velazquez"}354.${"workers"}.dev`,
+];
+
 describe("worker fetch routes", () => {
-  it("GET / returns a judge-safe MishiPass landing page", async () => {
+  it("GET / redirects to the public-facing MishiPass site", async () => {
     const res = await worker.fetch(new Request("https://example.com/"), fakeEnv);
 
-    expect(res.status).toBe(200);
-    expect(res.headers.get("Content-Type")).toBe("text/html; charset=UTF-8");
-
-    const body = await res.text();
-    expect(body).toContain("MishiPass");
-    expect(body).toContain("privacy-first dynamic QR passport and recovery system for cats");
-    expect(body).toContain("/c/MP-XX-XXXX-XXXX");
-    expect(body).toContain("/c/MP-MX-7X3B-9K21");
+    expect(res.status).toBe(302);
+    expect(res.headers.get("Location")).toBe(PUBLIC_SITE_URL);
   });
 
-  it("GET / does not expose owner identity or email-shaped text", async () => {
+  it("HEAD / redirects to the public-facing MishiPass site without a body", async () => {
+    const res = await worker.fetch(new Request("https://example.com/", { method: "HEAD" }), fakeEnv);
+
+    expect(res.status).toBe(302);
+    expect(res.headers.get("Location")).toBe(PUBLIC_SITE_URL);
+    expect(await res.text()).toBe("");
+  });
+
+  it("root redirect does not expose owner identity, private data, or personal runtime URL", async () => {
     const res = await worker.fetch(new Request("https://example.com/"), fakeEnv);
     const body = await res.text();
+    const exposedText = `${res.headers.get("Location") ?? ""}\n${body}`;
 
-    expect(body).not.toContain("Carlos Velazquez");
-    expect(body).not.toContain("Carlos Erick");
-    expect(body).not.toContain("carlosvelazquez354");
-    expect(body).not.toMatch(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
+    for (const term of FORBIDDEN_PERSONAL_TERMS) {
+      expect(exposedText).not.toContain(term);
+    }
+    expect(exposedText).not.toContain("owner_id");
+    expect(exposedText).not.toContain("dashboard");
+    expect(exposedText).not.toContain("private cat data");
+    expect(exposedText).not.toMatch(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
   });
 
   it("GET /c/invalid still returns not found", async () => {
