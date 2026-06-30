@@ -1,4 +1,4 @@
-/* TEMP UI — placeholder only, Carlos-approved per Constitution §8/§14. Zhanerke replaces this. */
+/* TEMP UI — placeholder only, Project Owner-approved per Constitution §8/§14. Zhanerke replaces this. */
 import { useState } from "react";
 
 interface RegisterResult {
@@ -38,7 +38,7 @@ export default function App() {
 
   return (
     <div style={{ padding: "1rem", maxWidth: "400px" }}>
-      {/* TEMP UI — placeholder only, Carlos-approved per Constitution §8/§14. Zhanerke replaces this. */}
+      {/* TEMP UI — placeholder only, Project Owner-approved per Constitution §8/§14. Zhanerke replaces this. */}
       <h1>Register a Cat</h1>
       <form
         onSubmit={handleSubmit}

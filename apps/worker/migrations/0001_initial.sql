@@ -78,7 +78,7 @@ END;
 
 -- ── contact_settings ─────────────────────────────────────────────────────────
 -- 1:1 with cats. Controls what finders see on the public QR profile.
--- Owner full name and exact address are intentionally NOT columns (spec §7).
+-- owner legal identity and exact address are intentionally NOT columns (spec §7).
 -- contact_mode: relay | phone | none (default: relay — MishiPass relay form).
 -- public_phone: only served when contact_mode = 'phone'.
 CREATE TABLE IF NOT EXISTS contact_settings (
@@ -167,7 +167,7 @@ CREATE TABLE IF NOT EXISTS vaccines (
 
 -- medications — documentation only (spec §4 LOCKED)
 -- Encoded by absence: no reminder_*, next_dose, interaction_*, or refill_* columns.
--- None may be added without a Carlos-approved re-scope logged in docs/decision-log.md.
+-- None may be added without a Project Owner-approved re-scope logged in docs/decision-log.md.
 CREATE TABLE IF NOT EXISTS medications (
   id              INTEGER PRIMARY KEY,
   cat_id          INTEGER NOT NULL REFERENCES cats(id) ON DELETE CASCADE,

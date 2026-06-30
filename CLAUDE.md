@@ -2,9 +2,9 @@
 
 Operating guide for Claude Code on this repository. This file distills the
 **MishiPass Project Constitution v1.0**, which is the full source of truth and is
-maintained locally by Carlos (it is intentionally not committed to this repo).
+maintained locally by the Project Owner (it is intentionally not committed to this repo).
 Where this file and the constitution ever disagree, the constitution wins. Where
-the constitution and a request disagree, **LOCKED** decisions win and only Carlos
+the constitution and a request disagree, **LOCKED** decisions win and only the Project Owner
 may revise them.
 
 ---
@@ -48,7 +48,7 @@ categories, reword or remove it before writing or building it.
 `QR scan → TypeScript Worker → D1 lookup → mode routing → HTML/API response`
 
 **Cost constraint:** stack stays free or near-free. No paid service is added
-without Carlos's explicit decision.
+without the Project Owner's explicit decision.
 
 ### Python role (LOCKED)
 
@@ -68,13 +68,13 @@ Python lives at `tools/python/` — a **folder in the repo, not a branch.**
 | Active Profile | Must build |
 | Missing Alert | Must build |
 | Vet Visit | Must build |
-| Travel · For Adoption · Memorial · Celebration | Optional — only after all must-build is done and judge-safe |
+| Travel · For Adoption · Memorial · Celebration | Optional — only after all must-build is done and public-ready |
 
 If the deadline is close, optional modes are skipped.
 
 ---
 
-## Hard boundaries — do not cross without Carlos re-scoping
+## Hard boundaries — do not cross without Project Owner re-scoping
 
 **Digital cartilla — medication boundary (absolute):**
 Medication **records** are allowed. Medication **advice** is not.
@@ -100,7 +100,7 @@ service.
 - Use random public IDs. **Never expose internal database IDs.**
 - Public URLs use `/c/MP-XX-XXXX-XXXX`, never `/cat/1`.
 - Owner controls contact visibility. Default is the MishiPass relay form.
-- No owner full name or exact address shown publicly.
+- No owner legal identity or exact address shown publicly.
 - Vet Visit mode is temporary and auto-expires (24h from activation OR
   immediately on Save & Finish Visit, whichever comes first).
 - Save & Finish Visit returns the QR to Active Profile automatically.
@@ -130,7 +130,7 @@ appropriate interface; the owner changes the mode. Document this clearly so the
 
 > Claude and ChatGPT advise. Codex and Claude Code execute.
 > Zhanerke Askerbekova (Design Authority) designs.
-> Carlos orchestrates and decides.
+> The Project Owner orchestrates and decides.
 
 - You handle larger, multi-file implementation tasks **with clear specs**.
 - You scaffold features once architecture is confirmed, and refactor within
@@ -138,9 +138,9 @@ appropriate interface; the owner changes the mode. Document this clearly so the
 - **Every task must be specced before you execute.** If a request is open-ended
   ("build the dashboard", "make it secure"), stop and ask for a spec.
 - You may suggest, but you do not decide design. No user-facing feature is
-  "done" without Zhanerke Askerbekova's approval (or Carlos marking it temporary
+  "done" without Zhanerke Askerbekova's approval (or the Project Owner marking it temporary
   functional UI).
-- Carlos reviews all your output before it is committed. Carlos handles all Git
+- The Project Owner reviews all your output before it is committed. The Project Owner handles all Git
   operations.
 
 ---
@@ -148,7 +148,7 @@ appropriate interface; the owner changes the mode. Document this clearly so the
 ## Branch strategy (LOCKED)
 
 ```
-main       → always deployable, judge-safe, protected
+main       → always deployable, public-ready, protected
 dev        → working integration branch
 feature/*  → one branch per feature
 docs/*     → documentation-only changes
@@ -200,14 +200,14 @@ respects Zhanerke Askerbekova's approved design on user-facing surfaces; is
 committed to the correct branch; and has related docs updated if behavior,
 architecture, or copy changed.
 
-For Beta 1.4, **done means judge-safe, not perfect.**
+For Beta 1.4, **done means public-ready, not perfect.**
 
 ---
 
 ## Feature workflow (no steps skipped)
 
 Spec → alignment check (scope/privacy/framing) → design approval if user-facing →
-task split → execute → Carlos review → manual test → QR-scan test if on the QR
+task split → execute → Project Owner review → manual test → QR-scan test if on the QR
 path → commit to correct branch → doc sync.
 
 ## Scope test before adding any feature
@@ -217,6 +217,6 @@ path → commit to correct branch → doc sync.
 2. In the locked must-build list? → **Build it.**
 3. In the locked optional list? → **Only after all must-build is done.**
 4. In the V2 list? → **Log it, do not build it.**
-5. New and on no list? → **Full alignment check with Carlos before adding it.**
+5. New and on no list? → **Full alignment check with the Project Owner before adding it.**
 
 Terminal-agent suggestions are not approvals. Drift is not a decision.
