@@ -39,9 +39,18 @@ function buildDashboardHtml(): string {
     a{color:#111}
     .nav{margin-bottom:1.5rem;font-size:0.875rem}
     hr{border:none;border-top:1px solid #eee;margin:1.5rem 0}
-    .status{padding:0.5rem;border-radius:4px;margin-bottom:0.75rem;font-size:0.875rem}
     button:disabled{opacity:0.6;cursor:not-allowed}
-    .upcoming{color:#888;font-size:0.875rem;margin-top:1rem}
+    .tab-nav{display:flex;gap:0;border-bottom:2px solid #ddd;margin-bottom:1.5rem}
+    .tab-btn{background:none;border:none;border-bottom:2px solid transparent;padding:0.5rem 1rem;cursor:pointer;font-size:0.875rem;font-weight:500;margin:0 0 -2px 0;color:#555}
+    .tab-btn.active{border-bottom-color:#111;color:#111}
+    .tab-panel{display:none}
+    .tab-panel.active{display:block}
+    .photo-label{display:inline-block;padding:0.4rem 0.8rem;background:#eee;color:#111;border-radius:4px;cursor:pointer;font-size:0.75rem;font-weight:500}
+    .photo-label:hover{background:#ddd}
+    .photo-file-input{display:none}
+    details summary{cursor:pointer;font-size:1.25rem;font-weight:600;margin-top:1.5rem;margin-bottom:0.75rem}
+    .contact-card{border:1px solid #ddd;border-radius:6px;padding:1rem;margin-bottom:1rem}
+    .contact-card h4{margin:0 0 0.5rem 0}
   </style>
 </head>
 <body>
@@ -77,35 +86,47 @@ function buildDashboardHtml(): string {
 
   <div id="dashboard-section" class="hidden">
     <div style="display:flex;justify-content:space-between;align-items:center">
-      <h2>Your Cats</h2>
+      <h2>Dashboard</h2>
       <button id="logout-btn" class="btn-secondary">Logout</button>
     </div>
-    <div id="cat-list"></div>
-    <hr />
-    <h2>Register a Cat</h2>
-    <div id="create-error" class="error hidden"></div>
-    <form id="create-cat-form">
-      <label for="cat-name">Name</label>
-      <input type="text" id="cat-name" name="name" required />
-      <label for="cat-country">Country</label>
-      <select id="cat-country" name="countryCode" required>
-        <option value="">Select country...</option>
-        ${countryOptions}
-      </select>
-      <label for="cat-sex">Sex</label>
-      <select id="cat-sex" name="sex" style="width:100%;padding:0.5rem;border:1px solid #ccc;border-radius:4px;margin-bottom:0.75rem">
-        <option value="">Unknown</option>
-        <option value="female">Female</option>
-        <option value="male">Male</option>
-      </select>
-      <label for="cat-color">Color / Markings</label>
-      <input type="text" id="cat-color" name="colorMarkings" maxlength="200" />
-      <label for="cat-breed">Breed / Mix</label>
-      <input type="text" id="cat-breed" name="breedMix" maxlength="100" />
-      <button type="submit" class="btn-primary">Register Cat</button>
-    </form>
-    <hr />
-    <p class="upcoming">Coming next: Digital Cartilla, WhatsApp Card</p>
+
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="cats-tab">Your Cats</button>
+      <button class="tab-btn" data-tab="contact-tab">Contact &amp; Privacy</button>
+    </div>
+
+    <div id="cats-tab" class="tab-panel active">
+      <div id="cat-list"></div>
+      <hr />
+      <details>
+        <summary>Register a Cat</summary>
+        <div id="create-error" class="error hidden"></div>
+        <form id="create-cat-form">
+          <label for="cat-name">Name</label>
+          <input type="text" id="cat-name" name="name" required />
+          <label for="cat-country">Country</label>
+          <select id="cat-country" name="countryCode" required>
+            <option value="">Select country...</option>
+            ${countryOptions}
+          </select>
+          <label for="cat-sex">Sex</label>
+          <select id="cat-sex" name="sex" style="width:100%;padding:0.5rem;border:1px solid #ccc;border-radius:4px;margin-bottom:0.75rem">
+            <option value="">Unknown</option>
+            <option value="female">Female</option>
+            <option value="male">Male</option>
+          </select>
+          <label for="cat-color">Color / Markings</label>
+          <input type="text" id="cat-color" name="colorMarkings" maxlength="200" />
+          <label for="cat-breed">Breed / Mix</label>
+          <input type="text" id="cat-breed" name="breedMix" maxlength="100" />
+          <button type="submit" class="btn-primary">Register Cat</button>
+        </form>
+      </details>
+    </div>
+
+    <div id="contact-tab" class="tab-panel">
+      <div id="contact-list"><p>Loading contact settings...</p></div>
+    </div>
   </div>
 
   <script>
@@ -117,350 +138,128 @@ function buildDashboardHtml(): string {
       var createCatForm = document.getElementById("create-cat-form");
       var logoutBtn = document.getElementById("logout-btn");
       var catList = document.getElementById("cat-list");
+      var contactList = document.getElementById("contact-list");
       var loginError = document.getElementById("login-error");
       var registerError = document.getElementById("register-error");
       var registerSuccess = document.getElementById("register-success");
       var createError = document.getElementById("create-error");
 
-      function showAuth() {
-        authSection.classList.remove("hidden");
-        dashSection.classList.add("hidden");
+      var tabBtns = document.querySelectorAll(".tab-btn");
+      for (var t = 0; t < tabBtns.length; t++) {
+        tabBtns[t].addEventListener("click", function() {
+          var target = this.getAttribute("data-tab");
+          var allBtns = document.querySelectorAll(".tab-btn");
+          var allPanels = document.querySelectorAll(".tab-panel");
+          for (var j = 0; j < allBtns.length; j++) allBtns[j].classList.remove("active");
+          for (var j = 0; j < allPanels.length; j++) allPanels[j].classList.remove("active");
+          this.classList.add("active");
+          var panel = document.getElementById(target);
+          if (panel) panel.classList.add("active");
+          if (target === "contact-tab") loadContactSettings();
+        });
       }
 
-      function showDash() {
-        authSection.classList.add("hidden");
-        dashSection.classList.remove("hidden");
-        loadCats();
-      }
-
+      function showAuth() { authSection.classList.remove("hidden"); dashSection.classList.add("hidden"); }
+      function showDash() { authSection.classList.add("hidden"); dashSection.classList.remove("hidden"); loadCats(); }
       function hideMsg(el) { el.classList.add("hidden"); el.textContent = ""; }
       function showMsg(el, msg) { el.textContent = msg; el.classList.remove("hidden"); }
-
-      function escHtml(s) {
-        var d = document.createElement("div");
-        d.appendChild(document.createTextNode(s));
-        return d.innerHTML;
-      }
+      function escHtml(s) { var d = document.createElement("div"); d.appendChild(document.createTextNode(s)); return d.innerHTML; }
 
       function loadCats() {
-        fetch("/api/cats", { credentials: "same-origin" })
-          .then(function(r) {
-            if (r.status === 401) { showAuth(); return null; }
-            return r.json();
-          })
-          .then(function(cats) {
-            if (!cats) return;
-            if (cats.length === 0) {
-              catList.innerHTML = "<p>No cats registered yet.</p>";
-              return;
-            }
-            var html = "";
-            for (var i = 0; i < cats.length; i++) {
-              var c = cats[i];
-              html += '<div class="cat-card">';
-              html += '<h3><a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '">' + escHtml(c.name) + '</a></h3>';
-              html += '<p class="cat-meta">Mode: ' + escHtml(c.currentMode) + '</p>';
-              html += '<div class="cat-actions">';
-              html += '<a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '" class="btn-secondary" style="text-decoration:none;display:inline-block;padding:0.4rem 0.8rem">Details</a> ';
-              html += '<a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '/qr" class="btn-secondary" style="text-decoration:none;display:inline-block;padding:0.4rem 0.8rem">QR Card</a> ';
+        fetch("/api/cats", { credentials: "same-origin" }).then(function(r) {
+          if (r.status === 401) { showAuth(); return null; }
+          return r.json();
+        }).then(function(cats) {
+          if (!cats) return;
+          if (cats.length === 0) { catList.innerHTML = "<p>No cats registered yet.</p>"; return; }
+          var html = "";
+          for (var i = 0; i < cats.length; i++) {
+            var c = cats[i];
+            html += '<div class="cat-card">';
+            html += '<h3><a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '">' + escHtml(c.name) + '</a></h3>';
+            html += '<p class="cat-meta">Mode: ' + escHtml(c.currentMode) + '</p>';
+            html += '<div class="cat-actions">';
+            html += '<a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '" class="btn-secondary" style="text-decoration:none;display:inline-block;padding:0.4rem 0.8rem">Details</a> ';
+            html += '<a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '/qr" class="btn-secondary" style="text-decoration:none;display:inline-block;padding:0.4rem 0.8rem">QR Card</a> ';
+            if (c.currentMode === "missing") {
               html += '<a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '/sightings" class="btn-secondary" style="text-decoration:none;display:inline-block;padding:0.4rem 0.8rem">Sightings</a>';
-              html += '</div>';
-              html += '<form class="photo-upload-form" data-id="' + escHtml(c.publicId) + '" style="margin-top:0.5rem">';
-              html += '<input type="file" accept="image/jpeg,image/png,image/webp" class="photo-file-input" style="font-size:0.8rem" />';
-              html += '<button type="submit" class="btn-secondary" style="font-size:0.75rem">Upload Photo</button>';
-              html += '</form>';
-              html += '<div class="cat-actions">';
-              html += '<button class="btn-secondary contact-toggle-btn" data-id="' + escHtml(c.publicId) + '">Contact &amp; Privacy</button>';
-              html += '<div class="mode-fields hidden" id="contact-panel-' + escHtml(c.publicId) + '">';
-              html += '<label>Contact mode</label>';
-              html += '<select class="contact-mode-select" style="width:100%;padding:0.4rem;margin-bottom:0.5rem;border:1px solid #ccc;border-radius:4px">';
-              html += '<option value="none">Hidden</option>';
-              html += '<option value="relay">Relay (contact form)</option>';
-              html += '<option value="phone">Public phone</option>';
-              html += '</select>';
-              html += '<input type="text" class="contact-phone" placeholder="Phone (if phone mode)" maxlength="30" />';
-              html += '<button class="btn-primary contact-save-btn" data-id="' + escHtml(c.publicId) + '">Save contact settings</button>';
-              html += '<span class="contact-status" style="font-size:0.8rem;margin-left:0.5rem"></span>';
-              html += '</div>';
-              html += '</div>';
-              html += '<div class="cat-actions">';
-              if (c.currentMode === "missing") {
-                html += '<button class="btn-primary switch-active-btn" data-id="' + escHtml(c.publicId) + '">Switch to Active</button>';
-              } else if (c.currentMode === "vet") {
-                html += '<span class="mode-badge" style="background:#e0f0ff;color:#036;padding:4px 8px;border-radius:4px;font-size:0.8rem;font-weight:bold">🩺 Vet Visit Active</span> ';
-                html += '<button class="btn-primary cancel-vet-btn" data-id="' + escHtml(c.publicId) + '">End Vet Visit</button>';
-              } else {
-                html += '<button class="btn-warn switch-missing-btn" data-id="' + escHtml(c.publicId) + '">Switch to Missing</button> ';
-                html += '<button class="btn-primary start-vet-btn" data-id="' + escHtml(c.publicId) + '">Start Vet Visit</button>';
-                html += '<div class="mode-fields hidden" id="missing-fields-' + escHtml(c.publicId) + '">';
-                html += '<input type="text" placeholder="City" class="missing-city" />';
-                html += '<input type="text" placeholder="Area / neighborhood" class="missing-area" />';
-                html += '<input type="text" placeholder="Reward (optional)" class="missing-reward" />';
-                html += '<button class="btn-danger confirm-missing-btn" data-id="' + escHtml(c.publicId) + '">Confirm Missing</button>';
-                html += "</div>";
-              }
-              html += "</div></div>";
             }
-            catList.innerHTML = html;
-            attachCatActions();
-          })
-          .catch(function() { showMsg(createError, "Network error. Try again."); });
+            html += '</div>';
+            html += '<div class="cat-actions" data-photo-id="' + escHtml(c.publicId) + '" style="margin-top:0.5rem">';
+            html += '<input type="file" accept="image/jpeg,image/png,image/webp" class="photo-file-input" id="photo-input-' + escHtml(c.publicId) + '" />';
+            html += '<label for="photo-input-' + escHtml(c.publicId) + '" class="photo-label">Upload Photo</label>';
+            html += '</div>';
+            html += '<div class="cat-actions">';
+            if (c.currentMode === "missing") {
+              html += '<button class="btn-primary switch-active-btn" data-id="' + escHtml(c.publicId) + '">Switch to Active</button>';
+            } else if (c.currentMode === "vet") {
+              html += '<span style="background:#e0f0ff;color:#036;padding:4px 8px;border-radius:4px;font-size:0.8rem;font-weight:bold">&#x1F9BA; Vet Visit Active</span> ';
+              html += '<button class="btn-primary cancel-vet-btn" data-id="' + escHtml(c.publicId) + '">End Vet Visit</button>';
+            } else {
+              html += '<button class="btn-warn switch-missing-btn" data-id="' + escHtml(c.publicId) + '">Switch to Missing</button> ';
+              html += '<button class="btn-primary start-vet-btn" data-id="' + escHtml(c.publicId) + '">Start Vet Visit</button>';
+              html += '<div class="mode-fields hidden" id="missing-fields-' + escHtml(c.publicId) + '">';
+              html += '<input type="text" placeholder="City" class="missing-city" />';
+              html += '<input type="text" placeholder="Area / neighborhood" class="missing-area" />';
+              html += '<input type="text" placeholder="Reward (optional)" class="missing-reward" />';
+              html += '<button class="btn-danger confirm-missing-btn" data-id="' + escHtml(c.publicId) + '">Confirm Missing</button>';
+              html += '</div>';
+            }
+            html += '</div>';
+            html += '<div class="cat-actions" style="margin-top:0.75rem"><button class="btn-danger remove-cat-btn" data-id="' + escHtml(c.publicId) + '">Remove</button></div>';
+            html += '</div>';
+          }
+          catList.innerHTML = html;
+          attachCatActions();
+        }).catch(function() { showMsg(createError, "Network error. Try again."); });
       }
 
       function attachCatActions() {
         var missingBtns = document.querySelectorAll(".switch-missing-btn");
-        for (var i = 0; i < missingBtns.length; i++) {
-          missingBtns[i].addEventListener("click", function() {
-            var id = this.getAttribute("data-id");
-            var fields = document.getElementById("missing-fields-" + id);
-            if (fields) fields.classList.toggle("hidden");
-          });
-        }
-
+        for (var i = 0; i < missingBtns.length; i++) missingBtns[i].addEventListener("click", function() { var id = this.getAttribute("data-id"); var f = document.getElementById("missing-fields-" + id); if (f) f.classList.toggle("hidden"); });
         var confirmBtns = document.querySelectorAll(".confirm-missing-btn");
-        for (var i = 0; i < confirmBtns.length; i++) {
-          confirmBtns[i].addEventListener("click", function() {
-            var btn = this;
-            var id = btn.getAttribute("data-id");
-            var fields = document.getElementById("missing-fields-" + id);
-            var city = fields.querySelector(".missing-city").value;
-            var area = fields.querySelector(".missing-area").value;
-            var reward = fields.querySelector(".missing-reward").value;
-            btn.disabled = true;
-            btn.textContent = "Working...";
-            fetch("/api/cats/" + encodeURIComponent(id) + "/missing", {
-              method: "POST",
-              credentials: "same-origin",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ city: city || null, area: area || null, rewardAmount: reward || null, rewardVisible: reward ? 1 : 0 })
-            }).then(function(r) {
-              if (r.ok) loadCats();
-              btn.disabled = false;
-              btn.textContent = "Confirm Missing";
-            }).catch(function() { btn.disabled = false; btn.textContent = "Confirm Missing"; showMsg(createError, "Network error. Try again."); });
-          });
-        }
-
+        for (var i = 0; i < confirmBtns.length; i++) confirmBtns[i].addEventListener("click", function() { var btn = this; var id = btn.getAttribute("data-id"); var f = document.getElementById("missing-fields-" + id); var city = f.querySelector(".missing-city").value; var area = f.querySelector(".missing-area").value; var reward = f.querySelector(".missing-reward").value; btn.disabled = true; btn.textContent = "Working..."; fetch("/api/cats/" + encodeURIComponent(id) + "/missing", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ city: city || null, area: area || null, rewardAmount: reward || null, rewardVisible: reward ? 1 : 0 }) }).then(function(r) { if (r.ok) loadCats(); btn.disabled = false; btn.textContent = "Confirm Missing"; }).catch(function() { btn.disabled = false; btn.textContent = "Confirm Missing"; }); });
         var activeBtns = document.querySelectorAll(".switch-active-btn");
-        for (var i = 0; i < activeBtns.length; i++) {
-          activeBtns[i].addEventListener("click", function() {
-            var btn = this;
-            var id = btn.getAttribute("data-id");
-            btn.disabled = true;
-            btn.textContent = "Working...";
-            fetch("/api/cats/" + encodeURIComponent(id) + "/active", {
-              method: "POST",
-              credentials: "same-origin",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({})
-            }).then(function(r) {
-              if (r.ok) loadCats();
-              btn.disabled = false;
-              btn.textContent = "Switch to Active";
-            }).catch(function() { btn.disabled = false; btn.textContent = "Switch to Active"; showMsg(createError, "Network error. Try again."); });
-          });
-        }
-
+        for (var i = 0; i < activeBtns.length; i++) activeBtns[i].addEventListener("click", function() { var btn = this; var id = btn.getAttribute("data-id"); btn.disabled = true; btn.textContent = "Working..."; fetch("/api/cats/" + encodeURIComponent(id) + "/active", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) }).then(function(r) { if (r.ok) loadCats(); btn.disabled = false; btn.textContent = "Switch to Active"; }).catch(function() { btn.disabled = false; btn.textContent = "Switch to Active"; }); });
         var startVetBtns = document.querySelectorAll(".start-vet-btn");
-        for (var i = 0; i < startVetBtns.length; i++) {
-          startVetBtns[i].addEventListener("click", function() {
-            var btn = this;
-            var id = btn.getAttribute("data-id");
-            if (!confirm("Start Vet Visit? While active, anyone scanning this QR can submit a vet visit record. Save & Finish returns the QR to Active Profile.")) return;
-            btn.disabled = true;
-            btn.textContent = "Starting...";
-            fetch("/api/cats/" + encodeURIComponent(id) + "/vet-visit/start", {
-              method: "POST",
-              credentials: "same-origin",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({})
-            }).then(function(r) {
-              if (r.ok) loadCats();
-              else { r.text().then(function(t) { alert(t || "Could not start vet visit"); }); }
-              btn.disabled = false;
-              btn.textContent = "Start Vet Visit";
-            }).catch(function() { btn.disabled = false; btn.textContent = "Start Vet Visit"; showMsg(createError, "Network error. Try again."); });
-          });
-        }
-
+        for (var i = 0; i < startVetBtns.length; i++) startVetBtns[i].addEventListener("click", function() { var btn = this; var id = btn.getAttribute("data-id"); if (!confirm("Start Vet Visit? While active, anyone scanning this QR can submit a vet visit record. Save & Finish returns the QR to Active Profile.")) return; btn.disabled = true; btn.textContent = "Starting..."; fetch("/api/cats/" + encodeURIComponent(id) + "/vet-visit/start", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) }).then(function(r) { if (r.ok) loadCats(); else { r.text().then(function(t) { alert(t || "Could not start vet visit"); }); } btn.disabled = false; btn.textContent = "Start Vet Visit"; }).catch(function() { btn.disabled = false; btn.textContent = "Start Vet Visit"; }); });
         var cancelVetBtns = document.querySelectorAll(".cancel-vet-btn");
-        for (var i = 0; i < cancelVetBtns.length; i++) {
-          cancelVetBtns[i].addEventListener("click", function() {
-            var btn = this;
-            var id = btn.getAttribute("data-id");
-            btn.disabled = true;
-            btn.textContent = "Working...";
-            fetch("/api/cats/" + encodeURIComponent(id) + "/vet-visit/cancel", {
-              method: "POST",
-              credentials: "same-origin",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({})
-            }).then(function(r) {
-              if (r.ok) loadCats();
-              btn.disabled = false;
-              btn.textContent = "End Vet Visit";
-            }).catch(function() { btn.disabled = false; btn.textContent = "End Vet Visit"; showMsg(createError, "Network error. Try again."); });
-          });
-        }
-
-        var contactToggles = document.querySelectorAll(".contact-toggle-btn");
-        for (var i = 0; i < contactToggles.length; i++) {
-          contactToggles[i].addEventListener("click", function() {
-            var id = this.getAttribute("data-id");
-            var panel = document.getElementById("contact-panel-" + id);
-            if (panel.classList.contains("hidden")) {
-              panel.classList.remove("hidden");
-              fetch("/api/cats/" + encodeURIComponent(id) + "/contact", { credentials: "same-origin" })
-                .then(function(r) { return r.json(); })
-                .then(function(d) {
-                  var sel = panel.querySelector(".contact-mode-select");
-                  var phone = panel.querySelector(".contact-phone");
-                  if (sel) sel.value = d.contact_mode || "none";
-                  if (phone) phone.value = d.public_phone || "";
-                })
-                .catch(function() {});
-            } else {
-              panel.classList.add("hidden");
-            }
-          });
-        }
-
-        var contactSaveBtns = document.querySelectorAll(".contact-save-btn");
-        for (var i = 0; i < contactSaveBtns.length; i++) {
-          contactSaveBtns[i].addEventListener("click", function() {
-            var btn = this;
-            var id = btn.getAttribute("data-id");
-            var panel = document.getElementById("contact-panel-" + id);
-            var mode = panel.querySelector(".contact-mode-select").value;
-            var phone = panel.querySelector(".contact-phone").value;
-            var status = panel.querySelector(".contact-status");
-            btn.disabled = true;
-            btn.textContent = "Saving...";
-            fetch("/api/cats/" + encodeURIComponent(id) + "/contact", {
-              method: "POST",
-              credentials: "same-origin",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ contact_mode: mode, public_phone: phone || null })
-            }).then(function(r) {
-              btn.disabled = false;
-              btn.textContent = "Save contact settings";
-              if (r.ok) { status.textContent = "Saved"; status.style.color = "#060"; }
-              else { status.textContent = "Error saving"; status.style.color = "#c00"; }
-            }).catch(function() { btn.disabled = false; btn.textContent = "Save contact settings"; status.textContent = "Network error"; status.style.color = "#c00"; });
-          });
-        }
-
-        var photoForms = document.querySelectorAll(".photo-upload-form");
-        for (var i = 0; i < photoForms.length; i++) {
-          photoForms[i].addEventListener("submit", function(e) {
-            e.preventDefault();
-            var form = this;
-            var id = form.getAttribute("data-id");
-            var fileInput = form.querySelector(".photo-file-input");
-            if (!fileInput.files || !fileInput.files[0]) return;
-            var fd = new FormData();
-            fd.append("photo", fileInput.files[0]);
-            var btn = form.querySelector("button");
-            btn.disabled = true;
-            btn.textContent = "Uploading...";
-            fetch("/api/cats/" + encodeURIComponent(id) + "/photo", {
-              method: "POST",
-              credentials: "same-origin",
-              body: fd
-            }).then(function(r) {
-              btn.disabled = false;
-              btn.textContent = "Upload Photo";
-              if (r.ok) { loadCats(); }
-              else { r.text().then(function(t) { alert(t || "Upload failed"); }); }
-            }).catch(function() { btn.disabled = false; btn.textContent = "Upload Photo"; });
-          });
-        }
+        for (var i = 0; i < cancelVetBtns.length; i++) cancelVetBtns[i].addEventListener("click", function() { var btn = this; var id = btn.getAttribute("data-id"); btn.disabled = true; btn.textContent = "Working..."; fetch("/api/cats/" + encodeURIComponent(id) + "/vet-visit/cancel", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) }).then(function(r) { if (r.ok) loadCats(); btn.disabled = false; btn.textContent = "End Vet Visit"; }).catch(function() { btn.disabled = false; btn.textContent = "End Vet Visit"; }); });
+        var photoInputs = document.querySelectorAll(".photo-file-input");
+        for (var i = 0; i < photoInputs.length; i++) photoInputs[i].addEventListener("change", function() { var input = this; var container = input.closest("[data-photo-id]"); var id = container.getAttribute("data-photo-id"); if (!input.files || !input.files[0]) return; var fd = new FormData(); fd.append("photo", input.files[0]); var label = container.querySelector(".photo-label"); var orig = label.textContent; label.textContent = "Uploading..."; fetch("/api/cats/" + encodeURIComponent(id) + "/photo", { method: "POST", credentials: "same-origin", body: fd }).then(function(r) { label.textContent = orig; if (r.ok) loadCats(); else r.text().then(function(t) { alert(t || "Upload failed"); }); }).catch(function() { label.textContent = orig; }); });
+        var removeBtns = document.querySelectorAll(".remove-cat-btn");
+        for (var i = 0; i < removeBtns.length; i++) removeBtns[i].addEventListener("click", function() { var btn = this; var id = btn.getAttribute("data-id"); if (!confirm("Remove this cat from MishiPass? This will hide the public profile and dashboard entry.")) return; btn.disabled = true; btn.textContent = "Removing..."; fetch("/api/cats/" + encodeURIComponent(id) + "/remove", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) }).then(function(r) { if (r.ok) loadCats(); else { r.text().then(function(t) { alert(t || "Could not remove cat"); }); btn.disabled = false; btn.textContent = "Remove"; } }).catch(function() { btn.disabled = false; btn.textContent = "Remove"; }); });
       }
 
-      loginForm.addEventListener("submit", function(e) {
-        e.preventDefault();
-        hideMsg(loginError);
-        var email = document.getElementById("login-email").value;
-        var password = document.getElementById("login-password").value;
-        var btn = loginForm.querySelector("button[type=submit]");
-        btn.disabled = true;
-        btn.textContent = "Working...";
-        fetch("/api/auth/login", {
-          method: "POST",
-          credentials: "same-origin",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: email, password: password })
-        }).then(function(r) {
-          btn.disabled = false;
-          btn.textContent = "Login";
-          if (r.ok) { showDash(); }
-          else { return r.text().then(function(t) { try { var d = JSON.parse(t); showMsg(loginError, d.error || "Login failed"); } catch(e) { showMsg(loginError, "Error " + r.status + ": " + (t || "Login failed")); } }); }
-        }).catch(function() { btn.disabled = false; btn.textContent = "Login"; showMsg(loginError, "Network error. Try again."); });
-      });
+      function loadContactSettings() {
+        contactList.innerHTML = "<p>Loading...</p>";
+        fetch("/api/cats", { credentials: "same-origin" }).then(function(r) { if (r.status === 401) { showAuth(); return null; } return r.json(); }).then(function(cats) {
+          if (!cats) return;
+          if (cats.length === 0) { contactList.innerHTML = "<p>No cats registered.</p>"; return; }
+          var promises = [];
+          for (var i = 0; i < cats.length; i++) (function(cat) { promises.push(fetch("/api/cats/" + encodeURIComponent(cat.publicId) + "/contact", { credentials: "same-origin" }).then(function(r) { return r.json(); }).then(function(d) { return { cat: cat, contact: d }; }).catch(function() { return { cat: cat, contact: { contact_mode: "none", public_phone: "" } }; })); })(cats[i]);
+          Promise.all(promises).then(function(results) {
+            var out = "";
+            for (var k = 0; k < results.length; k++) { var r = results[k]; var d = r.contact;
+              out += '<div class="contact-card" data-contact-id="' + escHtml(r.cat.publicId) + '">';
+              out += '<h4>' + escHtml(r.cat.name) + '</h4>';
+              out += '<select class="contact-mode-select" style="width:100%;padding:0.4rem;margin-bottom:0.5rem;border:1px solid #ccc;border-radius:4px"><option value="none"' + (d.contact_mode === "none" ? " selected" : "") + '>Hidden</option><option value="relay"' + (d.contact_mode === "relay" ? " selected" : "") + '>Relay</option><option value="phone"' + (d.contact_mode === "phone" ? " selected" : "") + '>Public phone</option></select>';
+              out += '<input type="text" class="contact-phone" placeholder="Phone" maxlength="30" value="' + escHtml(d.public_phone || "") + '" />';
+              out += '<button class="btn-primary contact-save-btn" data-id="' + escHtml(r.cat.publicId) + '">Save</button>';
+              out += '<span class="contact-status" style="font-size:0.8rem;margin-left:0.5rem"></span></div>';
+            }
+            contactList.innerHTML = out;
+            var saveBtns = document.querySelectorAll("#contact-list .contact-save-btn");
+            for (var i = 0; i < saveBtns.length; i++) saveBtns[i].addEventListener("click", function() { var btn = this; var id = btn.getAttribute("data-id"); var card = btn.closest(".contact-card"); var mode = card.querySelector(".contact-mode-select").value; var phone = card.querySelector(".contact-phone").value; var status = card.querySelector(".contact-status"); btn.disabled = true; btn.textContent = "Saving..."; fetch("/api/cats/" + encodeURIComponent(id) + "/contact", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contact_mode: mode, public_phone: phone || null }) }).then(function(r) { btn.disabled = false; btn.textContent = "Save"; if (r.ok) { status.textContent = "Saved"; status.style.color = "#060"; } else { status.textContent = "Error"; status.style.color = "#c00"; } }).catch(function() { btn.disabled = false; btn.textContent = "Save"; status.textContent = "Network error"; status.style.color = "#c00"; }); });
+          });
+        }).catch(function() { contactList.innerHTML = "<p>Error loading.</p>"; });
+      }
 
-      registerForm.addEventListener("submit", function(e) {
-        e.preventDefault();
-        hideMsg(registerError);
-        hideMsg(registerSuccess);
-        var email = document.getElementById("register-email").value;
-        var password = document.getElementById("register-password").value;
-        var btn = registerForm.querySelector("button[type=submit]");
-        btn.disabled = true;
-        btn.textContent = "Working...";
-        fetch("/api/auth/register", {
-          method: "POST",
-          credentials: "same-origin",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: email, password: password })
-        }).then(function(r) {
-          btn.disabled = false;
-          btn.textContent = "Register";
-          if (r.ok) { showMsg(registerSuccess, "Registered. You can now log in."); }
-          else { return r.text().then(function(t) { try { var d = JSON.parse(t); showMsg(registerError, d.error || "Registration failed"); } catch(e) { showMsg(registerError, "Error " + r.status + ": " + (t || "Registration failed")); } }); }
-        }).catch(function() { btn.disabled = false; btn.textContent = "Register"; showMsg(registerError, "Network error. Try again."); });
-      });
-
-      createCatForm.addEventListener("submit", function(e) {
-        e.preventDefault();
-        hideMsg(createError);
-        var name = document.getElementById("cat-name").value;
-        var countryCode = document.getElementById("cat-country").value;
-        var sex = document.getElementById("cat-sex").value;
-        var colorMarkings = document.getElementById("cat-color").value;
-        var breedMix = document.getElementById("cat-breed").value;
-        var btn = createCatForm.querySelector("button[type=submit]");
-        btn.disabled = true;
-        btn.textContent = "Working...";
-        var payload = { name: name, countryCode: countryCode };
-        if (sex) payload.sex = sex;
-        if (colorMarkings) payload.colorMarkings = colorMarkings;
-        if (breedMix) payload.breedMix = breedMix;
-        fetch("/api/cats", {
-          method: "POST",
-          credentials: "same-origin",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        }).then(function(r) {
-          btn.disabled = false;
-          btn.textContent = "Register Cat";
-          if (r.ok) { createCatForm.reset(); loadCats(); }
-          else { return r.text().then(function(t) { showMsg(createError, t || "Could not register cat"); }); }
-        }).catch(function() { btn.disabled = false; btn.textContent = "Register Cat"; showMsg(createError, "Network error. Try again."); });
-      });
-
-      logoutBtn.addEventListener("click", function() {
-        fetch("/api/auth/logout", {
-          method: "POST",
-          credentials: "same-origin"
-        }).then(function() { showAuth(); }).catch(function() { showAuth(); });
-      });
-
-      fetch("/api/cats", { credentials: "same-origin" })
-        .then(function(r) {
-          if (r.status === 401) showAuth();
-          else { r.json().then(function() { showDash(); }); }
-        })
-        .catch(function() { showAuth(); });
+      loginForm.addEventListener("submit", function(e) { e.preventDefault(); hideMsg(loginError); var email = document.getElementById("login-email").value; var password = document.getElementById("login-password").value; var btn = loginForm.querySelector("button[type=submit]"); btn.disabled = true; btn.textContent = "Working..."; fetch("/api/auth/login", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: email, password: password }) }).then(function(r) { btn.disabled = false; btn.textContent = "Login"; if (r.ok) showDash(); else r.text().then(function(t) { try { var d = JSON.parse(t); showMsg(loginError, d.error || "Login failed"); } catch(e) { showMsg(loginError, t || "Login failed"); } }); }).catch(function() { btn.disabled = false; btn.textContent = "Login"; showMsg(loginError, "Network error."); }); });
+      registerForm.addEventListener("submit", function(e) { e.preventDefault(); hideMsg(registerError); hideMsg(registerSuccess); var email = document.getElementById("register-email").value; var password = document.getElementById("register-password").value; var btn = registerForm.querySelector("button[type=submit]"); btn.disabled = true; btn.textContent = "Working..."; fetch("/api/auth/register", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: email, password: password }) }).then(function(r) { btn.disabled = false; btn.textContent = "Register"; if (r.ok) showMsg(registerSuccess, "Registered. You can now log in."); else r.text().then(function(t) { try { var d = JSON.parse(t); showMsg(registerError, d.error || "Registration failed"); } catch(e) { showMsg(registerError, t || "Registration failed"); } }); }).catch(function() { btn.disabled = false; btn.textContent = "Register"; showMsg(registerError, "Network error."); }); });
+      createCatForm.addEventListener("submit", function(e) { e.preventDefault(); hideMsg(createError); var name = document.getElementById("cat-name").value; var countryCode = document.getElementById("cat-country").value; var sex = document.getElementById("cat-sex").value; var colorMarkings = document.getElementById("cat-color").value; var breedMix = document.getElementById("cat-breed").value; var btn = createCatForm.querySelector("button[type=submit]"); btn.disabled = true; btn.textContent = "Working..."; var payload = { name: name, countryCode: countryCode }; if (sex) payload.sex = sex; if (colorMarkings) payload.colorMarkings = colorMarkings; if (breedMix) payload.breedMix = breedMix; fetch("/api/cats", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }).then(function(r) { btn.disabled = false; btn.textContent = "Register Cat"; if (r.ok) { createCatForm.reset(); loadCats(); } else r.text().then(function(t) { showMsg(createError, t || "Could not register cat"); }); }).catch(function() { btn.disabled = false; btn.textContent = "Register Cat"; showMsg(createError, "Network error."); }); });
+      logoutBtn.addEventListener("click", function() { fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" }).then(function() { showAuth(); }).catch(function() { showAuth(); }); });
+      fetch("/api/cats", { credentials: "same-origin" }).then(function(r) { if (r.status === 401) showAuth(); else r.json().then(function() { showDash(); }); }).catch(function() { showAuth(); });
     })();
   </script>
 </body>
