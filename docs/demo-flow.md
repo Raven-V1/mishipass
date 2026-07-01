@@ -21,14 +21,16 @@ interface.
 | 8 | Finder submits optional photo sighting report | Photo stored in R2; rate-limited and validated |
 | 9 | Owner opens sighting inbox and sees report/photo | Owner-only access to sighting photos |
 | 10 | Privacy/contact settings remain owner-controlled | Relay default; owner can toggle visibility |
+| 11 | Owner starts Vet Visit mode | Dashboard confirms activation; QR changes behavior |
+| 12 | Scan the same QR — Vet Visit form | Temporary form with clinic, vet, reason, weight, notes |
+| 13 | Save & Finish Visit | Visit record saved privately; QR returns to Active Profile |
+| 14 | Scan the same QR again — Active Profile | Confirms auto-return after vet visit |
 
 ## Planned, not yet built
 
 | Feature | Status |
 |---|---|
 | WhatsApp card | Not built |
-| Vet Visit mode | Not built (Day 7 target) |
-| Save and Finish Visit | Not built |
 | Digital cartilla | Not built |
 | Recovery Board | Not built |
 | Optional modes (Travel, Adoption, Memorial, Celebration) | Not built |

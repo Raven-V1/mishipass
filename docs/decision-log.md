@@ -387,6 +387,45 @@ Decided by: Project Owner
 
 ---
 
+## [2026-06-30T20:05:00-06:00] — Day 7 Vet Visit mode implementation
+
+Decision: Implement Vet Visit mode as purely mode-gated (no vet token required).
+24-hour session expiry. Save & Finish immediately returns cat to Active Profile.
+No vet account in Beta.
+
+Executor: Kiro
+Branch: feature/vet-visit-mode
+Related PRs: (to be assigned on PR creation)
+
+Summary:
+- Owner can start Vet Visit from dashboard (POST /api/cats/:publicId/vet-visit/start)
+- Same QR/public URL renders vet entry form when mode = vet
+- Public form accepts clinic name, vet name, visit date, reason, weight, notes
+- Save & Finish (POST /api/cats/:publicId/vet-visit/finish) saves vet_visits record,
+  marks vet_sessions finished, returns cat to active mode
+- Owner can cancel (POST /api/cats/:publicId/vet-visit/cancel) returning to active
+- Expired sessions (24h) render an expired state page, reject submissions
+- No medical/cartilla history shown on public vet page
+- No internal IDs exposed
+- No vet account auth (known Beta limitation, documented)
+
+Tests: 166 passing (133 worker + 33 shared-validation)
+New tests: 22 vet visit specific + 2 updated cats tests
+
+Not started:
+- Digital cartilla UI
+- WhatsApp card
+- Recovery Board
+- Optional modes
+- V2 items
+
+Reason: Constitution Day 7 milestone. Vet Visit completes the core mode-switching
+trifecta (Active, Missing, Vet) demonstrating the same QR produces three different
+experiences.
+Decided by: Project Owner
+
+---
+
 ## Open items (not yet decided)
 
 Tracked in Constitution Section 23; each will be logged here when resolved:
