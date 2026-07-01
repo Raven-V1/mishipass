@@ -5,6 +5,7 @@ import {
   getMissingAlertPublic,
   insertCat,
   listCatsForOwner,
+  softDeleteCat,
 } from "../db/index.js";
 import type { ContactSettingsPublicView, MissingAlertPublicView } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
@@ -326,4 +327,27 @@ function renderUnbuiltMode(name: string): string {
   <p>This cat's current mode isn't available yet. Check back soon.</p>
 </body>
 </html>`;
+}
+
+// ── POST /api/cats/:publicId/remove ─────────────────────────────────────────
+
+export async function handleRemoveCat(
+  publicId: string,
+  db: D1Database,
+  ctx: RequestContext,
+): Promise<Response> {
+  if (ctx.ownerId === null) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  if (!validateId(publicId)) {
+    return new Response("Not Found", { status: 404 });
+  }
+
+  const removed = await softDeleteCat(db, publicId, ctx.ownerId);
+  if (!removed) {
+    return new Response("Forbidden", { status: 403 });
+  }
+
+  return Response.json({ status: "removed" }, { status: 200 });
 }

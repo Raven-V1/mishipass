@@ -59,6 +59,7 @@ export async function getCatForOwner(
  * Returns only whitelisted public columns. No internal id, no owner_id,
  * no cartilla data, no contact settings (fetch separately if needed for mode).
  * Does NOT include notes (private to owner).
+ * Excludes soft-deleted cats.
  * Returns null if no cat with that public_id exists.
  */
 export async function getCatPublicProfile(
@@ -70,7 +71,7 @@ export async function getCatPublicProfile(
       `SELECT public_id, name, country_code, photo_r2_key, current_mode,
               sex, birth_date, color_markings, breed_mix, weight
        FROM cats
-       WHERE public_id = ?`,
+       WHERE public_id = ? AND deleted_at IS NULL`,
     )
     .bind(publicId)
     .first<CatPublicView>();
@@ -80,6 +81,7 @@ export async function getCatPublicProfile(
  * List all cats belonging to an owner (owner dashboard).
  * Returns the same whitelisted public columns as getCatPublicProfile.
  * ownerId is an internal value from the authenticated session — never a URL param.
+ * Excludes soft-deleted cats.
  */
 export async function listCatsForOwner(
   db: D1Database,
@@ -90,7 +92,7 @@ export async function listCatsForOwner(
       `SELECT public_id, name, country_code, photo_r2_key, current_mode,
               sex, birth_date, color_markings, breed_mix, weight
        FROM cats
-       WHERE owner_id = ?
+       WHERE owner_id = ? AND deleted_at IS NULL
        ORDER BY created_at ASC`,
     )
     .bind(ownerId)
@@ -138,6 +140,28 @@ export async function updateCatPhoto(
        WHERE public_id = ? AND owner_id = ?`,
     )
     .bind(photoR2Key, publicId, ownerId)
+    .run();
+  return result.meta.changes > 0;
+}
+
+
+/**
+ * Soft-delete a cat. Sets deleted_at to current timestamp.
+ * Ownership enforced: only succeeds if public_id and owner_id both match.
+ * Returns true if a row was updated, false if not found or not owned.
+ */
+export async function softDeleteCat(
+  db: D1Database,
+  publicId: string,
+  ownerId: number,
+): Promise<boolean> {
+  const result = await db
+    .prepare(
+      `UPDATE cats
+       SET deleted_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now')
+       WHERE public_id = ? AND owner_id = ? AND deleted_at IS NULL`,
+    )
+    .bind(publicId, ownerId)
     .run();
   return result.meta.changes > 0;
 }

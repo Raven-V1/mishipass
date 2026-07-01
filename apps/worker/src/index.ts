@@ -2,7 +2,7 @@ import { resolveSession } from "./middleware/session.js";
 import { checkDurableRateLimit } from "./middleware/durableRateLimit.js";
 import { hmacSha256Hex } from "./utils/crypto.js";
 import { handleLogin, handleLogout, handleRegister } from "./routes/auth.js";
-import { handleCreateCat, handleListCats, handlePublicProfile } from "./routes/cats.js";
+import { handleCreateCat, handleListCats, handlePublicProfile, handleRemoveCat } from "./routes/cats.js";
 import { handleGetContactSettings, handleUpsertContactSettings } from "./routes/contactSettings.js";
 import { handleSwitchToActive, handleSwitchToMissing } from "./routes/missingAlerts.js";
 import { handleSightingForm, handleSightingSubmit, handleListSightingsForOwner } from "./routes/sightingReports.js";
@@ -40,6 +40,7 @@ const DASHBOARD_CAT_SIGHTINGS = /^\/dashboard\/cats\/([^/]+)\/sightings$/;
 const VET_VISIT_START = /^\/api\/cats\/([^/]+)\/vet-visit\/start$/;
 const VET_VISIT_CANCEL = /^\/api\/cats\/([^/]+)\/vet-visit\/cancel$/;
 const VET_VISIT_FINISH = /^\/api\/cats\/([^/]+)\/vet-visit\/finish$/;
+const CAT_REMOVE = /^\/api\/cats\/([^/]+)\/remove$/;
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -144,6 +145,14 @@ export default {
     const vetFinishMatch = VET_VISIT_FINISH.exec(pathname);
     if (method === "POST" && vetFinishMatch) {
       return handleVetVisitFinish(vetFinishMatch[1]!, request, env.DB);
+    }
+
+    // -- Cat remove API --
+
+    const catRemoveMatch = CAT_REMOVE.exec(pathname);
+    if (method === "POST" && catRemoveMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleRemoveCat(catRemoveMatch[1]!, env.DB, ctx);
     }
 
     // -- Photo upload/serve --

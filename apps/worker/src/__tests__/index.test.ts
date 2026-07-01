@@ -149,7 +149,7 @@ describe("GET /dashboard", () => {
     const body = await res.text();
     expect(body).toContain("Contact &amp; Privacy");
     expect(body).toContain("contact-mode-select");
-    expect(body).toContain("Save contact settings");
+    expect(body).toContain("contact-save-btn");
   });
 
   it("does not contain .toUpperCase() in submit handler", async () => {
