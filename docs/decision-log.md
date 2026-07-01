@@ -333,6 +333,58 @@ judges and future agents). Applying migration 0002 without explicit approval
 (rejected -- schema changes to production require Project Owner decision).
 Decided by: Project Owner
 
+**(Superseded by the Day 1–6 final closure entry below. Historical context preserved.)**
+
+## [2026-06-30T23:59:00-06:00] — Day 1–6 final closure: code complete, docs synchronized
+
+Decision: Close Day 1–6 implementation and synchronize all project documentation
+to reflect the actual deployed state.
+
+Executor: Kiro
+Reviewer/audit source: Codex
+Branch: docs/day1-6-final-sync
+Related PRs: #48 (Day 1–6 final closure implementation), #49 (promotion to main),
+earlier PRs #41–#47 (incremental Day 5–6 implementation)
+
+Deployed version: 95673ab7-5fa2-4188-a488-216d614c99f5
+
+Summary of what was completed and deployed:
+- Sighting photo upload (R2-backed, owner-only access)
+- Public `/c/:publicId` durable rate limiting (D1-backed)
+- Sighting submit rate limiting (D1-backed)
+- R2 cat profile photo upload and display
+- HMAC-SHA256 reporter IP hashing with SIGHTING_IP_HMAC_SECRET
+- Magic-byte/content validation for image uploads
+- MIME allowlist and size limit enforcement
+- Real QR SVG/image generation
+- Expanded cat profile fields (migration 0002 applied)
+- Production deploy completed
+
+Tests: 142 passing (worker + shared-validation)
+Production smoke: root 200, dashboard 200, photo404 404, sighting-photo401 401
+
+What is NOT started:
+- Day 7 Vet Visit mode (branch created, no implementation)
+- Digital cartilla
+- WhatsApp card
+- Recovery Board
+- Optional modes (Travel, Adoption, Memorial, Celebration)
+- V2 items
+
+Docs synchronized in this closure:
+- README updated to actual Day 1–6 state
+- demo-flow updated with built photo/QR steps
+- security-model updated (stale "planned" claims removed)
+- sitemap implementation status clarified
+- Codex checkpoint audit artifact added
+
+Reason: Codex audit identified gaps (sighting photo not built, docs stale,
+public lookup limiter missing). PR #48 remediated code gaps; this docs PR
+synchronizes documentation to match the deployed truth.
+Alternatives considered: Starting Day 7 with stale docs (rejected — misleading
+for judges and violates Constitution Section 19 documentation requirements).
+Decided by: Project Owner
+
 ---
 
 ## Open items (not yet decided)
