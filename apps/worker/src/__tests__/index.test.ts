@@ -188,3 +188,90 @@ describe("dashboard sub-routes (unauthenticated)", () => {
     expect(res.headers.get("Location")).toContain("/dashboard");
   });
 });
+
+describe("Vet Visit route wiring", () => {
+  it("POST /api/cats/:publicId/vet-visit/start routes to the owner-gated handler", async () => {
+    const res = await worker.fetch(
+      new Request("https://example.com/api/cats/MP-MX-0000-0000/vet-visit/start", { method: "POST" }),
+      fakeEnv,
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it("POST /api/cats/:publicId/vet-visit/cancel routes to the owner-gated handler", async () => {
+    const res = await worker.fetch(
+      new Request("https://example.com/api/cats/MP-MX-0000-0000/vet-visit/cancel", { method: "POST" }),
+      fakeEnv,
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it("POST /api/cats/:publicId/vet-visit/finish validates malformed public IDs before D1 access", async () => {
+    const res = await worker.fetch(
+      new Request("https://example.com/api/cats/bad-id/vet-visit/finish", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "clinic_name=Test",
+      }),
+      fakeEnv,
+    );
+    expect(res.status).toBe(404);
+  });
+
+  it("wrong methods for Vet Visit API routes return 404", async () => {
+    const start = await worker.fetch(
+      new Request("https://example.com/api/cats/MP-MX-0000-0000/vet-visit/start"),
+      fakeEnv,
+    );
+    const cancel = await worker.fetch(
+      new Request("https://example.com/api/cats/MP-MX-0000-0000/vet-visit/cancel"),
+      fakeEnv,
+    );
+    const finish = await worker.fetch(
+      new Request("https://example.com/api/cats/MP-MX-0000-0000/vet-visit/finish"),
+      fakeEnv,
+    );
+    expect(start.status).toBe(404);
+    expect(cancel.status).toBe(404);
+    expect(finish.status).toBe(404);
+  });
+});
+
+describe("media route wiring", () => {
+  it("POST /api/cats/:publicId/photo routes to auth-gated upload handler", async () => {
+    const res = await worker.fetch(
+      new Request("https://example.com/api/cats/MP-MX-0000-0000/photo", { method: "POST" }),
+      fakeEnv,
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it("GET /api/cats/:publicId/sightings/:createdAt/photo routes to auth-gated private photo handler", async () => {
+    const res = await worker.fetch(
+      new Request("https://example.com/api/cats/MP-MX-0000-0000/sightings/2026-06-30T00%3A00%3A00Z/photo"),
+      fakeEnv,
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it("public numeric cat paths and raw object-key-like routes are not wired", async () => {
+    const numeric = await worker.fetch(new Request("https://example.com/cat/1"), fakeEnv);
+    const rawR2Key = await worker.fetch(new Request("https://example.com/media/cats/MP-MX-0000-0000/secret-key.jpg"), fakeEnv);
+    expect(numeric.status).toBe(404);
+    expect(rawR2Key.status).toBe(404);
+  });
+});
+
+describe("scope guard route wiring", () => {
+  it.each([
+    "/cartilla",
+    "/whatsapp",
+    "/recovery-board",
+    "/travel",
+    "/adoption",
+    "/memorial",
+  ])("%s is not wired as an implemented app route", async (path) => {
+    const res = await worker.fetch(new Request(`https://example.com${path}`), fakeEnv);
+    expect(res.status).toBe(404);
+  });
+});

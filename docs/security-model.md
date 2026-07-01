@@ -81,7 +81,8 @@ changes the mode. The QR never changes.
 - Sighting photos are owner-only — accessible only through authenticated
   dashboard routes. Raw R2 keys are never exposed.
 - Temporary vet access is reachable only while the cat is in Vet Visit mode.
-  (Vet Visit is not yet implemented.)
+  Vet Visit mode is implemented with purely mode-gated access (no vet token).
+  The session expires after 24 hours or on Save & Finish Visit.
 
 ---
 
@@ -124,10 +125,15 @@ changes the mode. The QR never changes.
 ## 5. Known Beta limitations (disclosed)
 
 - **Vet accounts:** a vet does not need an account in Beta. Anyone who scans
-  the QR while it is in Vet Visit mode could submit a record. This is a known
-  Beta limitation, mitigated by the temporary auto-expiring session. The risk
-  is intentionally accepted for Beta 1.4 by the project owner and is recorded
-  in `docs/decision-log.md`. (Vet Visit mode is not yet implemented.)
+  the QR while it is in Vet Visit mode can submit a vet visit record. This is a known
+  Beta limitation, mitigated by:
+  - Owner-controlled activation (only the authenticated owner can start Vet Visit)
+  - 24-hour automatic session expiry
+  - Save & Finish Visit immediately ends the session and returns to Active Profile
+  - No existing medical/cartilla history is shown on the public Vet Visit page
+  - No public exposure of cartilla, medication, or vaccine data
+  The risk is intentionally accepted for Beta 1.4 by the project owner and is recorded
+  in `docs/decision-log.md`. (Vet Visit mode is now implemented.)
 
 ---
 

@@ -66,7 +66,7 @@ MishiPass
 
 ## Implementation status
 
-### Implemented (Day 1–6 complete)
+### Implemented (Day 1–7 complete)
 
 - Worker root page (landing)
 - Owner dashboard home
@@ -75,6 +75,7 @@ MishiPass
 - QR card with real QR SVG/image
 - Active Profile public view
 - Missing Alert public view with mode switching
+- Vet Visit mode (owner activation, public form, Save & Finish, 24h expiry)
 - Sighting Report Form (text + optional photo)
 - Sighting Reports inbox (owner-only)
 - Cat profile photo upload and display (R2-backed)
@@ -86,8 +87,6 @@ MishiPass
 
 ### Planned (not yet built)
 
-- Vet Visit mode and Temporary Vet Access
-- Save & Finish Visit auto-return
 - Digital Cartilla (vet visits, vaccines, medications)
 - WhatsApp Card Generator
 - Recovery Board Publishing
@@ -107,4 +106,4 @@ MishiPass
 - **Owner Dashboard** requires an authenticated owner session.
 - **Temporary Vet Access** is reachable only while the cat is in Vet Visit mode;
   the session is temporary and auto-expires (24h from activation or immediately on
-  Save & Finish Visit, whichever comes first). Not yet implemented.
+  Save & Finish Visit, whichever comes first). Implemented.

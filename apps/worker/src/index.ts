@@ -7,6 +7,7 @@ import { handleGetContactSettings, handleUpsertContactSettings } from "./routes/
 import { handleSwitchToActive, handleSwitchToMissing } from "./routes/missingAlerts.js";
 import { handleSightingForm, handleSightingSubmit, handleListSightingsForOwner } from "./routes/sightingReports.js";
 import { handleCatPhotoUpload, handleCatPhotoServe, handleSightingPhotoServe } from "./routes/photos.js";
+import { handleStartVetVisit, handleCancelVetVisit, handleVetVisitFinish } from "./routes/vetVisit.js";
 import { handleRoot } from "./pages/root.js";
 import { handleDashboard } from "./pages/dashboard.js";
 import { handleCatDetail } from "./pages/catDetail.js";
@@ -36,6 +37,9 @@ const SIGHTING_PHOTO_SERVE = /^\/api\/cats\/([^/]+)\/sightings\/([^/]+)\/photo$/
 const DASHBOARD_CAT_DETAIL = /^\/dashboard\/cats\/([^/]+)$/;
 const DASHBOARD_CAT_QR = /^\/dashboard\/cats\/([^/]+)\/qr$/;
 const DASHBOARD_CAT_SIGHTINGS = /^\/dashboard\/cats\/([^/]+)\/sightings$/;
+const VET_VISIT_START = /^\/api\/cats\/([^/]+)\/vet-visit\/start$/;
+const VET_VISIT_CANCEL = /^\/api\/cats\/([^/]+)\/vet-visit\/cancel$/;
+const VET_VISIT_FINISH = /^\/api\/cats\/([^/]+)\/vet-visit\/finish$/;
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -121,6 +125,25 @@ export default {
     if (method === "POST" && pathname === "/api/cats") {
       const ctx = await resolveSession(request, env.DB);
       return handleCreateCat(request, env.DB, env.PUBLIC_BASE_URL, ctx);
+    }
+
+    // -- Vet Visit API --
+
+    const vetStartMatch = VET_VISIT_START.exec(pathname);
+    if (method === "POST" && vetStartMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleStartVetVisit(vetStartMatch[1]!, env.DB, ctx);
+    }
+
+    const vetCancelMatch = VET_VISIT_CANCEL.exec(pathname);
+    if (method === "POST" && vetCancelMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleCancelVetVisit(vetCancelMatch[1]!, env.DB, ctx);
+    }
+
+    const vetFinishMatch = VET_VISIT_FINISH.exec(pathname);
+    if (method === "POST" && vetFinishMatch) {
+      return handleVetVisitFinish(vetFinishMatch[1]!, request, env.DB);
     }
 
     // -- Photo upload/serve --
