@@ -1,11 +1,11 @@
 import { validateId } from "@mishipass/shared-validation";
-import { getCatForOwner, getCatPublicProfile, updateCatPhoto } from "../db/index.js";
+import { getCatForOwner, getCatPublicProfile, listSightingReportsForOwner, updateCatPhoto } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
 
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_CAT_PHOTO_SIZE = 2 * 1024 * 1024; // 2 MB
 
-function checkMagicBytes(header: Uint8Array, mimeType: string): boolean {
+export function checkMagicBytes(header: Uint8Array, mimeType: string): boolean {
   if (header.length < 4) return false;
 
   if (mimeType === "image/jpeg") {
@@ -126,6 +126,47 @@ export async function handleCatPhotoServe(
     headers: {
       "Content-Type": object.httpMetadata?.contentType || "application/octet-stream",
       "Cache-Control": "public, max-age=86400",
+      "X-Content-Type-Options": "nosniff",
+    },
+  });
+}
+
+
+/**
+ * GET /api/cats/:publicId/sightings/:createdAt/photo
+ * Owner-only sighting photo serving. Sighting photos are private to the owner.
+ */
+export async function handleSightingPhotoServe(
+  publicId: string,
+  createdAt: string,
+  db: D1Database,
+  photos: R2Bucket,
+  ctx: RequestContext,
+): Promise<Response> {
+  if (ctx.ownerId === null) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  if (!validateId(publicId)) {
+    return new Response("Not Found", { status: 404 });
+  }
+
+  // Get reports for this owner's cat and find matching one
+  const reports = await listSightingReportsForOwner(db, publicId, ctx.ownerId);
+  const report = reports.find(r => r.created_at === createdAt);
+  if (!report || !report.photo_r2_key) {
+    return new Response("Not Found", { status: 404 });
+  }
+
+  const object = await photos.get(report.photo_r2_key);
+  if (!object) {
+    return new Response("Not Found", { status: 404 });
+  }
+
+  return new Response(object.body, {
+    headers: {
+      "Content-Type": object.httpMetadata?.contentType || "application/octet-stream",
+      "Cache-Control": "private, max-age=3600",
       "X-Content-Type-Options": "nosniff",
     },
   });
