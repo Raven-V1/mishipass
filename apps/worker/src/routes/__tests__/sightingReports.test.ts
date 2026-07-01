@@ -174,6 +174,7 @@ describe("handleSightingSubmit", () => {
       TEST_CAT_ID,
       jsonRequest({ city: "CDMX", area: "Roma Norte", message: "Seen near park" }),
       fakeDb,
+      "test-secret",
     );
     expect(res.status).toBe(200);
     const html = await res.text();
@@ -183,7 +184,7 @@ describe("handleSightingSubmit", () => {
       catPublicId: TEST_CAT_ID,
       message: "Seen near park",
       location_text: "CDMX, Roma Norte",
-      reporter_ip_hash: "hashed_1.2.3.4",
+      reporter_ip_hash: "hmac_1.2.3.4",
     });
   });
 
@@ -202,6 +203,7 @@ describe("handleSightingSubmit", () => {
       TEST_CAT_ID,
       formRequest({ city: "Puebla" }),
       fakeDb,
+      "test-secret",
     );
     expect(res.status).toBe(200);
     const html = await res.text();
@@ -210,7 +212,7 @@ describe("handleSightingSubmit", () => {
       catPublicId: TEST_CAT_ID,
       message: null,
       location_text: "Puebla",
-      reporter_ip_hash: "hashed_1.2.3.4",
+      reporter_ip_hash: "hmac_1.2.3.4",
     });
   });
 
@@ -228,6 +230,7 @@ describe("handleSightingSubmit", () => {
       TEST_CAT_ID,
       jsonRequest({ city: "CDMX" }),
       fakeDb,
+      "test-secret",
     );
     expect(res.status).toBe(400);
     const json = await res.json() as { error: string };
@@ -248,6 +251,7 @@ describe("handleSightingSubmit", () => {
       TEST_CAT_ID,
       jsonRequest({ area: "Roma" }),
       fakeDb,
+      "test-secret",
     );
     expect(res.status).toBe(400);
     const json = await res.json() as { error: string };
@@ -269,6 +273,7 @@ describe("handleSightingSubmit", () => {
       TEST_CAT_ID,
       jsonRequest({ city: longCity }),
       fakeDb,
+      "test-secret",
     );
     expect(res.status).toBe(400);
     const json = await res.json() as { error: string };
@@ -283,6 +288,7 @@ describe("handleSightingSubmit", () => {
       TEST_CAT_ID,
       jsonRequest({ city: "CDMX" }),
       fakeDb,
+      "test-secret",
     );
     expect(res.status).toBe(404);
   });
@@ -294,9 +300,30 @@ describe("handleSightingSubmit", () => {
       "bad-id",
       jsonRequest({ city: "CDMX" }),
       fakeDb,
+      "test-secret",
     );
     expect(res.status).toBe(404);
     expect(mockGetCatPublicProfile).not.toHaveBeenCalled();
+  });
+
+  it("returns 503 when HMAC secret is missing", async () => {
+    mockValidateId.mockReturnValue(true);
+    mockGetCatPublicProfile.mockResolvedValue({
+      public_id: TEST_CAT_ID,
+      name: "Mishi",
+      country_code: "MX",
+      photo_r2_key: null,
+      current_mode: "missing",
+    });
+
+    const res = await handleSightingSubmit(
+      TEST_CAT_ID,
+      jsonRequest({ city: "CDMX" }),
+      fakeDb,
+    );
+    expect(res.status).toBe(503);
+    const json = await res.json() as { error: string };
+    expect(json.error).toBe("Service configuration error");
   });
 });
 
@@ -325,7 +352,7 @@ describe("handleSightingSubmit — rate limiting", () => {
       },
       body: JSON.stringify({ city: "CDMX" }),
     });
-    const res = await handleSightingSubmit(TEST_CAT_ID, req, fakeDb);
+    const res = await handleSightingSubmit(TEST_CAT_ID, req, fakeDb, "test-secret");
     expect(res.status).toBe(429);
     const json = await res.json() as { error: string };
     expect(json.error).toContain("Too many reports");
