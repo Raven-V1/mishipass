@@ -26,7 +26,6 @@ export async function handleQrPage(
   const safeName = escapeHtml(cat.name);
   const safeId = escapeHtml(publicId);
   const publicUrl = `${publicBaseUrl}/c/${publicId}`;
-  const safeUrl = escapeHtml(publicUrl);
   const qrSvg = generateQrSvg(publicUrl);
 
   const html = `<!DOCTYPE html>
@@ -38,19 +37,21 @@ export async function handleQrPage(
   <style>
     body{font-family:system-ui,-apple-system,sans-serif;max-width:480px;margin:2rem auto;padding:0 1rem;color:#111;line-height:1.5}
     .nav{margin-bottom:1.5rem;font-size:0.875rem}
-    .card{border:2px solid #111;border-radius:12px;padding:2rem;text-align:center;margin:1rem 0}
-    .card h2{margin:0 0 0.5rem 0;font-size:1.25rem}
-    .qr-image{margin:1.5rem auto;display:block}
-    .qr-image svg{display:block;margin:0 auto}
-    .card .id{font-size:1.25rem;font-family:monospace;font-weight:bold;letter-spacing:1px;margin:0.75rem 0 0.25rem}
-    .card .url{font-size:0.75rem;word-break:break-all;color:#555;margin:0.25rem 0}
-    .print-btn{display:inline-block;margin-top:1rem;padding:0.75rem 1.5rem;background:#111;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:1rem}
+    .card{border:2px solid #111;border-radius:8px;padding:1rem;text-align:center;margin:1rem 0;max-width:200px;margin-left:auto;margin-right:auto}
+    .card h2{margin:0 0 0.25rem 0;font-size:0.9rem}
+    .qr-image{margin:0.5rem auto;display:block}
+    .qr-image svg{display:block;margin:0 auto;width:120px;height:120px}
+    .card .id{font-size:0.75rem;font-family:monospace;font-weight:bold;letter-spacing:0.5px;margin:0.25rem 0 0}
+    .print-btn{display:inline-block;margin-top:1rem;padding:0.5rem 1.25rem;background:#111;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:0.875rem}
+    .print-note{font-size:0.75rem;color:#888;margin-top:0.5rem}
     @media print {
-      .nav,.print-btn{display:none}
-      body{margin:0;padding:2rem}
-      .card{border-width:3px;padding:3rem}
-      .card .id{font-size:1.5rem}
-      .qr-image svg{width:250px;height:250px}
+      .nav,.print-btn,.print-note{display:none}
+      body{margin:0;padding:0}
+      .card{border:1.5px solid #000;border-radius:4px;padding:3mm;max-width:42mm;width:42mm;margin:0 auto}
+      .card h2{font-size:7pt;margin:0 0 1mm 0}
+      .qr-image svg{width:30mm;height:30mm}
+      .card .id{font-size:6pt;margin:1mm 0 0}
+      .card .url{display:none}
     }
   </style>
 </head>
@@ -60,9 +61,10 @@ export async function handleQrPage(
     <h2>${safeName}</h2>
     <div class="qr-image">${qrSvg}</div>
     <div class="id">${safeId}</div>
-    <div class="url">${safeUrl}</div>
+    <div class="url" style="font-size:0.6rem;color:#999;word-break:break-all;margin-top:2px">${escapeHtml(publicUrl)}</div>
   </div>
-  <button class="print-btn" onclick="window.print()">Print QR Card</button>
+  <button class="print-btn" onclick="window.print()">Print Collar Tag</button>
+  <p class="print-note">Prints at ~42mm width — fits a standard cat collar tag.</p>
 </body>
 </html>`;
 
