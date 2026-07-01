@@ -5,6 +5,25 @@ import type { RequestContext } from "../middleware/session.js";
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_CAT_PHOTO_SIZE = 2 * 1024 * 1024; // 2 MB
 
+function checkMagicBytes(header: Uint8Array, mimeType: string): boolean {
+  if (header.length < 4) return false;
+
+  if (mimeType === "image/jpeg") {
+    return header[0] === 0xFF && header[1] === 0xD8 && header[2] === 0xFF;
+  }
+  if (mimeType === "image/png") {
+    return header.length >= 8
+      && header[0] === 0x89 && header[1] === 0x50 && header[2] === 0x4E && header[3] === 0x47
+      && header[4] === 0x0D && header[5] === 0x0A && header[6] === 0x1A && header[7] === 0x0A;
+  }
+  if (mimeType === "image/webp") {
+    return header.length >= 12
+      && header[0] === 0x52 && header[1] === 0x49 && header[2] === 0x46 && header[3] === 0x46
+      && header[8] === 0x57 && header[9] === 0x45 && header[10] === 0x42 && header[11] === 0x50;
+  }
+  return false;
+}
+
 /**
  * POST /api/cats/:publicId/photo
  * Owner-only cat profile photo upload. Accepts multipart/form-data with field "photo".
@@ -53,14 +72,23 @@ export async function handleCatPhotoUpload(
     return Response.json({ error: "File too large. Maximum 2 MB" }, { status: 400 });
   }
 
+  // Read file content once for both validation and upload
+  const fileBuffer = await photoFile.arrayBuffer();
+  const headerView = new Uint8Array(fileBuffer, 0, Math.min(12, fileBuffer.byteLength));
+
+  // Validate file content matches claimed MIME type (magic bytes)
+  if (!checkMagicBytes(headerView, photoFile.type)) {
+    return Response.json({ error: "File content does not match declared type" }, { status: 400 });
+  }
+
   // Generate non-guessable key
   const ext = photoFile.type === "image/jpeg" ? "jpg" : photoFile.type === "image/png" ? "png" : "webp";
   const randomBytes = crypto.getRandomValues(new Uint8Array(16));
   const hex = Array.from(randomBytes).map(b => b.toString(16).padStart(2, "0")).join("");
   const objectKey = `cats/${publicId}/${hex}.${ext}`;
 
-  // Upload to R2
-  await photos.put(objectKey, photoFile.stream(), {
+  // Upload to R2 from the buffer
+  await photos.put(objectKey, fileBuffer, {
     httpMetadata: { contentType: photoFile.type },
   });
 
