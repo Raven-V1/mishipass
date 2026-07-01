@@ -64,6 +64,41 @@ MishiPass
     └── Vet Session Expired Page
 ```
 
+## Implementation status
+
+### Implemented (Day 1–6 complete)
+
+- Worker root page (landing)
+- Owner dashboard home
+- Register / login / logout
+- Cat registration and edit (including expanded profile fields)
+- QR card with real QR SVG/image
+- Active Profile public view
+- Missing Alert public view with mode switching
+- Sighting Report Form (text + optional photo)
+- Sighting Reports inbox (owner-only)
+- Cat profile photo upload and display (R2-backed)
+- Sighting photo owner-only display (R2-backed)
+- Privacy & Contact Settings
+- D1-backed rate limiting (sighting submit + public cat lookup)
+- HMAC-SHA256 reporter IP hashing
+- MIME/size/magic-byte image validation
+
+### Planned (not yet built)
+
+- Vet Visit mode and Temporary Vet Access
+- Save & Finish Visit auto-return
+- Digital Cartilla (vet visits, vaccines, medications)
+- WhatsApp Card Generator
+- Recovery Board Publishing
+- Community Recovery Board with filters
+- Optional modes:
+  - Travel
+  - Adoption
+  - Memorial
+  - Celebration
+  - Public Preview
+
 ## Access boundaries (from the security model)
 
 - **Public Website** surfaces show only mode-appropriate, non-sensitive
@@ -72,4 +107,4 @@ MishiPass
 - **Owner Dashboard** requires an authenticated owner session.
 - **Temporary Vet Access** is reachable only while the cat is in Vet Visit mode;
   the session is temporary and auto-expires (24h from activation or immediately on
-  Save & Finish Visit, whichever comes first).
+  Save & Finish Visit, whichever comes first). Not yet implemented.
