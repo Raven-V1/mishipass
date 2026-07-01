@@ -7,7 +7,7 @@ import {
 import type { RequestContext } from "../middleware/session.js";
 import { checkRateLimit } from "../middleware/rateLimit.js";
 import { checkDurableRateLimit } from "../middleware/durableRateLimit.js";
-import { hmacSha256Hex, sha256Hex } from "../utils/crypto.js";
+import { hmacSha256Hex } from "../utils/crypto.js";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -83,7 +83,12 @@ export async function handleSightingSubmit(
 
   // Rate limiting: 5 submissions per 10 minutes per IP+publicId
   const ip = request.headers.get("CF-Connecting-IP") || "unknown";
-  const rateLimitKey = `sighting:${ip}:${publicId}`;
+  const secret = hmacSecret || "";
+  if (!secret) {
+    return Response.json({ error: "Service configuration error" }, { status: 503 });
+  }
+  const hashedIp = await hmacSha256Hex(ip, secret);
+  const rateLimitKey = `sighting:${hashedIp.slice(0, 16)}:${publicId}`;
 
   // Use durable D1-backed rate limiter (survives isolate restarts)
   const durableAllowed = await checkDurableRateLimit(db, rateLimitKey, 5, 10);
@@ -181,11 +186,8 @@ export async function handleSightingSubmit(
   if (reporterContact) parts.push("Contact: " + reporterContact);
   const combinedMessage = parts.join("\n") || null;
 
-  // Hash IP using HMAC-SHA256 (falls back to plain SHA-256 if secret is missing)
-  const secret = hmacSecret || "";
-  const reporterIpHash = secret
-    ? await hmacSha256Hex(ip, secret)
-    : await sha256Hex(ip);
+  // Hash IP using HMAC-SHA256 (secret presence already verified above)
+  const reporterIpHash = await hmacSha256Hex(ip, secret);
 
   await insertSightingReport(db, {
     catPublicId: publicId,
