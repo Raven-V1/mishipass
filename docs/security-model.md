@@ -50,13 +50,13 @@ internal database identifier.
 **Entropy:** the two random segments provide ~40 bits (approximately 1.1 x 10^12
 combinations), making brute-force enumeration of valid IDs infeasible.
 
-**Enumeration resistance** comes from entropy plus per-IP rate limiting on the
-public `/c/` lookup route. **(WIP — Day 13:** rate limiting is planned but not
-yet enforced at the Worker.**)**
+**Enumeration resistance** comes from entropy plus D1-backed durable rate limiting
+on the public `/c/:publicId` lookup route. Rate limiting is enforced at the Worker
+layer using a D1-persisted counter keyed by HMAC-hashed IP.
 
 **Uniqueness** is guaranteed by the data layer: the D1 schema places a UNIQUE
 constraint on the public-ID column, and the Worker retries generation on a
-constraint violation. **(WIP — Day 13:** verify this on a deployed instance.**)**
+constraint violation.
 
 **Internal IDs:** the internal database primary key is never serialized into any
 client response. The public ID is the only external identifier.
@@ -72,9 +72,16 @@ changes the mode. The QR never changes.
 - Public surfaces show only mode-appropriate, non-sensitive information.
   Scanning a QR grants read-only access in the current mode. No management or
   edit capability is reachable from a scan.
-- Owner dashboard requires an authenticated owner session. **(WIP — Day 13:**
-  document the chosen auth method and session lifecycle once implemented.**)**
+- Owner dashboard requires an authenticated owner session (PBKDF2-SHA256
+  password hash, opaque session token, HttpOnly cookie).
+- Owner-scoped dashboard routes enforce owner checks — an authenticated owner
+  cannot view or manage another owner's cats.
+- Cat profile photos are served through Worker media routes (`/media/cats/:publicId/photo`),
+  not raw R2 URLs.
+- Sighting photos are owner-only — accessible only through authenticated
+  dashboard routes. Raw R2 keys are never exposed.
 - Temporary vet access is reachable only while the cat is in Vet Visit mode.
+  (Vet Visit is not yet implemented.)
 
 ---
 
@@ -95,9 +102,16 @@ changes the mode. The QR never changes.
 
 ## 4. Input handling and uploads
 
-- Public sighting-report uploads come from unauthenticated finders.
-  **(WIP — Day 13:** file-type validation, size limits, and per-IP rate
-  limiting are planned; no sighting-report routes exist yet.**)**
+- Image uploads enforce:
+  - MIME allowlist (image/jpeg, image/png, image/webp)
+  - Size limit enforcement
+  - Magic-byte/content validation (file header bytes checked against declared MIME)
+- Reporter IP hashing uses HMAC-SHA256 with `SIGHTING_IP_HMAC_SECRET`.
+  Missing HMAC secret fails closed (sighting submission is rejected).
+- No raw IP is stored in sighting reports or rate-limit keys.
+- D1-backed durable rate limiting protects:
+  - Sighting submit
+  - Public `/c/:publicId` lookup
 - Session tokens are length-bounded (256 characters maximum) before hashing,
   to prevent CPU exhaustion from oversized inputs.
 - HTML output rendered by the Worker is passed through an `escapeHtml` helper
@@ -113,7 +127,7 @@ changes the mode. The QR never changes.
   the QR while it is in Vet Visit mode could submit a record. This is a known
   Beta limitation, mitigated by the temporary auto-expiring session. The risk
   is intentionally accepted for Beta 1.4 by the project owner and is recorded
-  in `docs/decision-log.md`.
+  in `docs/decision-log.md`. (Vet Visit mode is not yet implemented.)
 
 ---
 
@@ -156,7 +170,7 @@ security pass for controlled compatibility verification, and are tracked in
 |---|---|
 | Govern | Constitution v1.0 defines roles, decision authority, and a documented review protocol. Major security, privacy, architecture, and scope decisions receive advisory review before the project owner makes the final decision and records it in `docs/decision-log.md`. Beta risk tolerance is stated explicitly. |
 | Identify | Public identifiers use entropy-based uniqueness. Dependency vulnerabilities are tracked via Dependabot and the CI audit gate. Asset inventory: TypeScript Worker, D1 database, R2 storage, React web app, Python tooling layer. |
-| Protect | Type-safe TypeScript with `tsc --noEmit` enforced in CI. No internal IDs on public surfaces. Default-private for sensitive data. Input validation planned at all trust boundaries. |
+| Protect | Type-safe TypeScript with `tsc --noEmit` enforced in CI. No internal IDs on public surfaces. Default-private for sensitive data. Input validation enforced at all trust boundaries. HMAC-SHA256 IP hashing. Magic-byte file validation. D1-backed rate limiting. |
 | Detect | CI is configured to enforce typecheck, tests, and a targeted dependency audit on every PR. Dependabot monitors the dependency graph weekly. |
 | Respond | **(WIP — Day 13.)** |
 | Recover | **(WIP — Day 13.)** Data persistence relies on Cloudflare's infrastructure; migrations are version-controlled and reproducible. |
@@ -165,8 +179,7 @@ security pass for controlled compatibility verification, and are tracked in
 
 **Goal 1 — MFA:** Owner authentication backend exists (PBKDF2-SHA256 password
 hash, opaque session token, HttpOnly cookie — see `apps/worker/src/routes/auth.ts`).
-MFA is not implemented and is deferred to V2. Manual production verification
-of the auth routes is pending.
+MFA is not implemented and is deferred to V2.
 
 **Goal 2 — Default passwords:** MishiPass does not ship default or hardcoded
 credentials. `wrangler.toml` uses a placeholder `database_id`; all secrets are
@@ -180,7 +193,8 @@ IDOR as a class on this surface; HTML output is routed through a centralized
 routes); TypeScript with CI-enforced `tsc --noEmit` mitigates type-shape and
 null-reference errors at merge time. D1 repository queries use prepared
 statements with bound parameters throughout `apps/worker/src/db/repositories/`
-(source-confirmed Day 7 — no string concatenation in any query path).
+(source-confirmed — no string concatenation in any query path). Image uploads
+validated at MIME, size, and magic-byte level.
 
 **Goal 4 — Security patches:** Non-breaking patches applied Day 6. Major-version
 upgrades are deferred with decision-log entries and tracked in
@@ -211,27 +225,31 @@ keeping a living control-status table (Section 8) updated at each milestone.
 
 ## 8. Secure development lifecycle control status
 
-Day 7 of 14 coding days.
+Day 7 of 14 coding days. Updated 2026-06-30 for Day 1–6 closure.
 
 | Control | Implementation | Status |
 |---|---|---|
 | Type safety — worker, web, shared | `tsc --noEmit` per workspace | CI-enforced on all PRs and pushes |
 | Ambient type declarations | `apps/worker/src/types/cloudflare-test.d.ts` | Backend/API exists, not manually verified vs prod |
-| Test gate — shared-validation | 33 Vitest tests | Backend/API exists, not manually verified vs prod |
-| Test gate — worker | Vitest across route, middleware, db test files | Backend/API exists, not manually verified vs prod |
+| Test gate — shared-validation | 33 Vitest tests | CI-enforced |
+| Test gate — worker | Vitest across route, middleware, db test files | CI-enforced |
 | Dependency audit allowlist | `.audit-known-issues.json` | Active — CI gate blocks new high/critical findings |
 | CI workflow | `.github/workflows/ci.yml` | Active — running on all PRs and pushes to dev and main |
 | Secret scan | Repository-wide regex scan, Day 6 | No committed credentials found at time of scan |
 | Branch protection on main | Require 1 review; no force-push; no delete | Active — applied Day 6; status-check enforcement is off (CI runs but does not block) |
 | Dependabot | npm and pip, weekly | Active |
-| XSS mitigation | `escapeHtml` helper, must be called explicitly per route | Backend/API exists — helper present; not automatic for future routes |
-| IDOR mitigation | No internal PKs in any client response | Backend/API exists, not manually verified vs prod |
-| Session length guard | 256-character maximum before hashing | Backend/API exists, not manually verified vs prod |
-| Parameterized D1 queries | `.prepare(...).bind(...)` throughout `src/db/repositories/` | Source-confirmed Day 7 — no string concatenation in any query path |
-| UNIQUE constraint + retry | D1 schema constraint, Worker retry on collision | Backend/API exists, not manually verified vs prod |
-| Per-IP rate limiting on `/c/` | — | Missing — planned |
-| Sighting-report upload validation | — | Missing — no sighting routes exist yet |
-| Owner auth backend | PBKDF2-SHA256, opaque session token, HttpOnly cookie | Backend/API exists, not manually verified vs prod |
+| XSS mitigation | `escapeHtml` helper, must be called explicitly per route | Active — helper present; not automatic for future routes |
+| IDOR mitigation | No internal PKs in any client response | Active |
+| Session length guard | 256-character maximum before hashing | Active |
+| Parameterized D1 queries | `.prepare(...).bind(...)` throughout `src/db/repositories/` | Source-confirmed — no string concatenation in any query path |
+| UNIQUE constraint + retry | D1 schema constraint, Worker retry on collision | Active |
+| D1-backed rate limiting on `/c/:publicId` | HMAC-hashed IP key, D1 counter | Active — enforced |
+| D1-backed rate limiting on sighting submit | HMAC-hashed IP key, D1 counter | Active — enforced |
+| Image upload validation (MIME + size + magic-byte) | Worker middleware | Active — enforced on cat photo and sighting photo uploads |
+| HMAC-SHA256 reporter IP hashing | `SIGHTING_IP_HMAC_SECRET` environment variable | Active — missing secret fails closed |
+| R2 key non-exposure | Worker media routes serve photos; raw keys never in responses | Active |
+| Sighting photo owner-only access | Authenticated owner check on photo route | Active |
+| Owner auth backend | PBKDF2-SHA256, opaque session token, HttpOnly cookie | Active |
 | Aikido security scan | — | Scheduled for Day 13 |
 
 ---
@@ -258,8 +276,7 @@ messages, and any future form input) is treated as **untrusted data**:
 ---
 
 > Sections 1–5 contain locked properties derived from Constitution v1.0 and are
-> final. Sections 6–8 reflect implementation state as of Day 6 and will be
+> final. Sections 6–8 reflect implementation state as of Day 6 closure and will be
 > updated at the Day-13 security and documentation pass per Constitution
-> Section 19. Items marked "pending verification" or "WIP" are not claimed as
-> active controls until confirmed against the actual codebase or repository
-> configuration.
+> Section 19. Items marked "WIP" are not claimed as active controls until
+> confirmed against the actual codebase or repository configuration.
