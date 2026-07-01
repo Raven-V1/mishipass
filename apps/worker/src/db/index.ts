@@ -48,6 +48,7 @@ export {
   getCatPublicProfile,
   insertCat,
   listCatsForOwner,
+  softDeleteCat,
   updateCatMode,
   updateCatPhoto,
 } from "./repositories/cats.js";
