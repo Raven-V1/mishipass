@@ -151,7 +151,7 @@ export async function handlePublicProfile(
   const effectiveContact = contact ?? { contact_mode: "relay" as const, public_phone: null };
 
   return new Response(
-    renderActiveProfile(cat.name, cat.country_code, cat.photo_r2_key, effectiveContact, {
+    renderActiveProfile(publicId, cat.name, cat.country_code, cat.photo_r2_key, effectiveContact, {
       sex: cat.sex,
       color_markings: cat.color_markings,
       breed_mix: cat.breed_mix,
@@ -243,6 +243,7 @@ function renderMissingProfile(
 }
 
 function renderActiveProfile(
+  publicId: string,
   name: string,
   countryCode: string,
   photoR2Key: string | null,
@@ -253,8 +254,8 @@ function renderActiveProfile(
   const safeCountry = escapeHtml(countryCode);
 
   const photoSection = photoR2Key
-    ? `<div class="photo"><img src="/photos/${escapeHtml(photoR2Key)}" alt="${safeName}" /></div>`
-    : `<div class="photo-placeholder" aria-label="No photo yet">🐱</div>`;
+    ? `<div class="photo"><img src="/media/cats/${escapeHtml(publicId)}/photo" alt="${safeName}" /></div>`
+    : `<div class="photo-placeholder" aria-label="No photo available"></div>`;
 
   let contactSection = "";
   if (contact.contact_mode === "phone" && contact.public_phone) {

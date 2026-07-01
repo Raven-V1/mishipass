@@ -4,6 +4,7 @@ import worker, { type Env } from "../index.js";
 const fakeEnv: Env = {
   DB: {} as D1Database,
   PUBLIC_BASE_URL: "https://mishipass.example.com",
+  PHOTOS: {} as R2Bucket,
 };
 
 const FORBIDDEN_ROOT_TERMS = [
