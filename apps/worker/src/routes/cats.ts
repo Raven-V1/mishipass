@@ -8,6 +8,7 @@ import {
 } from "../db/index.js";
 import type { ContactSettingsPublicView, MissingAlertPublicView } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
+import { renderVetVisitPage } from "./vetVisit.js";
 
 // ── GET /api/cats ───────────────────────────────────────────────────────────
 
@@ -138,6 +139,10 @@ export async function handlePublicProfile(
 
   if (cat.current_mode === "missing") {
     return handlePublicMissingProfile(publicId, cat.name, db);
+  }
+
+  if (cat.current_mode === "vet") {
+    return renderVetVisitPage(publicId, cat.name, cat.country_code, cat.photo_r2_key, db);
   }
 
   if (cat.current_mode !== "active") {
