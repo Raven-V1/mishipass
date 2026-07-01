@@ -117,3 +117,20 @@ describe("ALPHABET coverage vs validateId regex", () => {
     }
   });
 });
+
+describe("malformed public ID hardening", () => {
+  it.each([
+    ["empty", ""],
+    ["lowercase prefix/country", "mp-mx-7X3B-9K21"],
+    ["missing segment", "MP-MX-7X3B"],
+    ["extra segment", "MP-MX-7X3B-9K21-ABCD"],
+    ["unicode lookalike prefix", "МP-MX-7X3B-9K21"],
+    ["unicode lookalike country", "MP-МХ-7X3B-9K21"],
+    ["path traversal", "../MP-MX-7X3B-9K21"],
+    ["encoded slash", "MP-MX-7X3B%2F9K21"],
+    ["embedded slash", "MP-MX-7X3B/9K21"],
+    ["blank-looking whitespace", " MP-MX-7X3B-9K21 "],
+  ])("rejects %s", (_label, value) => {
+    expect(validateId(value)).toBe(false);
+  });
+});
