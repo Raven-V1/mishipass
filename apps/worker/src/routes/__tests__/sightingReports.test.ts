@@ -49,7 +49,12 @@ vi.mock("../../utils/crypto.js", () => ({
   hmacSha256Hex: async (val: string, _secret: string) => "hmac_" + val,
 }));
 
+vi.mock("../photos.js", () => ({
+  checkMagicBytes: () => true,
+}));
+
 const fakeDb = {} as D1Database;
+const fakePhotos = {} as R2Bucket;
 const TEST_CAT_ID = "MP-MX-0000-0001";
 
 beforeEach(() => {
@@ -174,6 +179,7 @@ describe("handleSightingSubmit", () => {
       TEST_CAT_ID,
       jsonRequest({ city: "CDMX", area: "Roma Norte", message: "Seen near park" }),
       fakeDb,
+      fakePhotos,
       "test-secret",
     );
     expect(res.status).toBe(200);
@@ -185,6 +191,7 @@ describe("handleSightingSubmit", () => {
       message: "Seen near park",
       location_text: "CDMX, Roma Norte",
       reporter_ip_hash: "hmac_1.2.3.4",
+      photo_r2_key: null,
     });
   });
 
@@ -203,6 +210,7 @@ describe("handleSightingSubmit", () => {
       TEST_CAT_ID,
       formRequest({ city: "Puebla" }),
       fakeDb,
+      fakePhotos,
       "test-secret",
     );
     expect(res.status).toBe(200);
@@ -213,6 +221,7 @@ describe("handleSightingSubmit", () => {
       message: null,
       location_text: "Puebla",
       reporter_ip_hash: "hmac_1.2.3.4",
+      photo_r2_key: null,
     });
   });
 
@@ -230,6 +239,7 @@ describe("handleSightingSubmit", () => {
       TEST_CAT_ID,
       jsonRequest({ city: "CDMX" }),
       fakeDb,
+      fakePhotos,
       "test-secret",
     );
     expect(res.status).toBe(400);
@@ -251,6 +261,7 @@ describe("handleSightingSubmit", () => {
       TEST_CAT_ID,
       jsonRequest({ area: "Roma" }),
       fakeDb,
+      fakePhotos,
       "test-secret",
     );
     expect(res.status).toBe(400);
@@ -273,6 +284,7 @@ describe("handleSightingSubmit", () => {
       TEST_CAT_ID,
       jsonRequest({ city: longCity }),
       fakeDb,
+      fakePhotos,
       "test-secret",
     );
     expect(res.status).toBe(400);
@@ -288,6 +300,7 @@ describe("handleSightingSubmit", () => {
       TEST_CAT_ID,
       jsonRequest({ city: "CDMX" }),
       fakeDb,
+      fakePhotos,
       "test-secret",
     );
     expect(res.status).toBe(404);
@@ -300,6 +313,7 @@ describe("handleSightingSubmit", () => {
       "bad-id",
       jsonRequest({ city: "CDMX" }),
       fakeDb,
+      fakePhotos,
       "test-secret",
     );
     expect(res.status).toBe(404);
@@ -320,6 +334,7 @@ describe("handleSightingSubmit", () => {
       TEST_CAT_ID,
       jsonRequest({ city: "CDMX" }),
       fakeDb,
+      fakePhotos,
     );
     expect(res.status).toBe(503);
     const json = await res.json() as { error: string };
@@ -352,7 +367,7 @@ describe("handleSightingSubmit — rate limiting", () => {
       },
       body: JSON.stringify({ city: "CDMX" }),
     });
-    const res = await handleSightingSubmit(TEST_CAT_ID, req, fakeDb, "test-secret");
+    const res = await handleSightingSubmit(TEST_CAT_ID, req, fakeDb, fakePhotos, "test-secret");
     expect(res.status).toBe(429);
     const json = await res.json() as { error: string };
     expect(json.error).toContain("Too many reports");
