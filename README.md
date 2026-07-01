@@ -16,6 +16,8 @@ physical tag behaves differently depending on what the cat needs.
 - Printable QR card
 - Active Profile public page
 - Missing Alert mode with mode switching
+- Vet Visit mode with temporary 24-hour session
+- Save & Finish Visit auto-return to Active Profile
 - Public sighting report form with text and optional photo
 - Owner sighting report inbox
 - Owner-only sighting photo viewing
@@ -31,8 +33,6 @@ physical tag behaves differently depending on what the cat needs.
 
 ## Planned (not yet built)
 
-- Vet Visit mode with temporary session
-- Save and Finish Visit auto-return to Active
 - Digital cartilla (vet visits, vaccines, medications as documentation only)
 - Community Recovery Board with city filters
 - WhatsApp-ready missing card and shareable image
