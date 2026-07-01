@@ -165,6 +165,10 @@ function buildDashboardHtml(): string {
               html += '<a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '/qr" class="btn-secondary" style="text-decoration:none;display:inline-block;padding:0.4rem 0.8rem">QR Card</a> ';
               html += '<a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '/sightings" class="btn-secondary" style="text-decoration:none;display:inline-block;padding:0.4rem 0.8rem">Sightings</a>';
               html += '</div>';
+              html += '<form class="photo-upload-form" data-id="' + escHtml(c.publicId) + '" style="margin-top:0.5rem">';
+              html += '<input type="file" accept="image/jpeg,image/png,image/webp" class="photo-file-input" style="font-size:0.8rem" />';
+              html += '<button type="submit" class="btn-secondary" style="font-size:0.75rem">Upload Photo</button>';
+              html += '</form>';
               html += '<div class="cat-actions">';
               html += '<button class="btn-secondary contact-toggle-btn" data-id="' + escHtml(c.publicId) + '">Contact &amp; Privacy</button>';
               html += '<div class="mode-fields hidden" id="contact-panel-' + escHtml(c.publicId) + '">';
@@ -297,6 +301,32 @@ function buildDashboardHtml(): string {
               if (r.ok) { status.textContent = "Saved"; status.style.color = "#060"; }
               else { status.textContent = "Error saving"; status.style.color = "#c00"; }
             }).catch(function() { btn.disabled = false; btn.textContent = "Save contact settings"; status.textContent = "Network error"; status.style.color = "#c00"; });
+          });
+        }
+
+        var photoForms = document.querySelectorAll(".photo-upload-form");
+        for (var i = 0; i < photoForms.length; i++) {
+          photoForms[i].addEventListener("submit", function(e) {
+            e.preventDefault();
+            var form = this;
+            var id = form.getAttribute("data-id");
+            var fileInput = form.querySelector(".photo-file-input");
+            if (!fileInput.files || !fileInput.files[0]) return;
+            var fd = new FormData();
+            fd.append("photo", fileInput.files[0]);
+            var btn = form.querySelector("button");
+            btn.disabled = true;
+            btn.textContent = "Uploading...";
+            fetch("/api/cats/" + encodeURIComponent(id) + "/photo", {
+              method: "POST",
+              credentials: "same-origin",
+              body: fd
+            }).then(function(r) {
+              btn.disabled = false;
+              btn.textContent = "Upload Photo";
+              if (r.ok) { loadCats(); }
+              else { r.text().then(function(t) { alert(t || "Upload failed"); }); }
+            }).catch(function() { btn.disabled = false; btn.textContent = "Upload Photo"; });
           });
         }
       }

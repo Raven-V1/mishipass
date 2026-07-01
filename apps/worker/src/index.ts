@@ -4,6 +4,7 @@ import { handleCreateCat, handleListCats, handlePublicProfile } from "./routes/c
 import { handleGetContactSettings, handleUpsertContactSettings } from "./routes/contactSettings.js";
 import { handleSwitchToActive, handleSwitchToMissing } from "./routes/missingAlerts.js";
 import { handleSightingForm, handleSightingSubmit, handleListSightingsForOwner } from "./routes/sightingReports.js";
+import { handleCatPhotoUpload, handleCatPhotoServe } from "./routes/photos.js";
 import { handleRoot } from "./pages/root.js";
 import { handleDashboard } from "./pages/dashboard.js";
 import { handleCatDetail } from "./pages/catDetail.js";
@@ -16,6 +17,8 @@ export interface Env {
   PUBLIC_BASE_URL: string;
   /** HMAC secret for hashing reporter IPs. Set via wrangler secret. */
   SIGHTING_IP_HMAC_SECRET?: string;
+  /** R2 bucket for cat profile photos and sighting report photos. */
+  PHOTOS: R2Bucket;
 }
 
 // Route patterns
@@ -25,6 +28,8 @@ const SIGHTINGS_API_PATH = /^\/api\/cats\/([^/]+)\/sightings$/;
 const CAT_MISSING_PATH = /^\/api\/cats\/([^/]+)\/missing$/;
 const CAT_ACTIVE_PATH = /^\/api\/cats\/([^/]+)\/active$/;
 const CONTACT_SETTINGS_PATH = /^\/api\/cats\/([^/]+)\/contact$/;
+const CAT_PHOTO_UPLOAD = /^\/api\/cats\/([^/]+)\/photo$/;
+const CAT_PHOTO_SERVE = /^\/media\/cats\/([^/]+)\/photo$/;
 const DASHBOARD_CAT_DETAIL = /^\/dashboard\/cats\/([^/]+)$/;
 const DASHBOARD_CAT_QR = /^\/dashboard\/cats\/([^/]+)\/qr$/;
 const DASHBOARD_CAT_SIGHTINGS = /^\/dashboard\/cats\/([^/]+)\/sightings$/;
@@ -113,6 +118,19 @@ export default {
     if (method === "POST" && pathname === "/api/cats") {
       const ctx = await resolveSession(request, env.DB);
       return handleCreateCat(request, env.DB, env.PUBLIC_BASE_URL, ctx);
+    }
+
+    // -- Photo upload/serve --
+
+    const photoUploadMatch = CAT_PHOTO_UPLOAD.exec(pathname);
+    if (method === "POST" && photoUploadMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleCatPhotoUpload(photoUploadMatch[1]!, request, env.DB, env.PHOTOS, ctx);
+    }
+
+    const photoServeMatch = CAT_PHOTO_SERVE.exec(pathname);
+    if (method === "GET" && photoServeMatch) {
+      return handleCatPhotoServe(photoServeMatch[1]!, env.DB, env.PHOTOS);
     }
 
     // -- Public sighting form --
