@@ -46,11 +46,8 @@ vi.mock("../../middleware/durableRateLimit.js", () => ({
 
 vi.mock("../../utils/crypto.js", () => ({
   sha256Hex: async (val: string) => "hashed_" + val,
-  hmacSha256Hex: async (val: string, _secret: string) => "hmac_" + val,
-}));
-
-vi.mock("../photos.js", () => ({
-  checkMagicBytes: () => true,
+  hmacSha256Hex: async (_val: string, _secret: string) =>
+    "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
 }));
 
 const fakeDb = {} as D1Database;
@@ -190,9 +187,16 @@ describe("handleSightingSubmit", () => {
       catPublicId: TEST_CAT_ID,
       message: "Seen near park",
       location_text: "CDMX, Roma Norte",
-      reporter_ip_hash: "hmac_1.2.3.4",
+      reporter_ip_hash: "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
       photo_r2_key: null,
     });
+    expect(mockCheckDurableRateLimit).toHaveBeenCalledWith(
+      fakeDb,
+      `sighting:abcdef1234567890:${TEST_CAT_ID}`,
+      5,
+      10,
+    );
+    expect(mockCheckDurableRateLimit.mock.calls[0]![1]).not.toContain("1.2.3.4");
   });
 
   it("stores report and returns success for valid form data", async () => {
@@ -220,7 +224,7 @@ describe("handleSightingSubmit", () => {
       catPublicId: TEST_CAT_ID,
       message: null,
       location_text: "Puebla",
-      reporter_ip_hash: "hmac_1.2.3.4",
+      reporter_ip_hash: "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
       photo_r2_key: null,
     });
   });
@@ -339,6 +343,72 @@ describe("handleSightingSubmit", () => {
     expect(res.status).toBe(503);
     const json = await res.json() as { error: string };
     expect(json.error).toBe("Service configuration error");
+    expect(mockCheckDurableRateLimit).not.toHaveBeenCalled();
+  });
+
+  it("rejects multipart sighting photos whose magic bytes do not match declared type", async () => {
+    mockValidateId.mockReturnValue(true);
+    mockGetCatPublicProfile.mockResolvedValue({
+      public_id: TEST_CAT_ID,
+      name: "Mishi",
+      country_code: "MX",
+      photo_r2_key: null,
+      current_mode: "missing",
+    });
+    const formData = new FormData();
+    formData.set("city", "CDMX");
+    formData.set("photo", new File([new Uint8Array([0x25, 0x50, 0x44, 0x46])], "fake.png", { type: "image/png" }));
+    const req = new Request(`https://example.com/c/${TEST_CAT_ID}/sighting`, {
+      method: "POST",
+      headers: { "CF-Connecting-IP": "1.2.3.4" },
+      body: formData,
+    });
+
+    const res = await handleSightingSubmit(TEST_CAT_ID, req, fakeDb, fakePhotos, "test-secret");
+
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "Photo content does not match declared type" });
+    expect(mockInsertSightingReport).not.toHaveBeenCalled();
+  });
+
+  it("uploads valid multipart sighting photos to R2 and stores only the object key", async () => {
+    mockValidateId.mockReturnValue(true);
+    mockGetCatPublicProfile.mockResolvedValue({
+      public_id: TEST_CAT_ID,
+      name: "Mishi",
+      country_code: "MX",
+      photo_r2_key: null,
+      current_mode: "missing",
+    });
+    mockInsertSightingReport.mockResolvedValue(undefined);
+    const photos = {
+      put: vi.fn().mockResolvedValue(undefined),
+    } as unknown as R2Bucket & { put: ReturnType<typeof vi.fn> };
+    const formData = new FormData();
+    formData.set("city", "CDMX");
+    formData.set(
+      "photo",
+      new File([new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])], "sighting.png", { type: "image/png" }),
+    );
+    const req = new Request(`https://example.com/c/${TEST_CAT_ID}/sighting`, {
+      method: "POST",
+      headers: { "CF-Connecting-IP": "1.2.3.4" },
+      body: formData,
+    });
+
+    const res = await handleSightingSubmit(TEST_CAT_ID, req, fakeDb, photos, "test-secret");
+
+    expect(res.status).toBe(200);
+    expect(photos.put).toHaveBeenCalledOnce();
+    const photoKey = photos.put.mock.calls[0]![0] as string;
+    expect(photoKey).toMatch(new RegExp(`^sightings/${TEST_CAT_ID}/[a-f0-9]{32}\\.png$`));
+    expect(mockInsertSightingReport).toHaveBeenCalledWith(fakeDb, expect.objectContaining({
+      photo_r2_key: photoKey,
+      reporter_ip_hash: "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+    }));
+    const html = await res.text();
+    expect(html).not.toContain(photoKey);
+    expect(html).not.toContain("photo_r2_key");
   });
 });
 

@@ -16,12 +16,17 @@ const mockInsertCat = vi.fn();
 const mockGetCatPublicProfile = vi.fn();
 const mockGetContactSettingsPublic = vi.fn();
 const mockGetMissingAlertPublic = vi.fn();
+const mockFindLatestVetSession = vi.fn();
 
 vi.mock("../../db/index.js", () => ({
   insertCat: (...args: unknown[]) => mockInsertCat(...args),
   getCatPublicProfile: (...args: unknown[]) => mockGetCatPublicProfile(...args),
   getContactSettingsPublic: (...args: unknown[]) => mockGetContactSettingsPublic(...args),
   getMissingAlertPublic: (...args: unknown[]) => mockGetMissingAlertPublic(...args),
+  findLatestVetSession: (...args: unknown[]) => mockFindLatestVetSession(...args),
+  insertVetSession: vi.fn(),
+  finishVetSession: vi.fn(),
+  updateCatMode: vi.fn(),
 }));
 
 let mockGenerateIdCallCount = 0;
@@ -49,6 +54,7 @@ beforeEach(() => {
   mockGetCatPublicProfile.mockReset();
   mockGetContactSettingsPublic.mockReset();
   mockGetMissingAlertPublic.mockReset();
+  mockFindLatestVetSession.mockReset();
   mockGenerateId.mockReset();
   mockValidateId.mockReset();
   mockGenerateIdCallCount = 0;
@@ -131,7 +137,7 @@ describe("handlePublicProfile", () => {
     expect(res.status).toBe(404);
   });
 
-  it("returns 200 with placeholder for non-active mode, never 500", async () => {
+  it("returns 200 with vet visit form when mode is vet and session is active", async () => {
     mockValidateId.mockReturnValue(true);
     mockGetCatPublicProfile.mockResolvedValue({
       public_id: "MP-MX-0000-0001",
@@ -139,6 +145,52 @@ describe("handlePublicProfile", () => {
       country_code: "MX",
       photo_r2_key: null,
       current_mode: "vet",
+    });
+    const futureExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    mockFindLatestVetSession.mockResolvedValue({
+      token_hash: null,
+      activated_at: new Date().toISOString(),
+      expires_at: futureExpiry,
+      status: "active",
+    });
+    const res = await handlePublicProfile("MP-MX-0000-0001", fakeDb);
+    expect(res.status).toBe(200);
+    const html = await res.text();
+    expect(html).toContain("Luna");
+    expect(html).toContain("Vet Visit");
+    expect(html).toContain("Save");
+  });
+
+  it("returns 200 with expired page when vet mode session is expired", async () => {
+    mockValidateId.mockReturnValue(true);
+    mockGetCatPublicProfile.mockResolvedValue({
+      public_id: "MP-MX-0000-0001",
+      name: "Luna",
+      country_code: "MX",
+      photo_r2_key: null,
+      current_mode: "vet",
+    });
+    mockFindLatestVetSession.mockResolvedValue({
+      token_hash: null,
+      activated_at: "2020-01-01T00:00:00Z",
+      expires_at: "2020-01-02T00:00:00Z",
+      status: "active",
+    });
+    const res = await handlePublicProfile("MP-MX-0000-0001", fakeDb);
+    expect(res.status).toBe(200);
+    const html = await res.text();
+    expect(html).toContain("Luna");
+    expect(html).toContain("expired");
+  });
+
+  it("returns 200 with placeholder for unbuilt modes (travel, adoption, etc)", async () => {
+    mockValidateId.mockReturnValue(true);
+    mockGetCatPublicProfile.mockResolvedValue({
+      public_id: "MP-MX-0000-0001",
+      name: "Luna",
+      country_code: "MX",
+      photo_r2_key: null,
+      current_mode: "travel",
     });
     const res = await handlePublicProfile("MP-MX-0000-0001", fakeDb);
     expect(res.status).toBe(200);
@@ -222,7 +274,7 @@ describe("handlePublicProfile", () => {
       name: "Luna",
       country_code: "MX",
       photo_r2_key: null,
-      current_mode: "vet",
+      current_mode: "travel",
     });
     const res = await handlePublicProfile("MP-MX-0000-0005", fakeDb);
     expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
