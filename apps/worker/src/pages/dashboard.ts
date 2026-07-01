@@ -105,7 +105,7 @@ function buildDashboardHtml(): string {
       <button type="submit" class="btn-primary">Register Cat</button>
     </form>
     <hr />
-    <p class="upcoming">Coming next: Vet Visit Mode, Digital Cartilla</p>
+    <p class="upcoming">Coming next: Digital Cartilla, WhatsApp Card</p>
   </div>
 
   <script>
@@ -186,8 +186,12 @@ function buildDashboardHtml(): string {
               html += '<div class="cat-actions">';
               if (c.currentMode === "missing") {
                 html += '<button class="btn-primary switch-active-btn" data-id="' + escHtml(c.publicId) + '">Switch to Active</button>';
+              } else if (c.currentMode === "vet") {
+                html += '<span class="mode-badge" style="background:#e0f0ff;color:#036;padding:4px 8px;border-radius:4px;font-size:0.8rem;font-weight:bold">🩺 Vet Visit Active</span> ';
+                html += '<button class="btn-primary cancel-vet-btn" data-id="' + escHtml(c.publicId) + '">End Vet Visit</button>';
               } else {
-                html += '<button class="btn-warn switch-missing-btn" data-id="' + escHtml(c.publicId) + '">Switch to Missing</button>';
+                html += '<button class="btn-warn switch-missing-btn" data-id="' + escHtml(c.publicId) + '">Switch to Missing</button> ';
+                html += '<button class="btn-primary start-vet-btn" data-id="' + escHtml(c.publicId) + '">Start Vet Visit</button>';
                 html += '<div class="mode-fields hidden" id="missing-fields-' + escHtml(c.publicId) + '">';
                 html += '<input type="text" placeholder="City" class="missing-city" />';
                 html += '<input type="text" placeholder="Area / neighborhood" class="missing-area" />';
@@ -254,6 +258,48 @@ function buildDashboardHtml(): string {
               btn.disabled = false;
               btn.textContent = "Switch to Active";
             }).catch(function() { btn.disabled = false; btn.textContent = "Switch to Active"; showMsg(createError, "Network error. Try again."); });
+          });
+        }
+
+        var startVetBtns = document.querySelectorAll(".start-vet-btn");
+        for (var i = 0; i < startVetBtns.length; i++) {
+          startVetBtns[i].addEventListener("click", function() {
+            var btn = this;
+            var id = btn.getAttribute("data-id");
+            if (!confirm("Start Vet Visit? While active, anyone scanning this QR can submit a vet visit record. Save & Finish returns the QR to Active Profile.")) return;
+            btn.disabled = true;
+            btn.textContent = "Starting...";
+            fetch("/api/cats/" + encodeURIComponent(id) + "/vet-visit/start", {
+              method: "POST",
+              credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({})
+            }).then(function(r) {
+              if (r.ok) loadCats();
+              else { r.text().then(function(t) { alert(t || "Could not start vet visit"); }); }
+              btn.disabled = false;
+              btn.textContent = "Start Vet Visit";
+            }).catch(function() { btn.disabled = false; btn.textContent = "Start Vet Visit"; showMsg(createError, "Network error. Try again."); });
+          });
+        }
+
+        var cancelVetBtns = document.querySelectorAll(".cancel-vet-btn");
+        for (var i = 0; i < cancelVetBtns.length; i++) {
+          cancelVetBtns[i].addEventListener("click", function() {
+            var btn = this;
+            var id = btn.getAttribute("data-id");
+            btn.disabled = true;
+            btn.textContent = "Working...";
+            fetch("/api/cats/" + encodeURIComponent(id) + "/vet-visit/cancel", {
+              method: "POST",
+              credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({})
+            }).then(function(r) {
+              if (r.ok) loadCats();
+              btn.disabled = false;
+              btn.textContent = "End Vet Visit";
+            }).catch(function() { btn.disabled = false; btn.textContent = "End Vet Visit"; showMsg(createError, "Network error. Try again."); });
           });
         }
 

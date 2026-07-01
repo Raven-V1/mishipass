@@ -18,6 +18,7 @@ import {
   findLatestVetSession,
   findOwnerByEmail,
   findSessionByTokenHash,
+  finishVetSession,
   getCatPublicProfile,
   getContactSettingsForOwner,
   getContactSettingsPublic,
@@ -38,6 +39,7 @@ import {
   listVaccines,
   listVetVisits,
   updateCatMode,
+  updateCatPhoto,
   upsertContactSettings,
   upsertMissingAlert,
 } from "../index.js";
@@ -211,6 +213,20 @@ describe("cats — public profile", () => {
     const rejected = await updateCatMode(env.DB, PUBLIC_ID_A, ownerB, "active");
     expect(rejected).toBe(false);
   });
+
+  it("cat photo key persists privately while public view exposes only whitelisted fields", async () => {
+    const ownerId = await createOwner(OWNER_A_EMAIL);
+    await insertCat(env.DB, { public_id: PUBLIC_ID_A, owner_id: ownerId, name: "Mishi", country_code: "MX" });
+    const rawKey = `cats/${PUBLIC_ID_A}/generated-private-key.jpg`;
+
+    await updateCatPhoto(env.DB, PUBLIC_ID_A, ownerId, rawKey);
+
+    const profile = await getCatPublicProfile(env.DB, PUBLIC_ID_A);
+    expect(profile!.photo_r2_key).toBe(rawKey);
+    expect((profile as unknown as Record<string, unknown>)["id"]).toBeUndefined();
+    expect((profile as unknown as Record<string, unknown>)["owner_id"]).toBeUndefined();
+    expect((profile as unknown as Record<string, unknown>)["notes"]).toBeUndefined();
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -358,6 +374,26 @@ describe("sighting_reports", () => {
     const nonOwnerReports = await listSightingReportsForOwner(env.DB, PUBLIC_ID_A, ownerB);
     expect(nonOwnerReports).toHaveLength(0);
   });
+
+  it("persists sighting photo keys for owner-only retrieval without exposing reporter IP hash", async () => {
+    const ownerA = await createOwner(OWNER_A_EMAIL);
+    await insertCat(env.DB, { public_id: PUBLIC_ID_A, owner_id: ownerA, name: "Mishi", country_code: "MX" });
+    const photoKey = `sightings/${PUBLIC_ID_A}/generated-private-key.webp`;
+
+    await insertSightingReport(env.DB, {
+      catPublicId: PUBLIC_ID_A,
+      message: "Photo attached",
+      location_text: "CDMX",
+      reporter_ip_hash: "hmac-sha256-of-ip",
+      photo_r2_key: photoKey,
+    });
+
+    const reports = await listSightingReportsForOwner(env.DB, PUBLIC_ID_A, ownerA);
+    expect(reports).toHaveLength(1);
+    expect(reports[0]!.photo_r2_key).toBe(photoKey);
+    expect((reports[0] as unknown as Record<string, unknown>)["reporter_ip_hash"]).toBeUndefined();
+    expect((reports[0] as unknown as Record<string, unknown>)["cat_id"]).toBeUndefined();
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -383,6 +419,25 @@ describe("vet_sessions", () => {
     // Internal ids absent.
     expect((session as unknown as Record<string, unknown>)["id"]).toBeUndefined();
     expect((session as unknown as Record<string, unknown>)["cat_id"]).toBeUndefined();
+  });
+
+  it("finishVetSession marks the latest active session finished only for the owner", async () => {
+    const ownerA = await createOwner(OWNER_A_EMAIL);
+    const ownerB = await createOwner(OWNER_B_EMAIL);
+    await insertCat(env.DB, { public_id: PUBLIC_ID_A, owner_id: ownerA, name: "Mishi", country_code: "MX" });
+    await insertVetSession(env.DB, {
+      catPublicId: PUBLIC_ID_A,
+      ownerId: ownerA,
+      token_hash: null,
+      activated_at: NOW,
+      expires_at: FUTURE,
+    });
+
+    expect(await finishVetSession(env.DB, PUBLIC_ID_A, ownerB)).toBe(false);
+    expect((await findLatestVetSession(env.DB, PUBLIC_ID_A))!.status).toBe("active");
+
+    expect(await finishVetSession(env.DB, PUBLIC_ID_A, ownerA)).toBe(true);
+    expect((await findLatestVetSession(env.DB, PUBLIC_ID_A))!.status).toBe("finished");
   });
 });
 
