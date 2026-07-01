@@ -1,10 +1,12 @@
 import { resolveSession } from "./middleware/session.js";
+import { checkDurableRateLimit } from "./middleware/durableRateLimit.js";
+import { hmacSha256Hex } from "./utils/crypto.js";
 import { handleLogin, handleLogout, handleRegister } from "./routes/auth.js";
 import { handleCreateCat, handleListCats, handlePublicProfile } from "./routes/cats.js";
 import { handleGetContactSettings, handleUpsertContactSettings } from "./routes/contactSettings.js";
 import { handleSwitchToActive, handleSwitchToMissing } from "./routes/missingAlerts.js";
 import { handleSightingForm, handleSightingSubmit, handleListSightingsForOwner } from "./routes/sightingReports.js";
-import { handleCatPhotoUpload, handleCatPhotoServe } from "./routes/photos.js";
+import { handleCatPhotoUpload, handleCatPhotoServe, handleSightingPhotoServe } from "./routes/photos.js";
 import { handleRoot } from "./pages/root.js";
 import { handleDashboard } from "./pages/dashboard.js";
 import { handleCatDetail } from "./pages/catDetail.js";
@@ -30,6 +32,7 @@ const CAT_ACTIVE_PATH = /^\/api\/cats\/([^/]+)\/active$/;
 const CONTACT_SETTINGS_PATH = /^\/api\/cats\/([^/]+)\/contact$/;
 const CAT_PHOTO_UPLOAD = /^\/api\/cats\/([^/]+)\/photo$/;
 const CAT_PHOTO_SERVE = /^\/media\/cats\/([^/]+)\/photo$/;
+const SIGHTING_PHOTO_SERVE = /^\/api\/cats\/([^/]+)\/sightings\/([^/]+)\/photo$/;
 const DASHBOARD_CAT_DETAIL = /^\/dashboard\/cats\/([^/]+)$/;
 const DASHBOARD_CAT_QR = /^\/dashboard\/cats\/([^/]+)\/qr$/;
 const DASHBOARD_CAT_SIGHTINGS = /^\/dashboard\/cats\/([^/]+)\/sightings$/;
@@ -133,6 +136,12 @@ export default {
       return handleCatPhotoServe(photoServeMatch[1]!, env.DB, env.PHOTOS);
     }
 
+    const sightingPhotoMatch = SIGHTING_PHOTO_SERVE.exec(pathname);
+    if (method === "GET" && sightingPhotoMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleSightingPhotoServe(sightingPhotoMatch[1]!, decodeURIComponent(sightingPhotoMatch[2]!), env.DB, env.PHOTOS, ctx);
+    }
+
     // -- Public sighting form --
 
     const sightingMatch = SIGHTING_PATH.exec(pathname);
@@ -142,7 +151,7 @@ export default {
         return handleSightingForm(id, env.DB);
       }
       if (method === "POST") {
-        return handleSightingSubmit(id, request, env.DB, env.SIGHTING_IP_HMAC_SECRET);
+        return handleSightingSubmit(id, request, env.DB, env.PHOTOS, env.SIGHTING_IP_HMAC_SECRET);
       }
     }
 
@@ -158,6 +167,16 @@ export default {
 
     const profileMatch = PUBLIC_PROFILE_PATH.exec(pathname);
     if (method === "GET" && profileMatch) {
+      // Durable rate limit for public cat lookup
+      const lookupIp = request.headers.get("CF-Connecting-IP") || "unknown";
+      if (env.SIGHTING_IP_HMAC_SECRET) {
+        const hashedLookupIp = await hmacSha256Hex(lookupIp, env.SIGHTING_IP_HMAC_SECRET);
+        const lookupKey = `lookup:${hashedLookupIp.slice(0, 16)}:${profileMatch[1]!}`;
+        const lookupAllowed = await checkDurableRateLimit(env.DB, lookupKey, 60, 1);
+        if (!lookupAllowed) {
+          return new Response("Too many requests. Try again later.", { status: 429 });
+        }
+      }
       return handlePublicProfile(profileMatch[1]!, env.DB);
     }
 

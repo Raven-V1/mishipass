@@ -8,6 +8,7 @@ import type { RequestContext } from "../middleware/session.js";
 import { checkRateLimit } from "../middleware/rateLimit.js";
 import { checkDurableRateLimit } from "../middleware/durableRateLimit.js";
 import { hmacSha256Hex } from "../utils/crypto.js";
+import { checkMagicBytes } from "./photos.js";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -66,6 +67,7 @@ export async function handleSightingSubmit(
   publicId: string,
   request: Request,
   db: D1Database,
+  photos: R2Bucket,
   hmacSecret?: string,
 ): Promise<Response> {
   if (!validateId(publicId)) {
@@ -107,13 +109,14 @@ export async function handleSightingSubmit(
     );
   }
 
-  // Parse body (form-urlencoded or JSON)
+  // Parse body (form-urlencoded, JSON, or multipart/form-data)
   let city = "";
   let area = "";
   let sightedAt = "";
   let message = "";
   let reporterName = "";
   let reporterContact = "";
+  let sightingPhoto: File | null = null;
 
   const contentType = request.headers.get("Content-Type") || "";
   if (contentType.includes("application/json")) {
@@ -131,6 +134,25 @@ export async function handleSightingSubmit(
       message = typeof b["message"] === "string" ? b["message"] : "";
       reporterName = typeof b["reporterName"] === "string" ? b["reporterName"] : "";
       reporterContact = typeof b["reporterContact"] === "string" ? b["reporterContact"] : "";
+    }
+  } else if (contentType.includes("multipart/form-data")) {
+    let formData: FormData;
+    try {
+      formData = await request.formData();
+    } catch {
+      return Response.json({ error: "Invalid form data" }, { status: 400 });
+    }
+    city = (formData.get("city") as string) || "";
+    area = (formData.get("area") as string) || "";
+    sightedAt = (formData.get("sightedAt") as string) || "";
+    message = (formData.get("message") as string) || "";
+    reporterName = (formData.get("reporterName") as string) || "";
+    reporterContact = (formData.get("reporterContact") as string) || "";
+
+    // Optional photo
+    const photoField = formData.get("photo");
+    if (photoField && typeof photoField !== "string") {
+      sightingPhoto = photoField as File;
     }
   } else {
     // Default: application/x-www-form-urlencoded
@@ -189,11 +211,46 @@ export async function handleSightingSubmit(
   // Hash IP using HMAC-SHA256 (secret presence already verified above)
   const reporterIpHash = await hmacSha256Hex(ip, secret);
 
+  // Process photo if present
+  let photoR2Key: string | null = null;
+  if (sightingPhoto) {
+    const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp"]);
+    const MAX_SIZE = 3 * 1024 * 1024; // 3 MB
+
+    if (!ALLOWED.has(sightingPhoto.type)) {
+      return Response.json({ error: "Invalid photo type. Allowed: JPEG, PNG, WebP" }, { status: 400 });
+    }
+    if (sightingPhoto.size > MAX_SIZE) {
+      return Response.json({ error: "Photo too large. Maximum 3 MB" }, { status: 400 });
+    }
+    if (sightingPhoto.size === 0) {
+      return Response.json({ error: "Photo file is empty" }, { status: 400 });
+    }
+
+    // Magic byte validation
+    const photoBuffer = await sightingPhoto.arrayBuffer();
+    const headerView = new Uint8Array(photoBuffer, 0, Math.min(12, photoBuffer.byteLength));
+    if (!checkMagicBytes(headerView, sightingPhoto.type)) {
+      return Response.json({ error: "Photo content does not match declared type" }, { status: 400 });
+    }
+
+    // Upload to R2
+    const ext = sightingPhoto.type === "image/jpeg" ? "jpg" : sightingPhoto.type === "image/png" ? "png" : "webp";
+    const rnd = crypto.getRandomValues(new Uint8Array(16));
+    const hex = Array.from(rnd).map(b => b.toString(16).padStart(2, "0")).join("");
+    photoR2Key = `sightings/${publicId}/${hex}.${ext}`;
+
+    await photos.put(photoR2Key, photoBuffer, {
+      httpMetadata: { contentType: sightingPhoto.type },
+    });
+  }
+
   await insertSightingReport(db, {
     catPublicId: publicId,
     message: combinedMessage,
     location_text: locationText,
     reporter_ip_hash: reporterIpHash,
+    photo_r2_key: photoR2Key,
   });
 
   return new Response(
@@ -266,7 +323,7 @@ function renderSightingForm(publicId: string, catName: string): string {
 </head>
 <body>
   <h1>Report a sighting of ${safeName}</h1>
-  <form method="POST" action="/c/${safeId}/sighting">
+  <form method="POST" action="/c/${safeId}/sighting" enctype="multipart/form-data">
     <label for="city">City (required)</label>
     <input type="text" id="city" name="city" required maxlength="80" />
     <label for="area">Area / neighborhood</label>
@@ -279,6 +336,8 @@ function renderSightingForm(publicId: string, catName: string): string {
     <input type="text" id="reporterName" name="reporterName" maxlength="80" />
     <label for="reporterContact">Your contact info (optional)</label>
     <input type="text" id="reporterContact" name="reporterContact" maxlength="120" />
+    <label for="photo">Photo (optional, max 3 MB)</label>
+    <input type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/webp" />
     <button type="submit">Submit sighting report</button>
   </form>
 </body>
