@@ -15,11 +15,12 @@ Final status: PASS pending Carlos visual acceptance
   - `356da6a` - fix(worker): prevent stale localized html responses
   - `c7f2ec5` - docs: update beta 1.5 p1 cache-control decision
 - Final Days 1-10 closure commit: `7be3988`
+- Final acceptance patch commit: pending
 
 ## Tests Run
 
 - `npx tsc --noEmit --project apps/worker/tsconfig.json` - PASS
-- `npm test --workspace=mishipass-worker` - PASS, 215 tests
+- `npm test --workspace=mishipass-worker` - PASS, 219 tests
 - `npm test --workspace=@mishipass/shared-validation` - PASS, 43 tests
 - `npm run typecheck --workspace=@mishipass/shared-validation` - PASS
 
@@ -32,9 +33,12 @@ Final status: PASS pending Carlos visual acceptance
   hidden native file inputs and a single status line.
 - Owner Digital Cartilla sticker upload uses the same cleaned picker pattern.
 - Breed selection is split into featured visual breeds and a full searchable
-  compact text list. No-image breeds no longer render as a wall of gray image
-  placeholders.
+  all-breeds card grid. No-image breeds render as polished local placeholder
+  cards instead of plain text boxes or broken-looking gray placeholders.
 - Bengal keeps the verified `.png` TheCatAPI image URL.
+- Cat profile Vet Visit Records now render readable owner-only cards, include a
+  detail link, and use "Date not recorded" / "Vet visit record" fallback text
+  instead of blank bordered boxes.
 - Mobile spacing was tightened for Vet Visit, sighting report, Cartilla,
   dashboard breed selectors, homepage, and existing Recovery Board cards.
 - Public Vet Visit and sighting pages remain script-free to preserve the
@@ -126,8 +130,8 @@ Body scans:
 - PASS - Breed JSON did not contain `THE_CAT_API_KEY` or `x-api-key`.
 - PASS - Bengal used `https://cdn2.thecatapi.com/images/O3btzLlsO.png`.
 - PASS - Devon Rex and European Burmese returned `referenceImageUrl: null`
-  with `hasReferenceImage: false`, so the dashboard can render them as compact
-  text options instead of broken image cards.
+  with `hasReferenceImage: false`, so the dashboard can render them as polished
+  local placeholder cards instead of broken image cards.
 - PASS - Recovery Board Spanish/Kazakh pages did not expose `owner_id`,
   `cat_id`, raw media key fields, password/session terms, Medication Record, or
   Cartilla text.
@@ -138,8 +142,9 @@ Body scans:
   controls.
 - Open sighting report form at mobile width; photo section shows no native
   duplicate controls.
-- Confirm breed section shows polished featured visual cards plus full text
-  search, not mostly gray placeholders.
+- Confirm breed section shows polished featured visual cards plus all-breeds
+  cards, not plain text boxes or mostly gray placeholders.
+- Confirm cat profile Vet Visit Records show readable cards and no blank boxes.
 - Confirm Recovery Board layout is acceptable at mobile and desktop widths.
 - Confirm Dashboard layout is acceptable at mobile and desktop widths.
 - Confirm Homepage layout is acceptable at mobile and desktop widths.
