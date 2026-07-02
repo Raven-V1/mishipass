@@ -94,7 +94,8 @@ describe("worker fetch routes", () => {
   it("GET / contains link to /dashboard", async () => {
     const res = await worker.fetch(new Request("https://example.com/"), fakeEnv);
     const body = await res.text();
-    expect(body).toContain('href="/dashboard"');
+    expect(body).toContain('href="/dashboard?lang=en"');
+    expect(body).toContain("MishiPass Beta 1.5");
   });
 });
 
@@ -309,10 +310,28 @@ describe("settings and reference route wiring", () => {
   });
 });
 
+describe("Recovery Board route wiring", () => {
+  it("GET /recovery-board routes to the implemented public board", async () => {
+    const env = {
+      ...fakeEnv,
+      DB: {
+        prepare: () => ({
+          bind: () => ({
+            all: async () => ({ results: [] }),
+          }),
+        }),
+      } as unknown as D1Database,
+    };
+    const res = await worker.fetch(new Request("https://example.com/recovery-board"), env);
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain("Recovery Board");
+  });
+});
+
 describe("scope guard route wiring", () => {
   it.each([
     "/whatsapp",
-    "/recovery-board",
     "/travel",
     "/adoption",
     "/memorial",

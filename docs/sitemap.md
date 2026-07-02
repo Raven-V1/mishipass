@@ -1,7 +1,7 @@
 # MishiPass — Sitemap
 
 Derived from Constitution Section 20 (LOCKED). This is the planned information
-architecture for Beta 1.4. Optional modes are built only after all must-build
+architecture for MishiPass Beta 1.5. Optional modes are built only after all must-build
 work is complete and public-ready.
 
 **Hosting note (Day 7 correction):** All surfaces below are served by the
@@ -66,7 +66,7 @@ MishiPass
 
 ## Implementation status
 
-### Implemented (Day 1–8 partial closure)
+### Implemented (MishiPass Beta 1.5)
 
 - Worker root page (landing)
 - Owner dashboard home
@@ -75,7 +75,11 @@ MishiPass
 - QR card with real QR SVG/image
 - Active Profile public view
 - Missing Alert public view with mode switching
+- WhatsApp-ready Missing Card with public alert link
+- Recovery Board Publishing
+- Community Recovery Board with city and alert-age filters
 - Vet Visit mode (owner activation, public form, Save & Finish, 24h expiry)
+- Vet Visit Save & Finish can add vaccine, sticker photo, and Medication Record
 - Sighting Report Form (text + optional photo)
 - Sighting Reports inbox (owner-only)
 - Cat profile photo upload and display (R2-backed)
@@ -86,15 +90,13 @@ MishiPass
 - Clickable owner-only vet visit details
 - Vaccine sticker photo upload and owner-only display
 - Optional breed reference assist with local fallback
+- Visual breed cards and color/pattern swatches
 - D1-backed rate limiting (sighting submit + public cat lookup)
 - HMAC-SHA256 reporter IP hashing
 - MIME/size/magic-byte image validation
 
-### Planned (not yet built)
+### Deferred Version 1 Optional
 
-- WhatsApp Card Generator
-- Recovery Board Publishing
-- Community Recovery Board with filters
 - Optional modes:
   - Travel
   - Adoption
