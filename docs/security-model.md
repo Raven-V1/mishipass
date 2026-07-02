@@ -3,8 +3,8 @@
 Scope: MishiPass Beta 1.5. This document records the security and privacy
 properties of the system, the controls enforcing them, and the governance
 frameworks used to organize this documentation. Sections derived from locked
-Constitution decisions are final. Sections marked **(WIP — Day 13)** are
-completed during the Day-13 security pass per Constitution Section 19.
+Constitution decisions are final. Sections marked **(Scheduled — Day 13)** are
+to be completed during the Day-13 security pass per Constitution Section 19.
 
 This document is organized using three external reference frameworks. These
 are used as a documentation and control-mapping structure, not as a claim of
@@ -171,7 +171,7 @@ security pass for controlled compatibility verification, and are tracked in
   TypeScript typecheck across all three workspaces, the full test suite, and a
   targeted dependency audit that distinguishes new findings from known-deferred
   packages. New high or critical vulnerabilities fail the build.
-- **Aikido** security scan and report. **(WIP — Day 13.)**
+- **Aikido** security scan and report. **(Scheduled — not yet completed.)**
 
 ---
 
@@ -185,8 +185,8 @@ security pass for controlled compatibility verification, and are tracked in
 | Identify | Public identifiers use entropy-based uniqueness. Dependency vulnerabilities are tracked via Dependabot and the CI audit gate. Asset inventory: TypeScript Worker, D1 database, R2 storage, React web app, Python tooling layer. |
 | Protect | Type-safe TypeScript with `tsc --noEmit` enforced in CI. No internal IDs on public surfaces. Default-private for sensitive data. Input validation enforced at all trust boundaries. HMAC-SHA256 IP hashing. Magic-byte file validation. D1-backed rate limiting. |
 | Detect | CI is configured to enforce typecheck, tests, and a targeted dependency audit on every PR. Dependabot monitors the dependency graph weekly. |
-| Respond | **(WIP — Day 13.)** |
-| Recover | **(WIP — Day 13.)** Data persistence relies on Cloudflare's infrastructure; migrations are version-controlled and reproducible. |
+| Respond | Incident response plan not yet formalized for Beta. Production issues addressed via CI + manual review. |
+| Recover | Data persistence relies on Cloudflare's infrastructure; migrations are version-controlled and reproducible. |
 
 ### CISA Secure by Design pledge mapping
 
@@ -217,7 +217,7 @@ or critical findings once committed.
 
 **Goal 5 — Vulnerability disclosure policy:** MishiPass does not publish a
 formal VDP for MishiPass Beta 1.5. Known Beta limitations are disclosed in Section 5, and
-the Aikido scan report is scheduled for the submission. **(WIP — Day 13.)**
+the Aikido scan report is scheduled for submission but has not yet been completed.
 
 **Goal 6 — CVE accuracy:** MishiPass tracks third-party advisories via
 `npm audit`, GitHub Advisory references, and decision-log entries. MishiPass
@@ -268,7 +268,7 @@ Recovery Board and WhatsApp-ready Missing Card closure.
 | WhatsApp-ready Missing Card | Owner-only generated share link, public fields only | Active |
 | Recovery Board | Missing-mode only, city/age filters, public-safe fields only | Active |
 | Owner auth backend | PBKDF2-SHA256, opaque session token, HttpOnly cookie | Active |
-| Aikido security scan | — | Scheduled for Day 13 |
+| Aikido security scan | — | Scheduled, not yet completed |
 
 ---
 
@@ -294,7 +294,7 @@ messages, and any future form input) is treated as **untrusted data**:
 ---
 
 > Sections 1–5 contain locked properties derived from Constitution v1.0 and are
-> final. Sections 6–8 reflect implementation state as of Day 6 closure and will be
-> updated at the Day-13 security and documentation pass per Constitution
-> Section 19. Items marked "WIP" are not claimed as active controls until
+> final. Sections 6–8 reflect implementation state as of Beta 1.5 and will be
+> reviewed at the Day-13 security pass per Constitution Section 19.
+> Items marked "Scheduled" are not claimed as active controls until
 > confirmed against the actual codebase or repository configuration.

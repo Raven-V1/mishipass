@@ -1,116 +1,167 @@
-# MishiPass Beta 1.5 Report
+# MishiPass Beta 1.5 — Project Report
 
-## Overview
+## Executive Summary
 
-MishiPass Beta 1.5 is a privacy-first dynamic QR passport and recovery system
-for cats. Each cat has one permanent QR URL. The owner changes the cat's mode,
-and the same QR presents the correct public experience: Active Profile, Missing
-Alert, or temporary Vet Visit.
+MishiPass is a privacy-first dynamic QR passport and recovery system for cats.
+One permanent QR code adapts to what the cat needs — Active Profile, Missing
+Alert, or temporary Vet Visit — while keeping private owner and medical data
+separate from public pages. Built as a Cloudflare Workers TypeScript application
+with D1 and R2, it demonstrates a focused product with clear public/private
+data boundaries, a dynamic QR workflow, and multilingual support.
 
-MishiPass is not an official passport, legal ID, travel document, AI vet,
-symptom checker, medication advice tool, reminder app, or social network.
+## Project Overview
 
-## Problem
+### Why built
 
-Cat collars and QR tags often become stale because printed codes cannot adapt
-when a cat is missing or when a finder or vet needs different information.
-Owners also need a way to document vet visits and vaccines without publishing
-private medical records to anyone who scans the tag.
+Cat collars and QR tags typically encode static information that cannot adapt
+when a cat goes missing or visits a vet. Owners need a single permanent tag
+that changes behavior without reprinting. MishiPass solves this by keeping the
+QR URL stable while routing scanners to the correct experience based on the
+cat's current mode.
 
-## Solution
+### Theme connection
 
-MishiPass keeps the physical QR stable while changing the page behind it.
-Owners can register a cat, print or save the QR, and switch modes from the
-owner dashboard. Public pages only show mode-appropriate information and avoid
-private owner, location, and Digital Cartilla data.
+MishiPass connects to the hackathon theme by demonstrating a real-world
+product that uses Cloudflare's edge platform to serve different experiences
+from a single static URL, combining Workers, D1, and R2 into a cohesive
+privacy-first application.
 
-## Core Flow
+### Target audience
 
-1. The owner registers a cat and receives a public MishiPass ID and QR URL.
-2. Active Profile shows public-safe cat details and owner-controlled contact.
-3. Missing Alert adds city/area, reward visibility, sighting reports, a manual
-   WhatsApp-ready card, and Recovery Board visibility.
-4. Vet Visit temporarily allows a scanner to add visit documentation, vaccines,
-   sticker photos, and Medication Record entries.
-5. Save & Finish returns the QR to Active Profile.
-6. The owner reviews private Digital Cartilla records from the dashboard.
+- Cat owners who want a single collar tag that adapts to their cat's situation
+- Finders who scan a found cat's QR and need mode-appropriate information
+- Veterinarians documenting visits during temporary Vet Visit sessions
+- Cat owner communities using the Recovery Board during missing alerts
 
-## Built Features
+## Key Features
 
-- Owner registration, login, logout, and session-protected dashboard.
-- Cat registration with country, sex, color/markings, breed/mix, and photo.
-- Random public cat IDs and QR URL generation.
-- Active Profile, Missing Alert, and Vet Visit mode routing.
-- Sighting reports with photo upload validation.
-- Privacy/contact settings and reward visibility controls.
-- WhatsApp-ready Missing Card with manual share link.
-- Public Recovery Board with city and alert-age filters.
-- Owner-only Digital Cartilla with vet visits, vaccines, sticker photos, and
-  Medication Record documentation.
-- Registered country badge display.
-- English, Spanish, and Kazakh owner/guest language support.
-- Dependabot configuration and security documentation.
+- **Dynamic QR routing**: one static URL, three distinct public experiences
+- **Active Profile**: public-safe cat details and owner-controlled contact
+- **Missing Alert**: city/area, reward visibility, sighting reports, WhatsApp card, Recovery Board
+- **Vet Visit**: temporary mode-gated form for documentation-only records
+- **Digital Cartilla**: private owner-only vet visits, vaccines, sticker photos, Medication Record
+- **Recovery Board**: public opt-in missing cat listings with city and alert-age filters
+- **Privacy-first**: no internal IDs, no raw R2 keys, no owner identity on public pages
+- **Multilingual**: English, Spanish, and Kazakh support for owner and guest interfaces
 
-## Security And Privacy
+## Technology Stack
 
-The production request path is TypeScript Cloudflare Workers with D1 for data
-and R2 for private media objects. Public routes use the public MishiPass ID and
-do not expose internal database IDs, raw R2 keys, owner email, owner full name,
-or exact address.
+| Layer | Technology | Purpose |
+|---|---|---|
+| Runtime | Cloudflare Workers | TypeScript edge compute, HTML rendering, API |
+| Database | Cloudflare D1 | Structured data (SQLite-compatible) |
+| File storage | Cloudflare R2 | Cat photos, sighting photos, vaccine stickers |
+| Auth | PBKDF2-SHA256 + session cookies | Owner authentication |
+| ID format | Crockford Base32 | ~40-bit public cat IDs |
+| CI | GitHub Actions | Typecheck, tests, dependency audit |
+| Dependency monitoring | Dependabot | Weekly npm/pip checks |
+| Breed assist | TheCatAPI (optional) | Reference images for breed selection UI |
 
-Digital Cartilla data is owner-only except for temporary Vet Visit submission
-while Vet Visit mode is active. Medication Record entries are documentation-only:
-there is no dosage calculation, interaction checking, treatment planning,
-refill logic, reminder behavior, or medical advice.
+## Technical Architecture
 
-WhatsApp sharing is manual browser sharing only. Recovery Board listings are
-public-safe Missing Alert summaries and do not include private owner or medical
-data.
+### Request flow
 
-## Stack
+```
+QR scan / browser visit
+  → Cloudflare Worker (TypeScript)
+    → D1 lookup: resolve public_id → cat + current_mode
+      → Mode routing:
+        active  → Active Profile HTML
+        missing → Missing Alert HTML + sighting form
+        vet     → Vet Visit form (if session active)
+      → Response: server-rendered HTML or JSON API
+```
 
-- Cloudflare Workers TypeScript runtime.
-- Cloudflare D1 database.
-- Cloudflare R2 media storage.
-- TheCatAPI is optional reference assistance for breed/profile completion.
-- Python is tooling-only and is not part of the production request path.
+### Data boundaries
 
-## Demo Flow
+| Surface | Accessible data | Protected data |
+|---|---|---|
+| Public `/c/:id` | Cat name, country, photo, mode-appropriate info | Owner identity, cartilla, medications, internal IDs |
+| Sighting form | Submit text + photo | Reporter IP (HMAC-hashed only) |
+| Owner dashboard | Full cat profile, cartilla, sightings | Requires authenticated session |
+| Recovery Board | Missing alerts (public-safe fields) | Owner contact (relay only), medical data |
+| Vet Visit form | Temporary submit access | Existing cartilla history not shown |
 
-1. Open the homepage and Recovery Board.
-2. Log in to the owner dashboard.
-3. Register a cat with country badge, breed/color selection, and photo.
-4. Open the public Active Profile from the QR route.
-5. Switch to Missing Alert, review the public alert, WhatsApp Card, and board.
-6. Submit or review a sighting report.
-7. Switch back to Active and confirm board removal.
-8. Start Vet Visit, add visit/vaccine/sticker/Medication Record documentation,
-   and Save & Finish.
-9. Review owner-only Digital Cartilla.
+### Session and auth
+
+- PBKDF2-SHA256 password hashing (Web Crypto API)
+- Opaque session token in HttpOnly cookie; only SHA-256 hash stored in D1
+- Session expiry enforced server-side
+- Owner-scoped queries prevent cross-owner data access
+- Google/Apple login: **not enabled** (buttons are design placeholders only)
+
+## Testing Matrix
+
+| Category | Tool | Count | Status |
+|---|---|---|---|
+| Worker unit tests | Vitest + @cloudflare/vitest-pool-workers | 219 | Passing |
+| Shared validation | Vitest | 43 | Passing |
+| TypeScript typecheck | `tsc --noEmit` | all workspaces | Clean |
+| Production smoke | curl.exe | 4 routes | root:200, dashboard:200, breeds:200, invalid:404 |
+
+### Manual verification coverage
+
+- QR scan → Active Profile rendering
+- Mode switch → Missing Alert with sighting form
+- Sighting photo upload validation (MIME, size, magic-byte)
+- Vet Visit start → form → Save & Finish → auto-return to Active
+- Recovery Board city/alert-age filters
+- WhatsApp card share link generation
+- Privacy settings (relay/phone/hidden) reflected on public page
+- Owner-scoped access (cannot view other owners' cats)
+- Rate limiting on public lookup and sighting submit
+
+## Tools Used
+
+| Tool | Role |
+|---|---|
+| Kiro | Primary implementation agent |
+| Codex | Design review and visual polish |
+| Claude / ChatGPT | Advisory review |
+| Cloudflare Workers | Production runtime |
+| Cloudflare D1 | Production database |
+| Cloudflare R2 | Media storage |
+| GitHub Actions | CI pipeline |
+| Dependabot | Dependency security |
+| Wrangler | Deployment CLI |
+
+## Learnings & Takeaways
+
+- Server-rendered HTML from Workers is fast and avoids client-side JS bundle
+  costs for public-facing pages that need instant QR scan response.
+- D1's SQLite compatibility works well for a structured product but requires
+  careful migration tooling (semicolon splitting in trigger blocks).
+- Privacy-first architecture decisions made early (public IDs, no internal ID
+  exposure, HMAC IP hashing) save significant rework later.
+- Mode-gated access (Vet Visit) is a practical Beta alternative to full account
+  systems when scope and risk are documented.
+- Multilingual support is easier to add during build than to retrofit.
+
+## Acknowledgments
+
+- Project Owner: Carlos Velázquez
+- Design Authority: Zhanerke Askerbekova
+- AI Implementation: Kiro, Codex, Claude
+- Platform: Cloudflare (Workers, D1, R2)
+- Breed reference: TheCatAPI (optional, free tier)
+
+## Submission Checklist
+
+See `docs/submission-checklist.md` for the complete pre-submission verification list.
 
 ## Known Beta Limitations
 
-- Vet Visit mode is temporary and scanner-submitted; dedicated vet accounts are
-  deferred.
-- TheCatAPI assistance is optional and must degrade to local fallback choices.
-- Recovery Board uses city and alert-age filters only; there are no nearby
-  pings, automatic location tracking, or public editing tools.
-- The final user acceptance pass depends on manual review of responsive layout
-  and language screenshots after deployment.
+- Vet Visit mode is temporary and scanner-submitted; dedicated vet accounts are deferred.
+- Google and Apple login buttons are visual design placeholders only — not enabled.
+- TheCatAPI assistance is optional and degrades to local fallback choices.
+- Recovery Board uses city and alert-age filters only; no location tracking.
+- Medication Record is documentation-only: no dosage, reminders, or interactions.
 
-## Deferred Or Out Of Scope
+## Deferred / Out of Scope
 
-- Version 2 features.
-- Additional animal species.
-- AI vet, symptom checker, medical advice, medication reminders, or refill
-  tracking.
-- Official/legal passport or travel-document claims.
-- Social network, marketplace, shelter CRM, push notifications, or WhatsApp
-  backend automation.
-
-## Judging Alignment
-
-MishiPass Beta 1.5 demonstrates a focused product with a clear cat owner
-problem, a dynamic QR recovery workflow, privacy-first public/private data
-boundaries, multilingual demo readiness, and a deployable Cloudflare-native
-implementation.
+- Version 2 features and optional modes (Travel, Adoption, Memorial, Celebration)
+- Additional animal species
+- AI vet, symptom checker, medication reminders, or medical advice
+- Official/legal passport or travel-document claims
+- Social network, marketplace, shelter CRM, push notifications
+- WhatsApp backend automation (manual share link only)
