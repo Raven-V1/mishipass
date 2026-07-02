@@ -103,6 +103,52 @@ describe("worker fetch routes", () => {
     expect(body).toContain('href="/dashboard?lang=en"');
     expect(body).toContain("MishiPass Beta 1.5");
   });
+
+  it("root page uses a local cat visual with accessible alt text", async () => {
+    const res = await worker.fetch(new Request("https://example.com/"), fakeEnv);
+    const body = await res.text();
+    expect(body).toContain("White cat with brown spots");
+    expect(body).toContain("<svg");
+    expect(body).not.toContain("images.unsplash.com");
+    expect(body).not.toContain("pexels.com");
+  });
+
+  it("root Spanish page does not leak hard-coded English homepage copy", async () => {
+    const res = await worker.fetch(new Request("https://example.com/?lang=es"), fakeEnv);
+    const body = await res.text();
+    expect(body).toContain("Promesa de privacidad");
+    expect(body).toContain("Sin dirección exacta");
+    expect(body).toContain("Un QR. Tres modos.");
+    expect(body).not.toContain("Privacy promise");
+    expect(body).not.toContain("No exact address");
+    expect(body).not.toContain("Owner-controlled contact");
+    expect(body).not.toContain("Cartilla stays private");
+    expect(body).not.toContain("Vet visits, vaccines");
+  });
+
+  it("root Kazakh page does not leak hard-coded English homepage copy", async () => {
+    const res = await worker.fetch(new Request("https://example.com/?lang=kk-KZ"), fakeEnv);
+    const body = await res.text();
+    expect(body).toContain("Құпиялылық уәдесі");
+    expect(body).toContain("Нақты мекенжай жоқ");
+    expect(body).toContain("Бір QR. Үш режим.");
+    expect(body).not.toContain("Privacy promise");
+    expect(body).not.toContain("No exact address");
+    expect(body).not.toContain("Owner-controlled contact");
+    expect(body).not.toContain("Cartilla stays private");
+    expect(body).not.toContain("Vet visits, vaccines");
+  });
+
+  it("history page renders translated headings and body copy", async () => {
+    const es = await (await worker.fetch(new Request("https://example.com/history?lang=es"), fakeEnv)).text();
+    const kk = await (await worker.fetch(new Request("https://example.com/history?lang=kk-KZ"), fakeEnv)).text();
+    expect(es).toContain("Historia de MishiPass");
+    expect(es).toContain("MishiPass existe");
+    expect(es).not.toContain("MishiPass exists because");
+    expect(kk).toContain("MishiPass тарихы");
+    expect(kk).toContain("MishiPass мысықтың QR белгісі");
+    expect(kk).not.toContain("MishiPass exists because");
+  });
 });
 
 describe("GET /dashboard", () => {
