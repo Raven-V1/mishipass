@@ -1,5 +1,5 @@
 import { getCatForOwner } from "../db/index.js";
-import { MISHIPASS_DESIGN_CSS, escapeHtml, htmlResponse } from "../utils/html.js";
+import { MISHIPASS_DESIGN_CSS, brandLockupHtml, escapeHtml, htmlResponse } from "../utils/html.js";
 import { generateQrSvg } from "../utils/qr.js";
 import type { RequestContext } from "../middleware/session.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
@@ -34,9 +34,9 @@ export async function handleQrPage(
   <style>
     ${MISHIPASS_DESIGN_CSS}
     body{padding:var(--space-3)}
-    .qr-wrap{max-width:560px;margin:var(--space-6) auto}
+    .qr-wrap{max-width:560px;margin:var(--space-4) auto}
     .nav{margin-bottom:var(--space-3);font-size:0.875rem}
-    .card{border:2px solid var(--teal);border-radius:16px;padding:var(--space-3);text-align:center;margin:var(--space-3) auto;max-width:240px;background:#fff;box-shadow:var(--shadow)}
+    .card{border:2px solid var(--teal);border-radius:8px;padding:var(--space-3);text-align:center;margin:var(--space-3) auto;max-width:240px;background:#fff;box-shadow:var(--shadow)}
     .card h2{margin:0 0 var(--space-1);font-size:1rem;color:var(--teal)}
     .qr-image{margin:var(--space-2) auto;display:block}
     .qr-image svg{display:block;margin:0 auto;width:120px;height:120px}
@@ -56,6 +56,7 @@ export async function handleQrPage(
 </head>
 <body>
   <main class="qr-wrap">
+    ${brandLockupHtml(`/?lang=${lang}`)}
     <div class="nav"><a class="mp-back" href="/dashboard/cats/${safeId}?lang=${lang}">&larr; ${safeName}</a></div>
     <div class="card">
       <h2>${safeName}</h2>

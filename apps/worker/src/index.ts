@@ -21,6 +21,7 @@ import { handleCartillaPage, handleVetVisitDetailPage } from "./pages/cartilla.j
 import { handleQrPage } from "./pages/qrPage.js";
 import { handleSightingInbox } from "./pages/sightingInbox.js";
 import { getLanguageFromRequest } from "./utils/i18n.js";
+import { handleBrandAsset } from "./utils/brandAssets.js";
 
 export interface Env {
   DB: D1Database;
@@ -82,8 +83,11 @@ export default {
 
     // -- Static pages --
 
+    const brandAsset = (method === "GET" || method === "HEAD") ? handleBrandAsset(pathname, request) : null;
+    if (brandAsset) return brandAsset;
+
     if ((method === "GET" || method === "HEAD") && pathname === "/") {
-      return handleRoot(request);
+      return handleRoot(request, env);
     }
 
     if ((method === "GET" || method === "HEAD") && pathname === "/history") {

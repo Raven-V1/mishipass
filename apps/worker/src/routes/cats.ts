@@ -12,7 +12,8 @@ import type { RequestContext } from "../middleware/session.js";
 import { renderVetVisitPage } from "./vetVisit.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
 import { getCountryBadgeLabel } from "../data/countries.js";
-import { MISHIPASS_DESIGN_CSS } from "../utils/html.js";
+import { iconContact, iconMegaphone, iconShield } from "../utils/icons.js";
+import { MISHIPASS_DESIGN_CSS, brandLockupHtml } from "../utils/html.js";
 
 // ── GET /api/cats ───────────────────────────────────────────────────────────
 
@@ -141,7 +142,7 @@ export async function handlePublicProfile(
   }
 
   if (cat.current_mode === "missing") {
-    return handlePublicMissingProfile(publicId, cat.name, db, lang);
+    return handlePublicMissingProfile(publicId, cat, db, lang);
   }
 
   if (cat.current_mode === "vet") {
@@ -176,20 +177,21 @@ export async function handlePublicProfile(
 
 async function handlePublicMissingProfile(
   publicId: string,
-  catName: string,
+  cat: NonNullable<Awaited<ReturnType<typeof getCatPublicProfile>>>,
   db: D1Database,
   lang: LanguageCode,
 ): Promise<Response> {
   const alert = await getMissingAlertPublic(db, publicId);
   if (!alert) {
     // Shouldn't happen if current_mode is missing, but defensive fallback.
-    return new Response(renderUnbuiltMode(catName, lang), {
+    return new Response(renderUnbuiltMode(cat.name, lang), {
       status: 200,
       headers: { "Content-Type": "text/html;charset=UTF-8", "X-Content-Type-Options": "nosniff" },
     });
   }
+  const contact = await getContactSettingsPublic(db, publicId);
 
-  return new Response(renderMissingProfile(catName, alert, publicId, lang), {
+  return new Response(renderMissingProfile(cat, alert, contact ?? { contact_mode: "relay", public_phone: null }, publicId, lang), {
     status: 200,
     headers: { "Content-Type": "text/html;charset=UTF-8", "X-Content-Type-Options": "nosniff" },
   });
@@ -207,25 +209,50 @@ function escapeHtml(s: string): string {
 }
 
 function renderMissingProfile(
-  name: string,
+  cat: NonNullable<Awaited<ReturnType<typeof getCatPublicProfile>>>,
   alert: MissingAlertPublicView,
+  contact: ContactSettingsPublicView,
   publicId?: string,
   lang: LanguageCode = "en",
 ): string {
-  const safeName = escapeHtml(name);
+  const safeName = escapeHtml(cat.name);
+  const safeId = publicId ? escapeHtml(publicId) : "";
+  const safeCountry = escapeHtml(getCountryBadgeLabel(cat.country_code));
   const safeCity = alert.city ? escapeHtml(alert.city) : null;
   const safeArea = alert.area ? escapeHtml(alert.area) : null;
   const safeLastSeen = alert.last_seen_at ? escapeHtml(alert.last_seen_at) : null;
+  const contactValue = contact.contact_mode === "phone" && contact.public_phone
+    ? escapeHtml(contact.public_phone)
+    : t(lang, "contactThroughMishipass");
+  const photoSection = cat.photo_r2_key && publicId
+    ? `<img class="alert-photo" src="/media/cats/${safeId}/photo" alt="${safeName}" />`
+    : `<div class="alert-photo photo-placeholder">${t(lang, "noPhoto")}</div>`;
 
   let rewardSection = "";
   if (alert.reward_amount !== null) {
     const safeReward = escapeHtml(alert.reward_amount);
-    rewardSection = `<p class="reward">${t(lang, "reward")}: ${safeReward}</p>`;
+    rewardSection = safeReward;
   }
 
   const sightingLink = publicId
-    ? `<p class="sighting-link"><a class="mp-btn mp-btn-primary" href="/c/${escapeHtml(publicId)}/sighting?lang=${lang}">${t(lang, "reportSighting")}</a></p>`
+    ? `<p class="sighting-link"><a class="mp-btn mp-btn-primary" href="/c/${safeId}/sighting?lang=${lang}">${t(lang, "reportSighting")}</a></p>`
     : "";
+
+  const rows = [
+    [t(lang, "country"), safeCountry],
+    ["Status", t(lang, "missing")],
+    [t(lang, "city"), safeCity || t(lang, "unknown")],
+    [t(lang, "area"), safeArea || t(lang, "unknown")],
+    ...(rewardSection ? [[t(lang, "reward"), rewardSection]] : []),
+    [t(lang, "lastSeen"), safeLastSeen || t(lang, "unknown")],
+    [t(lang, "breedMix"), cat.breed_mix ? escapeHtml(cat.breed_mix) : t(lang, "unknown")],
+    [t(lang, "colorMarkings"), cat.color_markings ? escapeHtml(cat.color_markings) : t(lang, "unknown")],
+    ["Age", cat.birth_date ? escapeHtml(cat.birth_date) : t(lang, "unknown")],
+    [t(lang, "sex"), cat.sex ? escapeHtml(cat.sex) : t(lang, "unknown")],
+    ["Microchip ID", "Not available"],
+    [t(lang, "contact"), contactValue],
+    [t(lang, "openPublicAlert"), publicId ? `<a href="/c/${safeId}?lang=${lang}">/c/${safeId}</a>` : t(lang, "unknown")],
+  ].map(([label, value]) => `<div class="data-row"><dt>${label}</dt><dd>${value}</dd></div>`).join("");
 
   return `<!DOCTYPE html>
 <html lang="${lang}">
@@ -234,20 +261,34 @@ function renderMissingProfile(
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${safeName} — ${t(lang, "missing")} — MishiPass</title>
   <style>
-    body { font-family: sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
-    h1 { margin-bottom: 0.25rem; }
-    .status { display: inline-block; background: #fdd; color: #900; padding: 2px 8px; border-radius: 4px; font-size: 0.875rem; font-weight: bold; }
-    .detail { margin: 0.5rem 0; }
-    .reward { margin-top: 1rem; padding: 0.5rem; background: #ffe; border: 1px solid #cc0; border-radius: 4px; }
+    ${MISHIPASS_DESIGN_CSS}
+    body{padding:var(--space-3)}
+    .alert-shell{max-width:864px;margin:var(--space-4) auto}
+    .alert-card{display:grid;grid-template-columns:280px minmax(0,1fr);gap:var(--space-3);padding:var(--space-4)}
+    h1{display:flex;align-items:center;gap:var(--space-1);font-size:clamp(2rem,6vw,3.5rem);line-height:1.08;margin:var(--space-3) 0 var(--space-2);color:var(--teal);overflow-wrap:anywhere}
+    .status{background:#fff0e9;color:#b42318}
+    .alert-photo{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;background:#fff7f0}
+    .data-list{display:grid;gap:var(--space-1);margin:0}
+    .data-row{display:grid;grid-template-columns:minmax(120px,180px) minmax(0,1fr);gap:var(--space-2);padding:var(--space-1) 0;border-bottom:1px solid var(--line)}
+    .data-row dt{font-weight:900;color:var(--teal)}
+    .data-row dd{margin:0;overflow-wrap:anywhere}
+    .privacy-note{display:flex;align-items:center;gap:var(--space-1);color:var(--muted);margin:var(--space-2) 0 0}
+    @media(max-width:700px){body{padding:var(--space-2)}.alert-card{grid-template-columns:1fr;padding:var(--space-3)}.data-row{grid-template-columns:1fr;gap:0}.sighting-link .mp-btn{width:100%}}
   </style>
 </head>
 <body>
-  <h1>${safeName} <span class="status">${t(lang, "missing").toUpperCase()}</span></h1>
-  ${safeCity ? `<p class="detail">${t(lang, "city")}: ${safeCity}</p>` : ""}
-  ${safeArea ? `<p class="detail">${t(lang, "area")}: ${safeArea}</p>` : ""}
-  ${safeLastSeen ? `<p class="detail">${t(lang, "lastSeen")}: ${safeLastSeen}</p>` : ""}
-  ${rewardSection}
-  ${sightingLink}
+  <main class="alert-shell">
+    ${brandLockupHtml(`/?lang=${lang}`)}
+    <h1>${iconMegaphone(32)} <span>${t(lang, "missingAlert")}</span></h1>
+    <section class="mp-card alert-card">
+      <div>${photoSection}${sightingLink}</div>
+      <div>
+        <h2>${safeName} <span class="status">${t(lang, "missing")}</span></h2>
+        <dl class="data-list">${rows}</dl>
+        <p class="privacy-note">${iconShield(16)} <span>No private cartilla or medical data is shown.</span></p>
+      </div>
+    </section>
+  </main>
 </body>
 </html>`;
 }
@@ -298,21 +339,28 @@ function renderActiveProfile(
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${safeName} — MishiPass</title>
   <style>
-    body { font-family: sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
-    h1 { margin-bottom: 0.25rem; }
-    .badge { display: inline-block; background: #eee; padding: 2px 8px; border-radius: 4px; font-size: 0.875rem; vertical-align: middle; }
-    .photo img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; display: block; margin: 1rem 0; }
-    .photo-placeholder { width: 120px; height: 120px; background: #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 1rem 0; }
-    .detail { margin: 0.25rem 0; font-size: 0.95rem; color: #333; }
-    .contact-btn { display: inline-block; margin-top: 1rem; padding: 0.75rem 1.5rem; background: #333; color: #fff; text-decoration: none; border-radius: 6px; font-size: 1rem; }
-    .contact-info { margin-top: 1rem; color: #555; font-size: 0.95rem; }
+    ${MISHIPASS_DESIGN_CSS}
+    body{padding:var(--space-3)}
+    .profile-shell{max-width:704px;margin:var(--space-4) auto}
+    .profile-card{padding:var(--space-4)}
+    h1{font-size:clamp(2rem,6vw,3rem);line-height:1.08;margin:var(--space-3) 0 var(--space-1);color:var(--teal);overflow-wrap:anywhere}
+    .photo img,.photo-placeholder{width:160px;height:160px;border-radius:8px;object-fit:cover;display:flex;align-items:center;justify-content:center;margin:var(--space-3) 0;background:#fff7f0}
+    .detail{margin:var(--space-1) 0;color:var(--ink)}
+    .contact-info{display:flex;align-items:center;gap:var(--space-1);margin-top:var(--space-3);color:var(--muted)}
+    @media(max-width:430px){body{padding:var(--space-2)}.profile-card{padding:var(--space-3)}.contact-btn{width:100%}}
   </style>
 </head>
 <body>
-  <h1>${safeName} <span class="badge">${safeCountry}</span></h1>
-  ${photoSection}
-  ${detailLines}
-  ${contactSection}
+  <main class="profile-shell">
+    ${brandLockupHtml(`/?lang=${lang}`)}
+    <section class="mp-card profile-card">
+      <h1>${safeName}</h1>
+      <span class="badge">${safeCountry}</span>
+      ${photoSection}
+      ${detailLines}
+      ${contactSection || `<p class="contact-info">${iconContact(16)} <span>${t(lang, "privacyOwnerControlledContact")}</span></p>`}
+    </section>
+  </main>
 </body>
 </html>`;
 }

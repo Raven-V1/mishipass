@@ -1,5 +1,6 @@
 import { COUNTRIES } from "../data/countries.js";
-import { MISHIPASS_DESIGN_CSS, htmlResponse } from "../utils/html.js";
+import { iconApple, iconContact, iconGlobe, iconGoogle, iconLogout, iconMegaphone, iconQrCode, iconSettings } from "../utils/icons.js";
+import { MISHIPASS_DESIGN_CSS, brandLockupHtml, htmlResponse } from "../utils/html.js";
 import type { LogtoEnv } from "../routes/logto.js";
 
 function buildCountryOptions(): string {
@@ -22,34 +23,35 @@ function buildDashboardHtml(): string {
     body{max-width:none;margin:0;padding:var(--space-3);background-color:var(--cream)}
     .topbar{max-width:1184px;margin:0 auto var(--space-3);padding:var(--space-2) 0;border-bottom:1px solid var(--line)}
     .topbar h1{font-size:2rem;color:var(--teal);margin:0}.nav{margin-top:var(--space-1);margin-bottom:0}.nav a{font-weight:800;color:var(--teal)}
+    .topbar .brand-lockup{min-width:240px}.topbar-actions{display:flex;gap:var(--space-1);align-items:end;justify-content:flex-end;flex-wrap:wrap}.topbar-actions label{display:flex;align-items:center;gap:var(--space-1)}
     .language-row select{min-width:160px}
     #auth-section,#dashboard-section{max-width:1184px;margin:0 auto}
     .auth-card{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));overflow:hidden}
     .auth-main{grid-column:1/span 7;padding:var(--space-4);display:grid;gap:var(--space-3)}
     .auth-side{grid-column:8/span 5;padding:var(--space-4);background:#fff4f3;border-left:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;gap:var(--space-2)}
     .auth-meta{display:flex;gap:var(--space-2);align-items:center;justify-content:space-between;flex-wrap:wrap;margin:var(--space-2) 0}.remember{display:inline-flex;gap:var(--space-1);align-items:center;margin:0}.remember input{width:16px;min-height:16px}.divider{display:flex;align-items:center;gap:var(--space-2);font-weight:900;color:var(--muted)}.divider:before,.divider:after{content:"";height:1px;background:var(--line);flex:1}.social-btn{background:#fff;color:var(--ink);border:1px solid var(--line)}.visual-only{margin:0;color:var(--muted);font-size:.875rem}
-    .section-head{margin:var(--space-3) 0}.section-head h2{font-size:2rem;color:var(--teal)}
-    .tab-nav{gap:var(--space-1);border-bottom:0;margin:0 0 var(--space-3);padding:var(--space-1);background:#fff7f0;border:1px solid var(--line);border-radius:16px}.tab-btn,.tab-link{border-radius:8px;border:1px solid transparent;background:transparent;color:var(--teal);font-weight:800}.tab-btn.active{background:var(--teal);border-color:var(--teal);color:#fff}
-    .panel,.settings-card,.contact-card,.cat-card{border-color:var(--line);border-radius:16px;background:var(--card);box-shadow:var(--shadow);padding:var(--space-3)}
+    .section-head{margin:var(--space-3) 0}.section-head h2{font-size:2rem;color:var(--teal);margin:0}.section-head p{margin:var(--space-1) 0 0;color:var(--muted)}
+    .tab-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-1);border-bottom:0;margin:0 0 var(--space-3);padding:var(--space-1);background:#fff7f0;border:1px solid var(--line);border-radius:8px}.tab-btn,.tab-link{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-1);border-radius:8px;border:1px solid transparent;background:transparent;color:var(--teal);font-weight:800;font-size:.9375rem;line-height:1.2;min-height:48px;padding:var(--space-1) var(--space-2);white-space:normal}.tab-btn.active{background:var(--teal);border-color:var(--teal);color:#fff}
+    .panel,.settings-card,.contact-card,.cat-card{border-color:var(--line);border-radius:8px;background:var(--card);box-shadow:var(--shadow);padding:var(--space-3)}
     .form-grid{gap:var(--space-2)}.field{margin-bottom:var(--space-2)}
-    .cat-board{grid-template-columns:repeat(auto-fit,minmax(288px,1fr));gap:var(--space-3)}.cat-photo,.cat-photo-placeholder{border-radius:16px;margin-bottom:var(--space-2);background:#fff7f0}
+    .cat-board{grid-template-columns:repeat(auto-fit,minmax(288px,1fr));gap:var(--space-3)}.cat-photo,.cat-photo-placeholder{border-radius:8px;margin-bottom:var(--space-2);background:#fff7f0}
     .cat-actions,.mode-actions{gap:var(--space-1);margin-top:var(--space-2)}
     .selector-tools{grid-template-columns:minmax(0,1fr) auto;gap:var(--space-2);margin:var(--space-2) 0}.selector-summary{min-height:var(--space-3);color:var(--teal);font-weight:800}
     .breed-section-title{display:block;clear:both;font-size:.875rem;color:var(--teal);margin:var(--space-4) 0 var(--space-2);letter-spacing:0;text-transform:uppercase}
     .breed-card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(176px,1fr));gap:var(--space-3);align-items:stretch;margin:0 0 var(--space-4);padding:0;max-height:none;overflow:visible}.featured-breed-grid{grid-template-columns:repeat(auto-fit,minmax(192px,1fr))}.all-breed-grid{grid-template-columns:repeat(auto-fit,minmax(176px,1fr));max-height:none;overflow:visible}
-    .choice-card{border-color:var(--line);border-radius:16px;padding:var(--space-2);gap:var(--space-2);min-height:224px;background:#fff;box-shadow:0 8px 24px rgba(56,38,26,.06);overflow:hidden;align-self:stretch}.choice-card.compact{min-height:224px;padding:var(--space-2)}.choice-card.active{border-color:var(--teal);box-shadow:0 0 0 4px rgba(15,107,99,.18)}
-    .breed-card img,.breed-fallback,.breed-placeholder-art{display:block;width:100%;height:120px;flex:0 0 auto;object-fit:cover;border-radius:16px;padding:0;background:linear-gradient(90deg,#fff4f3 0%,#e9f5ef 50%,#fff4f3 100%);background-size:200% 100%;animation:breedShimmer 1.2s linear infinite}.breed-card.compact img,.breed-card.compact .breed-fallback,.breed-card.compact .breed-placeholder-art{height:120px}.breed-card img.loaded{animation:none;background:#fff}.breed-card img.failed{display:none}.breed-card img.failed+.breed-fallback{display:flex}.breed-fallback{display:flex;animation:none;align-items:center;justify-content:center}.breed-card img+.breed-fallback{display:none}.breed-placeholder-art{align-items:center;justify-content:center}.breed-placeholder-art svg{width:80px;height:64px}.breed-card-title,.choice-card span{display:block;min-height:48px;font-size:.9375rem;font-weight:800;line-height:1.35;color:var(--ink);overflow-wrap:anywhere}
-    .swatch{height:64px;border-radius:16px}
+    .choice-card{border-color:var(--line);border-radius:8px;padding:var(--space-2);gap:var(--space-2);min-height:224px;background:#fff;box-shadow:0 8px 24px rgba(56,38,26,.06);overflow:hidden;align-self:stretch}.choice-card.compact{min-height:224px;padding:var(--space-2)}.choice-card.active{border-color:var(--teal);box-shadow:0 0 0 4px rgba(36,119,110,.18)}
+    .breed-card img,.breed-fallback,.breed-placeholder-art{display:block;width:100%;height:120px;flex:0 0 auto;object-fit:cover;border-radius:8px;padding:0;background:linear-gradient(90deg,#fff4f3 0%,#e8faf7 50%,#fff4f3 100%);background-size:200% 100%;animation:breedShimmer 1.2s linear infinite}.breed-card.compact img,.breed-card.compact .breed-fallback,.breed-card.compact .breed-placeholder-art{height:120px}.breed-card img.loaded{animation:none;background:#fff}.breed-card img.failed{display:none}.breed-card img.failed+.breed-fallback{display:flex}.breed-fallback{display:flex;animation:none;align-items:center;justify-content:center}.breed-card img+.breed-fallback{display:none}.breed-placeholder-art{align-items:center;justify-content:center;font-weight:800}.breed-card-title,.choice-card span{display:block;min-height:48px;font-size:.9375rem;font-weight:800;line-height:1.35;color:var(--ink);overflow-wrap:anywhere}
+    .swatch{height:64px;border-radius:8px}
     @keyframes breedShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
     #create-cat-form>button[type=submit]{margin-top:var(--space-4)}
-    @media(max-width:768px){body{padding:var(--space-2)}.auth-main,.auth-side{grid-column:1/-1}.auth-side{border-left:0;border-top:1px solid var(--line)}.tab-nav{overflow-x:auto;flex-wrap:nowrap}.tab-btn,.tab-link{min-width:max-content}.selector-tools{grid-template-columns:1fr}.breed-card-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2)}.swatch-grid{grid-template-columns:repeat(auto-fit,minmax(144px,1fr))}}
-    @media(max-width:430px){body{padding:var(--space-2)}.topbar{align-items:flex-start}.cat-board{grid-template-columns:1fr}.cat-actions>*,.mode-actions>*{flex:1 1 100%}.breed-card-grid{grid-template-columns:1fr;gap:var(--space-2);max-height:none;overflow:visible}.swatch-grid{grid-template-columns:repeat(auto-fit,minmax(128px,1fr));max-height:384px}.breed-card img,.breed-fallback,.breed-placeholder-art,.breed-card.compact img,.breed-card.compact .breed-fallback,.breed-card.compact .breed-placeholder-art{height:104px}.choice-card,.choice-card.compact{min-height:208px}.auth-main,.auth-side,.panel,.settings-card,.contact-card,.cat-card{padding:var(--space-2)}}
+    @media(max-width:768px){body{padding:var(--space-2)}.auth-main,.auth-side{grid-column:1/-1}.auth-side{border-left:0;border-top:1px solid var(--line)}.tab-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.selector-tools{grid-template-columns:1fr}.breed-card-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2)}.swatch-grid{grid-template-columns:repeat(auto-fit,minmax(144px,1fr))}.topbar{align-items:flex-start}.topbar-actions{justify-content:flex-start}}
+    @media(max-width:430px){body{padding:var(--space-2)}.cat-board{grid-template-columns:1fr}.cat-actions>*,.mode-actions>*{flex:1 1 100%}.tab-nav{grid-template-columns:1fr}.tab-btn,.tab-link{width:100%;min-width:0}.breed-card-grid{grid-template-columns:1fr;gap:var(--space-2);max-height:none;overflow:visible}.swatch-grid{grid-template-columns:repeat(auto-fit,minmax(128px,1fr));max-height:384px}.breed-card img,.breed-fallback,.breed-placeholder-art,.breed-card.compact img,.breed-card.compact .breed-fallback,.breed-card.compact .breed-placeholder-art{height:104px}.choice-card,.choice-card.compact{min-height:208px}.auth-main,.auth-side,.panel,.settings-card,.contact-card,.cat-card{padding:var(--space-2)}}
   </style>
 </head>
 <body>
   <div class="topbar">
-    <div><h1>MishiPass</h1><div class="nav"><a href="/" data-i18n="home">Home</a></div></div>
-    <div class="language-row"><div><label for="guest-language-select" data-i18n="language">Language</label><select id="guest-language-select"><option value="en">English</option><option value="es">Español</option><option value="kk-KZ">Қазақша</option></select></div></div>
+    <div>${brandLockupHtml("/")}</div>
+    <div class="topbar-actions language-row"><div><label for="guest-language-select">${iconGlobe(16)} <span data-i18n="language">Language</span></label><select id="guest-language-select"><option value="en">English</option><option value="es">Español</option><option value="kk-KZ">Қазақша</option></select></div></div>
   </div>
 
   <div id="auth-section" class="dashboard-shell">
@@ -67,12 +69,12 @@ function buildDashboardHtml(): string {
   </div>
 
   <div id="dashboard-section" class="hidden">
-    <div class="section-head"><h2 data-i18n="dashboard">Owner Dashboard</h2><button id="logout-btn" class="btn-secondary">Logout</button></div>
+    <div class="section-head"><div><h2>Welcome back!</h2><p data-i18n="dashboard">Owner Dashboard</p></div><button id="logout-btn" class="btn-secondary">${iconLogout(16)} <span>Logout</span></button></div>
     <div class="tab-nav">
-      <button class="tab-btn active" data-tab="cats-tab" data-i18n="registerCat">Register a Cat</button>
-      <button class="tab-btn" data-tab="contact-tab" data-i18n="contactPrivacy">Contact &amp; Privacy</button>
-      <button class="tab-btn" data-tab="settings-tab" data-i18n="settings">Settings</button>
-      <a class="tab-link" id="board-link" href="/recovery-board" data-i18n="missingCatBoard">Missing Cat Board</a>
+      <button class="tab-btn active" data-tab="cats-tab">${iconQrCode(16)} <span data-i18n="registerCat">Register a Cat</span></button>
+      <button class="tab-btn" data-tab="contact-tab">${iconContact(16)} <span data-i18n="contactPrivacy">Contact &amp; Privacy</span></button>
+      <button class="tab-btn" data-tab="settings-tab">${iconSettings(16)} <span data-i18n="settings">Settings</span></button>
+      <a class="tab-link" id="board-link" href="/recovery-board">${iconMegaphone(16)} <span data-i18n="missingCatBoard">Missing Cat Board</span></a>
     </div>
 
     <div id="cats-tab" class="tab-panel active">
@@ -142,7 +144,7 @@ function buildDashboardHtml(): string {
     function loadSettings(){fetch("/api/settings",{credentials:"same-origin"}).then(function(r){return r.status===401?null:r.json()}).then(function(d){if(d&&d.language_code)setLang(d.language_code)}).catch(function(){})}
     function loadBreeds(){if(allBreeds.length)return;function fallback(){allBreeds=["Mixed / Unknown / Other","Abyssinian","Bengal","Maine Coon","Persian","Siamese","Domestic Shorthair","Domestic Longhair","Devon Rex","European Burmese","Russian Blue","Ragdoll","Sphynx","British Shorthair"].map(function(n){return{name:n,referenceImageUrl:"",hasReferenceImage:false}});featuredBreeds=[{name:"Mixed / Unknown / Other",referenceImageUrl:"",hasReferenceImage:false},{name:"Abyssinian",referenceImageUrl:"https://cdn2.thecatapi.com/images/0XYvRd7oD.jpg",hasReferenceImage:true},{name:"Bengal",referenceImageUrl:"https://cdn2.thecatapi.com/images/O3btzLlsO.png",hasReferenceImage:true},{name:"Maine Coon",referenceImageUrl:"https://cdn2.thecatapi.com/images/OOD3VXAQn.jpg",hasReferenceImage:true},{name:"Persian",referenceImageUrl:"https://cdn2.thecatapi.com/images/-Zfz5z2jK.jpg",hasReferenceImage:true},{name:"Siamese",referenceImageUrl:"https://cdn2.thecatapi.com/images/ai6Jps4sx.jpg",hasReferenceImage:true}];renderBreedCards()}fetch("/api/cat-reference/breeds",{credentials:"same-origin"}).then(function(r){return r.json()}).then(function(d){if(!d||!d.breeds||!d.breeds.length){fallback();return}allBreeds=d.breeds.slice();featuredBreeds=(d.featuredBreeds&&d.featuredBreeds.length?d.featuredBreeds:allBreeds.filter(function(b){return b.referenceImageUrl}).slice(0,8)).slice();if(!allBreeds.some(function(b){return b.name==="Mixed / Unknown / Other"}))allBreeds.unshift({name:"Mixed / Unknown / Other",referenceImageUrl:"",hasReferenceImage:false});if(!featuredBreeds.some(function(b){return b.name==="Mixed / Unknown / Other"}))featuredBreeds.unshift({name:"Mixed / Unknown / Other",referenceImageUrl:"",hasReferenceImage:false});renderBreedCards()}).catch(fallback)}
     function selectBreed(name){breedInput.value=name;breedSummary.textContent=breedInput.value;breedOtherWrap.classList.toggle("hidden",breedInput.value.indexOf("Other")===-1&&breedInput.value.indexOf("Unknown")===-1);renderBreedCards()}
-    function breedPlaceholder(){return'<div class="breed-placeholder-art" aria-hidden="true"><svg viewBox="0 0 96 64" role="img"><path d="M22 28 14 10 12 35" fill="#fffdf9" stroke="#111" stroke-width="4" stroke-linejoin="round"/><path d="M54 27 67 10 62 36" fill="#fffdf9" stroke="#111" stroke-width="4" stroke-linejoin="round"/><ellipse cx="40" cy="35" rx="28" ry="20" fill="#fffdf9" stroke="#111" stroke-width="4"/><circle cx="30" cy="34" r="3" fill="#111"/><circle cx="50" cy="34" r="3" fill="#111"/><path d="M38 42h5l-3 4z" fill="#111"/><path d="M28 49q12 8 24 0" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round"/></svg></div>'}
+    function breedPlaceholder(){return'<div class="breed-placeholder-art">'+tr("noPhoto")+'</div>'}
     function breedCardHtml(b,compact){var img=b.referenceImageUrl?'<img src="'+esc(b.referenceImageUrl)+'" alt="'+esc(b.name)+'" loading="lazy" onload="this.classList.add(\\'loaded\\')" onerror="this.classList.add(\\'failed\\')" /><div class="breed-fallback">'+breedPlaceholder()+'</div>':breedPlaceholder();return'<button type="button" class="choice-card breed-card'+(compact?' compact':'')+(breedInput.value===b.name?' active':'')+'" data-breed="'+esc(b.name)+'">'+img+'<span class="breed-card-title">'+esc(b.name)+'</span></button>'}
     function renderBreedCards(){if(!breedGrid||!allBreedGrid||!allBreeds.length)return;var q=(breedSearch.value||"").toLowerCase();var visual=featuredBreeds.filter(function(b){return !q||b.name.toLowerCase().indexOf(q)!==-1});breedGrid.innerHTML=visual.map(function(b){return breedCardHtml(b,false)}).join("");var list=allBreeds.filter(function(b){return !q||b.name.toLowerCase().indexOf(q)!==-1});var shown=list.slice(0,visibleBreedCount);allBreedGrid.innerHTML=shown.map(function(b){return breedCardHtml(b,true)}).join("");showMoreBreeds.classList.toggle("hidden",list.length<=visibleBreedCount);document.querySelectorAll(".breed-card").forEach(function(card){card.addEventListener("click",function(){selectBreed(card.getAttribute("data-breed"))})})}
     function renderColorSwatches(){if(!colorGrid)return;var names={en:["Black","White","Gray","Orange","Cream","Brown","Calico","Tortoiseshell","Tabby","Tuxedo","Pointed / Siamese-style","Mixed / Other"],es:["Negro","Blanco","Gris","Naranja","Crema","Marrón","Calicó","Carey","Atigrado","Tuxedo","Pointed / estilo siamés","Mixto / otro"],"kk-KZ":["Қара","Ақ","Сұр","Қызғылт","Крем","Қоңыр","Калико","Тасбақа түсті","Жолақты","Тукседо","Сиам стиліндегі","Аралас / басқа"]};var keys=["black","white","gray","orange","cream","brown","calico","tortoiseshell","tabby","tuxedo","pointed","mixed"];colorGrid.innerHTML=keys.map(function(k,i){var label=names[currentLanguage][i];return'<button type="button" class="choice-card swatch-card'+(colorInput.value===label?' active':'')+'" data-color="'+esc(label)+'"><div class="swatch '+k+'"></div><span>'+esc(label)+'</span></button>'}).join("");colorGrid.querySelectorAll(".swatch-card").forEach(function(card){card.addEventListener("click",function(){colorInput.value=card.getAttribute("data-color");colorSummary.textContent=colorInput.value;colorOtherWrap.classList.toggle("hidden",card.getAttribute("data-color").toLowerCase().indexOf("other")===-1&&card.getAttribute("data-color").indexOf("басқа")===-1);renderColorSwatches()})})}
@@ -166,12 +168,12 @@ function buildSocialButtons(env: LogtoEnv): string {
   const appleConfigured = googleConfigured && !!env.LOGTO_APPLE_CONNECTOR_TARGET;
 
   const googleBtn = googleConfigured
-    ? `<a href="/api/auth/logto/google" class="btn social-btn">Continue with Google</a>`
-    : `<button class="social-btn" type="button" disabled aria-disabled="true" title="Google login not configured">Continue with Google</button>`;
+    ? `<a href="/api/auth/logto/google" class="btn social-btn">${iconGoogle(18)}<span>Continue with Google</span></a>`
+    : `<button class="social-btn provider-pending" type="button" disabled aria-disabled="true" title="Google login not configured">${iconGoogle(18)}<span>Continue with Google</span></button>`;
 
   const appleBtn = appleConfigured
-    ? `<a href="/api/auth/logto/apple" class="btn social-btn">Continue with Apple</a>`
-    : `<button class="social-btn" type="button" disabled aria-disabled="true" title="Apple login not configured">Continue with Apple</button>`;
+    ? `<a href="/api/auth/logto/apple" class="btn social-btn">${iconApple(18)}<span>Continue with Apple</span></a>`
+    : `<button class="social-btn provider-pending" type="button" disabled aria-disabled="true" title="Apple login not configured">${iconApple(18)}<span>Continue with Apple</span></button>`;
 
   const note = googleConfigured
     ? ""
