@@ -15,17 +15,22 @@ describe("cat reference proxy", () => {
     expect(JSON.stringify(json)).not.toContain("THE_CAT_API_KEY");
   });
 
-  it("maps TheCatAPI breed response without returning the API key", async () => {
+  it("maps TheCatAPI breed response without forcing jpg URLs or returning the API key", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json([
+      { id: "beng", name: "Bengal", reference_image_id: "O3btzLlsO" },
       { id: "siam", name: "Siamese", reference_image_id: "abc123" },
+      { id: "mcoo", name: "Maine Coon", image: { url: "https://cdn2.thecatapi.com/images/OOD3VXAQn.jpg" } },
     ])));
     const res = await handleCatReferenceBreeds("secret-key");
     const json = await res.json() as { breeds: Array<Record<string, unknown>> };
     expect(json.breeds[0]).toEqual({
-      id: "siam",
-      name: "Siamese",
-      referenceImageUrl: "https://cdn2.thecatapi.com/images/abc123.jpg",
+      id: "beng",
+      name: "Bengal",
+      referenceImageUrl: "https://cdn2.thecatapi.com/images/O3btzLlsO.png",
     });
+    expect(json.breeds[1]).toMatchObject({ id: "siam", name: "Siamese", referenceImageUrl: null });
+    expect(json.breeds[2]).toMatchObject({ id: "mcoo", name: "Maine Coon", referenceImageUrl: "https://cdn2.thecatapi.com/images/OOD3VXAQn.jpg" });
     expect(JSON.stringify(json)).not.toContain("secret-key");
+    expect(JSON.stringify(json)).not.toContain("abc123.jpg");
   });
 });

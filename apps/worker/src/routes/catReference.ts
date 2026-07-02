@@ -7,18 +7,42 @@ const FALLBACK_BREEDS = [
   { id: "siam", name: "Siamese", referenceImageUrl: "https://cdn2.thecatapi.com/images/ai6Jps4sx.jpg" },
 ];
 
+const KNOWN_REFERENCE_IMAGE_URLS: Record<string, string> = Object.fromEntries(
+  FALLBACK_BREEDS
+    .filter((breed): breed is { id: string; name: string; referenceImageUrl: string } => breed.referenceImageUrl !== null)
+    .map(breed => {
+      const id = breed.referenceImageUrl.split("/").pop()?.replace(/\.[^.]+$/, "") || "";
+      return [id, breed.referenceImageUrl];
+    }),
+);
+
 let cachedBreeds: unknown[] | null = null;
 let cacheExpiresAt = 0;
+
+function safeTheCatApiImageUrl(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:") return null;
+    if (url.hostname !== "cdn2.thecatapi.com") return null;
+    if (!/^\/images\/[A-Za-z0-9_-]+\.(jpg|jpeg|png|webp)$/i.test(url.pathname)) return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
 
 function mapBreed(item: Record<string, unknown>) {
   const id = typeof item.id === "string" ? item.id : "";
   const name = typeof item.name === "string" ? item.name : "";
   const referenceImageId = typeof item.reference_image_id === "string" ? item.reference_image_id : null;
+  const image = typeof item.image === "object" && item.image !== null ? item.image as Record<string, unknown> : null;
+  const directImageUrl = safeTheCatApiImageUrl(image?.url);
   if (!id || !name) return null;
   return {
     id,
     name,
-    referenceImageUrl: referenceImageId ? `https://cdn2.thecatapi.com/images/${encodeURIComponent(referenceImageId)}.jpg` : null,
+    referenceImageUrl: directImageUrl || (referenceImageId ? KNOWN_REFERENCE_IMAGE_URLS[referenceImageId] || null : null),
   };
 }
 
