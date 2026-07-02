@@ -432,7 +432,7 @@ Decision: Move active product and documentation identity from Beta 1.4 to MishiP
 
 Executor: Codex
 Branch: `fix/beta15-day10-v1-completion`
-Commit: `c95ae40`
+Commit: `cc4f50b` (implementation commit recorded before this decision-log hash correction)
 
 Summary:
 - Product/documentation identity moved to MishiPass Beta 1.5.
