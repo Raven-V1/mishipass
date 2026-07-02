@@ -77,7 +77,7 @@ function buildDashboardHtml(): string {
 
     <div id="cats-tab" class="tab-panel active">
       <div id="cat-list"></div>
-      <details open>
+      <details>
         <summary data-i18n="registerCat">Register a Cat</summary>
         <div id="create-error" class="error hidden"></div>
         <form id="create-cat-form" class="panel">
