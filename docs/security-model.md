@@ -78,6 +78,8 @@ changes the mode. The QR never changes.
   cannot view or manage another owner's cats.
 - Cat profile photos are served through Worker media routes (`/media/cats/:publicId/photo`),
   not raw R2 URLs.
+- Vaccine sticker photos are private cartilla media and are served only through
+  authenticated owner-checked Worker routes.
 - Sighting photos are owner-only — accessible only through authenticated
   dashboard routes. Raw R2 keys are never exposed.
 - Temporary vet access is reachable only while the cat is in Vet Visit mode.
@@ -115,6 +117,10 @@ changes the mode. The QR never changes.
   - Public `/c/:publicId` lookup
 - Session tokens are length-bounded (256 characters maximum) before hashing,
   to prevent CPU exhaustion from oversized inputs.
+- TheCatAPI is used only as optional reference-data assist for owner cat profile
+  completion. It is not used for QR routing, security decisions, ID generation,
+  ownership, public truth, or medical/cartilla logic, and dashboard behavior
+  falls back to local options if the external service is unavailable.
 - HTML output rendered by the Worker is passed through an `escapeHtml` helper
   that encodes angle brackets, double quotes, and single quotes. This is a
   reusable encoding helper, not an automatic guarantee — any new route handler
@@ -251,10 +257,11 @@ Day 7 of 14 coding days. Updated 2026-06-30 for Day 1–6 closure.
 | UNIQUE constraint + retry | D1 schema constraint, Worker retry on collision | Active |
 | D1-backed rate limiting on `/c/:publicId` | HMAC-hashed IP key, D1 counter | Active — enforced |
 | D1-backed rate limiting on sighting submit | HMAC-hashed IP key, D1 counter | Active — enforced |
-| Image upload validation (MIME + size + magic-byte) | Worker middleware | Active — enforced on cat photo and sighting photo uploads |
+| Image upload validation (MIME + size + magic-byte) | Worker middleware | Active — enforced on cat photo, sighting photo, and vaccine sticker uploads |
 | HMAC-SHA256 reporter IP hashing | `SIGHTING_IP_HMAC_SECRET` environment variable | Active — missing secret fails closed |
 | R2 key non-exposure | Worker media routes serve photos; raw keys never in responses | Active |
 | Sighting photo owner-only access | Authenticated owner check on photo route | Active |
+| Owner language preference | `owner_settings.language_code` allowlist (`en`, `es`, `kk-KZ`) | Active — dashboard/settings only |
 | Owner auth backend | PBKDF2-SHA256, opaque session token, HttpOnly cookie | Active |
 | Aikido security scan | — | Scheduled for Day 13 |
 
