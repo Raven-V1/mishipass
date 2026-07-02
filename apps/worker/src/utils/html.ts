@@ -14,6 +14,7 @@ export function htmlResponse(body: string, status = 200): Response {
     status,
     headers: {
       "Content-Type": "text/html;charset=UTF-8",
+      "Cache-Control": "no-store",
       "X-Content-Type-Options": "nosniff",
     },
   });

@@ -73,6 +73,7 @@ export function handleRoot(request: Request): Response {
       status: 200,
       headers: {
         "Content-Type": "text/html;charset=UTF-8",
+        "Cache-Control": "no-store",
         "X-Content-Type-Options": "nosniff",
       },
     });
