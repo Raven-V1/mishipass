@@ -214,6 +214,11 @@ describe("GET /dashboard", () => {
     expect(body).toContain("Español");
     expect(body).toContain("Қазақша");
     expect(body).toContain('id="breed-card-grid"');
+    expect(body).toContain('id="breed-text-list"');
+    expect(body).toContain("Featured visual breeds");
+    expect(body).toContain("All breeds");
+    expect(body).toContain("featuredBreeds");
+    expect(body).toContain("breed-text-option");
     expect(body).toContain('id="breed-search"');
     expect(body).toContain('id="cat-breed"');
     expect(body).toContain('id="color-swatch-grid"');

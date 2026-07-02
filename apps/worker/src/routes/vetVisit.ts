@@ -314,19 +314,20 @@ function renderVetForm(
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${safeName} — ${t(lang, "vetVisit")} — MishiPass</title>
   <style>
-    body{font-family:system-ui,-apple-system,sans-serif;max-width:520px;margin:2rem auto;padding:0 1rem;color:#111;line-height:1.5}
+    *{box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:1.5rem auto;padding:0 1rem;color:#111;line-height:1.5}
     h1{font-size:1.5rem;margin-bottom:0.25rem}
     .badge{display:inline-block;background:#eee;padding:2px 8px;border-radius:4px;font-size:0.875rem}
     .vet-badge{background:#e0f0ff;color:#036;padding:4px 10px;border-radius:4px;font-size:0.8rem;font-weight:bold;display:inline-block;margin-bottom:1rem}
     .photo img{width:80px;height:80px;border-radius:50%;object-fit:cover;margin:0.75rem 0}
     .expiry{font-size:0.8rem;color:#666;margin-bottom:1rem}
     label{display:block;margin-bottom:0.25rem;font-size:0.875rem;font-weight:500;margin-top:0.75rem}
-    input[type="text"],input[type="date"],textarea{width:100%;padding:0.5rem;border:1px solid #ccc;border-radius:4px;font-size:1rem;box-sizing:border-box}
+    input[type="text"],input[type="date"],textarea{width:100%;padding:0.65rem;border:1px solid #ccc;border-radius:6px;font-size:1rem;min-height:44px}
     textarea{min-height:80px;resize:vertical}
-    .submit-btn{display:block;width:100%;margin-top:1.25rem;padding:0.75rem;background:#036;color:#fff;border:none;border-radius:6px;font-size:1rem;cursor:pointer}
+    .submit-btn{display:block;width:100%;min-height:44px;margin-top:1.25rem;padding:0.75rem;background:#036;color:#fff;border:none;border-radius:6px;font-size:1rem;cursor:pointer}
     .submit-btn:hover{background:#024}
     .note{font-size:0.8rem;color:#555;margin-top:1rem;padding:0.5rem;background:#f9f9f9;border-radius:4px}
-    .photo-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin:.35rem 0 .75rem}.photo-choice{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:.5rem .75rem;background:#eee;border-radius:6px;cursor:pointer;font-weight:600}.photo-actions input{width:auto}
+    .photo-picker{margin:.35rem 0 .85rem}.photo-picker-actions{display:flex;gap:.55rem;flex-wrap:wrap}.photo-action{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:.62rem .85rem;background:#eee;border-radius:6px;cursor:pointer;font-weight:700;text-align:center;line-height:1.2;flex:1 1 155px}.photo-input-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}.photo-status{font-size:.85rem;color:#666;margin-top:.4rem;overflow-wrap:anywhere}
+    @media(max-width:430px){body{margin:1rem auto;padding:0 .85rem}.photo-action{flex-basis:100%}h1{font-size:1.35rem}}
   </style>
 </head>
 <body>
@@ -360,11 +361,14 @@ function renderVetForm(
     <label for="vaccine_date">Date given (optional)</label>
     <input type="date" id="vaccine_date" name="vaccine_date" />
     <label>Vaccine sticker photo (optional)</label>
-    <div class="photo-actions">
-      <label class="photo-choice" for="vaccine_sticker_photo_capture">${t(lang, "takePhoto")}</label>
-      <input type="file" id="vaccine_sticker_photo_capture" name="vaccine_sticker_photo_capture" accept="image/*" capture="environment" />
-      <label class="photo-choice" for="vaccine_sticker_photo_upload">${t(lang, "chooseExistingPhoto")}</label>
-      <input type="file" id="vaccine_sticker_photo_upload" name="vaccine_sticker_photo_upload" accept="image/*" />
+    <div class="photo-picker">
+      <div class="photo-picker-actions">
+        <label class="photo-action" for="vaccine_sticker_photo_capture">${t(lang, "takePhoto")}</label>
+        <label class="photo-action" for="vaccine_sticker_photo_upload">${t(lang, "chooseExistingPhoto")}</label>
+      </div>
+      <input class="photo-input-visually-hidden" type="file" id="vaccine_sticker_photo_capture" name="vaccine_sticker_photo_capture" accept="image/*" capture="environment" data-photo-status="vaccine-sticker-status" />
+      <input class="photo-input-visually-hidden" type="file" id="vaccine_sticker_photo_upload" name="vaccine_sticker_photo_upload" accept="image/*" data-photo-status="vaccine-sticker-status" />
+      <div id="vaccine-sticker-status" class="photo-status">${t(lang, "noPhotoSelected")}</div>
     </div>
 
     <h2>${t(lang, "medicationRecord")}</h2>
