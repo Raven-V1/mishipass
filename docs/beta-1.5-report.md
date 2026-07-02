@@ -115,14 +115,14 @@ QR scan / browser visit
 
 | Tool | Role |
 |---|---|
-| Kiro | Primary implementation agent |
-| Codex | Design review and visual polish |
-| Claude / ChatGPT | Advisory review |
+| Kiro | AI implementation assistant |
+| Codex | AI design review and visual polish assistant |
+| Claude / ChatGPT | AI advisory review assistants |
 | Cloudflare Workers | Production runtime |
 | Cloudflare D1 | Production database |
 | Cloudflare R2 | Media storage |
 | GitHub Actions | CI pipeline |
-| Dependabot | Dependency security |
+| Dependabot | Automated dependency monitoring (not a contributor) |
 | Wrangler | Deployment CLI |
 
 ## Learnings & Takeaways
@@ -139,10 +139,22 @@ QR scan / browser visit
 
 ## Acknowledgments
 
-- Project Owner: Carlos Velázquez
-- Design Authority: Zhanerke Askerbekova
-- AI Implementation: Kiro, Codex, Claude
-- Platform: Cloudflare (Workers, D1, R2)
+- Registered team / group: Belvenar Analytics Development
+- Project owner and implementation lead: Carlos
+- Design authority: Zhanerke
+- Platform: Cloudflare Workers, D1, and R2
+- Dependency monitoring: Dependabot
+- Optional breed reference: TheCatAPI
+- AI-assisted implementation/review tools: Kiro, Codex, Claude, ChatGPT
+
+Dependabot was used for dependency monitoring. Major-version PRs that failed CI
+or conflicted were closed/deferred and are not counted as merged project
+contributions.
+
+## Design Inventory
+
+See `docs/design/zhanerke-page-inventory.md` for the full list of pages
+requiring design review.
 - Breed reference: TheCatAPI (optional, free tier)
 
 ## Submission Checklist

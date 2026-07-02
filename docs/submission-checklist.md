@@ -1,5 +1,7 @@
 # MishiPass — Submission Checklist
 
+Team / Registered Group: **Belvenar Analytics Development**
+
 ## Documentation
 
 - [x] README.md complete with prerequisites, local run, test commands, tech stack
@@ -8,6 +10,7 @@
 - [x] Security model documented (`docs/security-model.md`)
 - [x] Decision log maintained (`docs/decision-log.md`)
 - [x] Days 1–10 audit artifact (`docs/audits/beta15-days1-10-final-status-2026-07-02.md`)
+- [x] Design page inventory (`docs/design/zhanerke-page-inventory.md`)
 
 ## Demo Video
 
