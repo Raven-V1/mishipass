@@ -1,5 +1,5 @@
 import { getCatForOwner, listSightingReportsForOwner } from "../db/index.js";
-import { escapeHtml, htmlResponse } from "../utils/html.js";
+import { MISHIPASS_DESIGN_CSS, escapeHtml, htmlResponse } from "../utils/html.js";
 import type { RequestContext } from "../middleware/session.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
 
@@ -46,19 +46,24 @@ export async function handleSightingInbox(
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${t(lang, "reports")} — ${safeName} — MishiPass</title>
   <style>
-    body{font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:2rem auto;padding:0 1rem;color:#111;line-height:1.5}
-    .nav{margin-bottom:1.5rem;font-size:0.875rem}
-    h1{font-size:1.5rem;margin-bottom:1rem}
-    .report-card{border:1px solid #ddd;border-radius:6px;padding:0.75rem;margin-bottom:0.75rem}
-    .report-location{font-weight:500;margin:0 0 0.25rem 0}
-    .report-message{margin:0.25rem 0;color:#333}
-    .report-date{margin:0.25rem 0 0 0;font-size:0.8rem;color:#888}
+    ${MISHIPASS_DESIGN_CSS}
+    body{padding:var(--space-3)}
+    .inbox-shell{max-width:704px;margin:var(--space-4) auto;padding:var(--space-4)}
+    .nav{margin-bottom:var(--space-3);font-size:0.875rem}
+    h1{font-size:clamp(2rem,6vw,3rem);line-height:1.08;margin:0 0 var(--space-3);color:var(--teal)}
+    .report-card{border:1px solid var(--line);border-radius:16px;padding:var(--space-2);margin-bottom:var(--space-2);background:#fff}
+    .report-location{font-weight:800;margin:0 0 var(--space-1);color:var(--teal)}
+    .report-message{margin:var(--space-1) 0;color:var(--ink);white-space:pre-wrap}
+    .report-date{margin:var(--space-1) 0 0;font-size:0.875rem;color:var(--muted)}
+    @media(max-width:430px){body{padding:var(--space-2)}.inbox-shell{padding:var(--space-3)}}
   </style>
 </head>
 <body>
-  <div class="nav"><a href="/dashboard/cats/${safeId}?lang=${lang}">&larr; ${safeName}</a></div>
-  <h1>${t(lang, "reports")}: ${safeName}</h1>
-  ${reportsHtml}
+  <main class="mp-card inbox-shell">
+    <div class="nav"><a class="mp-back" href="/dashboard/cats/${safeId}?lang=${lang}">&larr; ${safeName}</a></div>
+    <h1>${t(lang, "reports")}: ${safeName}</h1>
+    ${reportsHtml}
+  </main>
 </body>
 </html>`;
 
