@@ -4,7 +4,7 @@ Date: 2026-07-02
 Auditor: Codex  
 Branch: `fix/beta15-p1-i18n-catapi-layout-report`  
 PR: #66  
-Deployment version: pending post-commit deploy  
+Deployment version: `d826997a-cfb0-410d-a881-ceebb8a74a06`  
 Final status: PASS pending Carlos visual acceptance
 
 ## Commit Evidence
@@ -14,7 +14,7 @@ Final status: PASS pending Carlos visual acceptance
   - `da9ba06` - docs: record beta 1.5 p1 acceptance decision
   - `356da6a` - fix(worker): prevent stale localized html responses
   - `c7f2ec5` - docs: update beta 1.5 p1 cache-control decision
-- Final Days 1-10 closure commit: pending
+- Final Days 1-10 closure commit: `7be3988`
 
 ## Tests Run
 
@@ -106,7 +106,31 @@ Final status: PASS pending Carlos visual acceptance
 
 ## Production Smoke
 
-Pending post-commit deploy.
+Status checks after deploy:
+
+- `/` - 200
+- `/?lang=es` - 200
+- `/?lang=kk-KZ` - 200
+- `/history?lang=es` - 200
+- `/history?lang=kk-KZ` - 200
+- `/dashboard` - 200
+- `/recovery-board?lang=es` - 200
+- `/recovery-board?lang=kk-KZ` - 200
+- `/api/cat-reference/breeds` - 200
+- `/c/invalid` - 404
+
+Body scans:
+
+- PASS - Spanish/Kazakh root pages did not contain audited English homepage
+  leakage strings.
+- PASS - Breed JSON did not contain `THE_CAT_API_KEY` or `x-api-key`.
+- PASS - Bengal used `https://cdn2.thecatapi.com/images/O3btzLlsO.png`.
+- PASS - Devon Rex and European Burmese returned `referenceImageUrl: null`
+  with `hasReferenceImage: false`, so the dashboard can render them as compact
+  text options instead of broken image cards.
+- PASS - Recovery Board Spanish/Kazakh pages did not expose `owner_id`,
+  `cat_id`, raw media key fields, password/session terms, Medication Record, or
+  Cartilla text.
 
 ## Manual Retest Checklist For Carlos
 
