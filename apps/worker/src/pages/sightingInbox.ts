@@ -1,19 +1,16 @@
-import { validateId } from "@mishipass/shared-validation";
 import { getCatForOwner, listSightingReportsForOwner } from "../db/index.js";
 import { escapeHtml, htmlResponse } from "../utils/html.js";
 import type { RequestContext } from "../middleware/session.js";
+import { type LanguageCode, t } from "../utils/i18n.js";
 
 export async function handleSightingInbox(
   publicId: string,
   db: D1Database,
   ctx: RequestContext,
+  lang: LanguageCode = "en",
 ): Promise<Response> {
   if (ctx.ownerId === null) {
     return new Response(null, { status: 302, headers: { Location: "/dashboard" } });
-  }
-
-  if (!validateId(publicId)) {
-    return new Response("Not Found", { status: 404 });
   }
 
   const cat = await getCatForOwner(db, publicId, ctx.ownerId);
@@ -28,10 +25,10 @@ export async function handleSightingInbox(
 
   let reportsHtml: string;
   if (reports.length === 0) {
-    reportsHtml = `<p>No sighting reports yet.</p>`;
+    reportsHtml = `<p>${t(lang, "noMatches")}</p>`;
   } else {
     reportsHtml = reports.map(r => {
-      const safeLocation = r.location_text ? escapeHtml(r.location_text) : "Unknown location";
+      const safeLocation = r.location_text ? escapeHtml(r.location_text) : t(lang, "unknown");
       const safeMessage = r.message ? escapeHtml(r.message) : "";
       const safeDate = r.created_at ? escapeHtml(r.created_at) : "";
       return `<div class="report-card">
@@ -43,11 +40,11 @@ export async function handleSightingInbox(
   }
 
   const html = `<!DOCTYPE html>
-<html lang="en">
+<html lang="${lang}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sighting Reports — ${safeName} — MishiPass</title>
+  <title>${t(lang, "reports")} — ${safeName} — MishiPass</title>
   <style>
     body{font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:2rem auto;padding:0 1rem;color:#111;line-height:1.5}
     .nav{margin-bottom:1.5rem;font-size:0.875rem}
@@ -59,8 +56,8 @@ export async function handleSightingInbox(
   </style>
 </head>
 <body>
-  <div class="nav"><a href="/dashboard/cats/${safeId}">&larr; Back to ${safeName}</a></div>
-  <h1>Sighting Reports for ${safeName}</h1>
+  <div class="nav"><a href="/dashboard/cats/${safeId}?lang=${lang}">&larr; ${safeName}</a></div>
+  <h1>${t(lang, "reports")}: ${safeName}</h1>
   ${reportsHtml}
 </body>
 </html>`;

@@ -36,3 +36,46 @@ export function getCountryName(code: string): string {
   const found = COUNTRIES.find(c => c.code === code);
   return found ? found.name : code;
 }
+
+const COUNTRY_FLAGS: Record<string, string> = {
+  AR: "🇦🇷",
+  AU: "🇦🇺",
+  BE: "🇧🇪",
+  BR: "🇧🇷",
+  CA: "🇨🇦",
+  CH: "🇨🇭",
+  CL: "🇨🇱",
+  CN: "🇨🇳",
+  CO: "🇨🇴",
+  CZ: "🇨🇿",
+  DE: "🇩🇪",
+  ES: "🇪🇸",
+  FR: "🇫🇷",
+  GB: "🇬🇧",
+  IN: "🇮🇳",
+  IT: "🇮🇹",
+  JP: "🇯🇵",
+  KR: "🇰🇷",
+  KZ: "🇰🇿",
+  MX: "🇲🇽",
+  NL: "🇳🇱",
+  NO: "🇳🇴",
+  NZ: "🇳🇿",
+  PE: "🇵🇪",
+  PL: "🇵🇱",
+  PT: "🇵🇹",
+  RU: "🇷🇺",
+  SE: "🇸🇪",
+  US: "🇺🇸",
+};
+
+export function getCountryFlag(code: string): string {
+  return COUNTRY_FLAGS[code.toUpperCase()] || "";
+}
+
+export function getCountryBadgeLabel(code: string): string {
+  const normalized = code.toUpperCase();
+  const flag = getCountryFlag(normalized);
+  const name = getCountryName(normalized);
+  return flag ? `${flag} ${name}` : `${normalized} ${name}`;
+}
