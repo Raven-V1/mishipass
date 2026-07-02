@@ -1,6 +1,6 @@
 import { listRecoveryBoardAlerts, updateRecoveryBoardOptIn } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
-import { escapeHtml, htmlResponse } from "../utils/html.js";
+import { MISHIPASS_DESIGN_CSS, escapeHtml, htmlResponse } from "../utils/html.js";
 import { validateId } from "@mishipass/shared-validation";
 import { getCountryBadgeLabel } from "../data/countries.js";
 import { getLanguageFromRequest, LANGUAGE_SCRIPT, languageSelectHtml, t } from "../utils/i18n.js";
@@ -30,16 +30,18 @@ export async function handleRecoveryBoardPage(request: Request, db: D1Database):
   return htmlResponse(`<!DOCTYPE html>
 <html lang="${lang}"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>${t(lang, "recoveryBoard")} — MishiPass Beta 1.5</title>
-<style>*{box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;max-width:1040px;margin:2rem auto;padding:0 1rem;color:#111;line-height:1.5}.top{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;flex-wrap:wrap}.language label{display:block;font-size:.8rem;font-weight:700;margin-bottom:.2rem}.language select,input{padding:.6rem;border:1px solid #cfcfcf;border-radius:6px}.filters{display:flex;gap:.6rem;flex-wrap:wrap;margin:1rem 0 1.25rem}.filters>*{min-height:42px}button,.actions a{border:0;border-radius:6px;background:#111;color:#fff;padding:.6rem .9rem;text-decoration:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;min-height:42px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1rem}.card{border:1px solid #ddd;border-radius:8px;padding:1rem;background:#fff;min-width:0}.card h2{margin:.7rem 0 .35rem;font-size:1.05rem;overflow-wrap:anywhere}.card p{margin:.3rem 0}.card img,.placeholder{width:100%;aspect-ratio:4/3;object-fit:cover;background:#eee;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#666;text-align:center;padding:.5rem}.badge{display:inline-block;background:#f1f1f1;border-radius:999px;padding:.15rem .55rem;font-size:.85rem}.actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem}.actions a{font-size:.9rem}.empty{padding:1rem;border:1px dashed #bbb;border-radius:8px;background:#fafafa}@media(max-width:430px){body{margin:1rem auto}.filters input,.filters button{width:100%}}</style></head>
+<style>${MISHIPASS_DESIGN_CSS}body{padding:var(--space-3)}.board-shell{max-width:1184px;margin:var(--space-3) auto}.top{display:flex;justify-content:space-between;gap:var(--space-3);align-items:flex-start;flex-wrap:wrap;margin-bottom:var(--space-3)}.top>*{min-width:0}h1{font-size:clamp(2rem,6vw,3.5rem);line-height:1.08;margin:var(--space-1) 0;color:var(--teal);overflow-wrap:anywhere}.language label{display:block;font-size:.8rem;font-weight:700;margin-bottom:var(--space-1)}.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(192px,1fr));gap:var(--space-2);margin:0 0 var(--space-4);align-items:end;padding:var(--space-3)}.filters button{width:100%}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(272px,1fr));gap:var(--space-3)}.card{border:1px solid var(--line);border-radius:16px;padding:var(--space-3);background:var(--card);min-width:0;display:flex;flex-direction:column;box-shadow:var(--shadow)}.card h2{margin:var(--space-2) 0 var(--space-1);font-size:1.25rem;color:var(--teal);overflow-wrap:anywhere}.card p{margin:var(--space-1) 0;overflow-wrap:anywhere}.card img,.placeholder{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:16px;padding:0}.placeholder{padding:var(--space-2)}.actions{display:flex;gap:var(--space-1);flex-wrap:wrap;margin-top:auto;padding-top:var(--space-3)}.actions a{font-size:.9rem;flex:1 1 144px}.empty{padding:var(--space-3);border:1px dashed var(--line);border-radius:16px;background:#fff;overflow-wrap:anywhere}@media(max-width:430px){body{padding:var(--space-2)}.grid{grid-template-columns:1fr}.filters{grid-template-columns:1fr;padding:var(--space-2)}.actions a{flex-basis:100%}}</style></head>
 <body>
-  <div class="top"><div><a href="/?lang=${lang}">${t(lang, "home")}</a><h1>${t(lang, "recoveryBoard")}</h1></div><div class="language">${languageSelectHtml(lang)}</div></div>
-  <form class="filters" method="GET" action="/recovery-board">
-    <input name="lang" type="hidden" value="${lang}" />
-    <input name="city" placeholder="${t(lang, "city")}" value="${city ? escapeHtml(city) : ""}" />
-    <input name="ageDays" type="number" min="1" max="365" placeholder="${t(lang, "alertAgeDays")}" value="${validAge ? String(validAge) : ""}" />
-    <button type="submit">${t(lang, "filter")}</button>
-  </form>
-  <div class="grid">${cards}</div>
+  <main class="board-shell">
+    <div class="top"><div><a class="mp-back" href="/?lang=${lang}">${t(lang, "home")}</a><h1>${t(lang, "recoveryBoard")}</h1></div><div class="language">${languageSelectHtml(lang)}</div></div>
+    <form class="mp-card filters" method="GET" action="/recovery-board">
+      <input name="lang" type="hidden" value="${lang}" />
+      <input name="city" placeholder="${t(lang, "city")}" value="${city ? escapeHtml(city) : ""}" />
+      <input name="ageDays" type="number" min="1" max="365" placeholder="${t(lang, "alertAgeDays")}" value="${validAge ? String(validAge) : ""}" />
+      <button class="mp-btn mp-btn-primary" type="submit">${t(lang, "filter")}</button>
+    </form>
+    <div class="grid">${cards}</div>
+  </main>
   ${LANGUAGE_SCRIPT}
 </body></html>`);
 }

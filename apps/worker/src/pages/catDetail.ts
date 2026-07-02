@@ -1,8 +1,44 @@
 import { getCatForOwner, listVetVisits } from "../db/index.js";
 import { getCountryBadgeLabel } from "../data/countries.js";
-import { escapeHtml, htmlResponse } from "../utils/html.js";
+import { MISHIPASS_DESIGN_CSS, escapeHtml, htmlResponse } from "../utils/html.js";
 import type { RequestContext } from "../middleware/session.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
+
+type VetVisitSummary = {
+  displayDate: string;
+  heading: string;
+  clinicOrVet: string | null;
+  reason: string | null;
+  weight: string | null;
+  notes: string | null;
+};
+
+function summarizeVetVisit(visit: { visit_date: string | null; vet_or_clinic_name: string | null; notes: string | null }): VetVisitSummary {
+  const displayDate = visit.visit_date?.trim() || "Date not recorded";
+  const clinicOrVet = visit.vet_or_clinic_name?.trim() || null;
+  let reason: string | null = null;
+  let weight: string | null = null;
+  const noteLines: string[] = [];
+  for (const rawLine of (visit.notes || "").split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line) continue;
+    if (line.toLowerCase().startsWith("reason:")) {
+      reason = line.slice("reason:".length).trim() || null;
+    } else if (line.toLowerCase().startsWith("weight:")) {
+      weight = line.slice("weight:".length).trim() || null;
+    } else {
+      noteLines.push(line);
+    }
+  }
+  return {
+    displayDate,
+    heading: clinicOrVet || "Vet visit record",
+    clinicOrVet,
+    reason,
+    weight,
+    notes: noteLines.length > 0 ? noteLines.join("\n") : null,
+  };
+}
 
 export async function handleCatDetail(
   publicId: string,
@@ -43,14 +79,19 @@ export async function handleCatDetail(
   const vetVisits = await listVetVisits(db, publicId, ctx.ownerId);
   let vetHtml = `<h2>${t(lang, "vetVisit")} Records</h2>`;
   if (vetVisits.length === 0) {
-    vetHtml += `<p class="empty">${t(lang, "noMatches")}</p>`;
+    vetHtml += `<p class="empty">No vet visits recorded yet.</p>`;
   } else {
     vetHtml += `<div class="vet-list">`;
     for (const v of vetVisits) {
+      const summary = summarizeVetVisit(v);
       vetHtml += `<div class="vet-entry">`;
-      if (v.visit_date) vetHtml += `<p class="vet-date">${escapeHtml(v.visit_date)}</p>`;
-      if (v.vet_or_clinic_name) vetHtml += `<p class="vet-clinic">${escapeHtml(v.vet_or_clinic_name)}</p>`;
-      if (v.notes) vetHtml += `<p class="vet-notes">${escapeHtml(v.notes)}</p>`;
+      vetHtml += `<p class="vet-date">${escapeHtml(summary.displayDate)}</p>`;
+      vetHtml += `<p class="vet-title">${escapeHtml(summary.heading)}</p>`;
+      if (summary.clinicOrVet) vetHtml += `<p class="vet-field"><strong>Vet or clinic:</strong> ${escapeHtml(summary.clinicOrVet)}</p>`;
+      if (summary.reason) vetHtml += `<p class="vet-field"><strong>${t(lang, "reason")}:</strong> ${escapeHtml(summary.reason)}</p>`;
+      if (summary.weight) vetHtml += `<p class="vet-field"><strong>${t(lang, "weight")}:</strong> ${escapeHtml(summary.weight)}</p>`;
+      if (summary.notes) vetHtml += `<p class="vet-notes">${escapeHtml(summary.notes)}</p>`;
+      vetHtml += `<a class="secondary detail-link" href="/dashboard/cats/${safeId}/cartilla/vet-visits/${v.id}?lang=${lang}">${t(lang, "details")}</a>`;
       vetHtml += `</div>`;
     }
     vetHtml += `</div>`;
@@ -72,38 +113,43 @@ export async function handleCatDetail(
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${safeName} — MishiPass Dashboard</title>
   <style>
-    body{font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:2rem auto;padding:0 1rem;color:#111;line-height:1.5}
-    h1{font-size:1.5rem;margin-bottom:0.5rem}
-    h2{font-size:1.15rem;margin-top:1.5rem;margin-bottom:0.5rem;border-bottom:1px solid #eee;padding-bottom:0.25rem}
-    .meta{font-size:0.875rem;color:#555;margin-bottom:0.5rem}
-    .nav{margin-bottom:1.5rem;font-size:0.875rem}
-    .info{font-size:0.9rem;margin:0.25rem 0;color:#333}
-    .photo img{width:100px;height:100px;border-radius:50%;object-fit:cover;margin:0.75rem 0}
-    .links{margin-top:1rem}
-    .links a{display:inline-block;padding:0.5rem 1rem;margin:0.25rem 0.25rem 0.25rem 0;background:#eee;color:#111;text-decoration:none;border-radius:4px;font-size:0.875rem}
-    .mode-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.8rem;font-weight:bold}
+    ${MISHIPASS_DESIGN_CSS}
+    body{padding:var(--space-3)}
+    .detail-shell{max-width:736px;margin:var(--space-4) auto;padding:var(--space-4)}
+    h1{font-size:clamp(2rem,6vw,3rem);line-height:1.08;margin:0 0 var(--space-1);color:var(--teal)}
+    h2{font-size:1.25rem;margin:var(--space-4) 0 var(--space-2);color:var(--teal);border-bottom:1px solid var(--line);padding-bottom:var(--space-1)}
+    .meta{font-size:0.875rem;color:var(--muted);margin-bottom:var(--space-1)}
+    .nav{margin-bottom:var(--space-3);font-size:0.875rem}
+    .info{font-size:0.95rem;margin:var(--space-1) 0;color:var(--ink)}
+    .photo img{width:144px;height:144px;border-radius:16px;object-fit:cover;margin:var(--space-3) 0}
+    .links{display:flex;gap:var(--space-1);flex-wrap:wrap;margin-top:var(--space-3)}
+    .links a{background:#fff7f0;color:var(--teal);border:1px solid var(--line);text-decoration:none;border-radius:8px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:var(--space-1) var(--space-2);font-weight:800}
     .mode-active{background:#dfd;color:#060}
     .mode-missing{background:#fdd;color:#900}
     .mode-vet{background:#e0f0ff;color:#036}
-    .id-line{font-size:0.8rem;color:#777;margin:0.25rem 0;font-family:monospace}
-    .empty{font-size:0.875rem;color:#888}
-    .vet-list{margin-top:0.5rem}
-    .vet-entry{border:1px solid #eee;border-radius:4px;padding:0.75rem;margin-bottom:0.5rem}
+    .id-line{font-size:0.8rem;color:var(--muted);margin:var(--space-1) 0;font-family:monospace}
+    .vet-list{margin-top:var(--space-2)}
+    .vet-entry{border:1px solid var(--line);border-radius:16px;padding:var(--space-2);margin-bottom:var(--space-2);background:#fff}
     .vet-date{font-weight:600;margin:0 0 0.25rem 0;font-size:0.9rem}
-    .vet-clinic{margin:0 0 0.25rem 0;font-size:0.875rem;color:#333}
-    .vet-notes{margin:0;font-size:0.8rem;color:#555;white-space:pre-wrap}
+    .vet-title{margin:0 0 0.35rem 0;font-size:0.95rem;color:#111;font-weight:700}
+    .vet-field{margin:0.2rem 0;font-size:0.875rem;color:#333}
+    .vet-notes{margin:0.35rem 0 0;font-size:0.85rem;color:#555;white-space:pre-wrap}
+    .detail-link{margin-top:var(--space-2)}
+    @media(max-width:430px){body{padding:var(--space-2)}.detail-shell{padding:var(--space-3)}.links a{width:100%}}
   </style>
 </head>
 <body>
-  <div class="nav"><a href="/dashboard?lang=${lang}">&larr; ${t(lang, "dashboard")}</a></div>
-  <h1>${safeName}</h1>
-  <p class="meta">${safeCountry} &middot; <span class="mode-badge mode-${safeMode}">${safeMode}</span></p>
-  <p class="id-line">${safeId}</p>
-  ${photoHtml}
-  ${infoHtml}
-  <div class="links">${linksHtml}
-  </div>
-  ${vetHtml}
+  <main class="mp-card detail-shell">
+    <div class="nav"><a class="mp-back" href="/dashboard?lang=${lang}">&larr; ${t(lang, "dashboard")}</a></div>
+    <h1>${safeName}</h1>
+    <p class="meta">${safeCountry} &middot; <span class="mode-badge mode-${safeMode}">${safeMode}</span></p>
+    <p class="id-line">${safeId}</p>
+    ${photoHtml}
+    ${infoHtml}
+    <div class="links">${linksHtml}
+    </div>
+    ${vetHtml}
+  </main>
 </body>
 </html>`;
 
