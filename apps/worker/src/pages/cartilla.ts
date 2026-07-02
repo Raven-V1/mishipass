@@ -7,7 +7,7 @@ import {
 } from "../db/index.js";
 import type { MedicationEntry, VaccineEntry, VetVisitEntry } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
-import { escapeHtml, htmlResponse } from "../utils/html.js";
+import { MISHIPASS_DESIGN_CSS, escapeHtml, htmlResponse } from "../utils/html.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
 
 function redirectDashboard(): Response {
@@ -44,26 +44,32 @@ export async function handleCartillaPage(
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${safeName} — ${t(lang, "cartilla")}</title>
   <style>
-    *{box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;max-width:780px;margin:1.5rem auto;padding:0 1rem;color:#111;line-height:1.5}
-    h1{font-size:1.5rem;margin-bottom:0.25rem}
-    h2{font-size:1.1rem;margin-top:1.5rem;border-bottom:1px solid #eee;padding-bottom:0.25rem}
-    a{color:#111}.nav{font-size:0.875rem;margin-bottom:1.5rem}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.75rem}
-    .record{border:1px solid #ddd;border-radius:6px;padding:0.75rem}.muted{color:#666;font-size:0.875rem}.notes{white-space:pre-wrap}
-    label{display:block;margin-top:0.6rem;font-size:0.875rem;font-weight:600}input,textarea{width:100%;padding:0.65rem;border:1px solid #ccc;border-radius:6px;min-height:44px}
-    textarea{min-height:70px}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;background:#111;color:#fff;border:0;border-radius:6px;padding:0.6rem 0.9rem;margin-top:0.75rem;text-decoration:none;cursor:pointer;text-align:center}
-    .secondary{background:#eee;color:#111}.sticker{display:block;max-width:140px;max-height:100px;object-fit:cover;margin-top:0.5rem;border-radius:4px}
-    .photo-picker{margin:.45rem 0 .75rem}.photo-picker-actions{display:flex;gap:.55rem;flex-wrap:wrap}.photo-action{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:.62rem .85rem;background:#eee;border-radius:6px;cursor:pointer;font-weight:700;text-align:center;line-height:1.2;flex:1 1 150px}.photo-input-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}.photo-status{font-size:.85rem;color:#666;margin-top:.35rem;overflow-wrap:anywhere}
-    @media(max-width:430px){body{margin:1rem auto;padding:0 .85rem}.grid{grid-template-columns:1fr}.photo-action,.btn{width:100%;flex-basis:100%}}
+    ${MISHIPASS_DESIGN_CSS}
+    body{padding:var(--space-3)}
+    .cartilla-shell{max-width:864px;margin:var(--space-4) auto;padding:var(--space-4)}
+    h1{font-size:clamp(2rem,6vw,3rem);line-height:1.08;margin:0 0 var(--space-1);color:var(--teal)}
+    h2{font-size:1.25rem;margin:var(--space-4) 0 var(--space-2);color:var(--teal);border-bottom:1px solid var(--line);padding-bottom:var(--space-1)}
+    .nav{font-size:0.875rem;margin-bottom:var(--space-3)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(224px,1fr));gap:var(--space-2)}
+    .record{border:1px solid var(--line);border-radius:16px;padding:var(--space-2);background:#fff}
+    .notes{white-space:pre-wrap}
+    label{margin-top:var(--space-2)}
+    .btn{margin-top:var(--space-2)}
+    .sticker{display:block;width:160px;height:112px;object-fit:cover;margin-top:var(--space-2);border-radius:8px}
+    .photo-picker{margin:var(--space-1) 0 var(--space-2)}.photo-picker-actions{display:flex;gap:var(--space-1);flex-wrap:wrap}.photo-action{flex:1 1 160px}.photo-input-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}.photo-status{margin-top:var(--space-1);overflow-wrap:anywhere}
+    @media(max-width:430px){body{padding:var(--space-2)}.cartilla-shell{margin:var(--space-2) auto;padding:var(--space-3)}.grid{grid-template-columns:1fr}.photo-action,.btn{width:100%;flex-basis:100%}}
   </style>
 </head>
 <body>
-  <div class="nav"><a href="/dashboard/cats/${safeId}?lang=${lang}">&larr; ${safeName}</a></div>
-  <h1>${t(lang, "cartilla")}</h1>
-  <p class="muted">${safeName} private owner records.</p>
-  ${renderVetVisits(safeId, vetVisits, lang)}
-  ${renderVaccines(safeId, vaccines, lang)}
-  ${renderMedications(medications, lang)}
-  ${renderForms(safeId, lang)}
+  <main class="mp-card cartilla-shell">
+    <div class="nav"><a class="mp-back" href="/dashboard/cats/${safeId}?lang=${lang}">&larr; ${safeName}</a></div>
+    <h1>${t(lang, "cartilla")}</h1>
+    <p class="muted">${safeName} private owner records.</p>
+    ${renderVetVisits(safeId, vetVisits, lang)}
+    ${renderVaccines(safeId, vaccines, lang)}
+    ${renderMedications(medications, lang)}
+    ${renderForms(safeId, lang)}
+  </main>
   <script>
     (function(){
       function postJson(url, payload){ return fetch(url,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}); }
@@ -101,14 +107,16 @@ export async function handleVetVisitDetailPage(
   const html = `<!DOCTYPE html>
 <html lang="${lang}"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>${t(lang, "vetVisit")} — ${safeName}</title>
-<style>body{font-family:system-ui,-apple-system,sans-serif;max-width:620px;margin:2rem auto;padding:0 1rem;color:#111;line-height:1.5}.nav{font-size:0.875rem;margin-bottom:1.5rem}.field{margin:0.75rem 0}.label{font-size:0.8rem;color:#666;font-weight:600}.value{white-space:pre-wrap}</style></head>
+<style>${MISHIPASS_DESIGN_CSS}body{padding:var(--space-3)}.detail-shell{max-width:672px;margin:var(--space-4) auto;padding:var(--space-4)}.nav{font-size:0.875rem;margin-bottom:var(--space-3)}h1{color:var(--teal)}.field{margin:var(--space-2) 0}.label{font-size:0.875rem;color:var(--muted);font-weight:800}.value{white-space:pre-wrap}@media(max-width:430px){body{padding:var(--space-2)}.detail-shell{padding:var(--space-3)}}</style></head>
 <body>
-  <div class="nav"><a href="/dashboard/cats/${safeId}/cartilla?lang=${lang}">&larr; ${t(lang, "cartilla")}</a></div>
-  <h1>${t(lang, "vetVisit")}</h1>
-  <div class="field"><div class="label">${t(lang, "visitDate")}</div><div class="value">${dateOrEmpty(visit.visit_date)}</div></div>
-  <div class="field"><div class="label">Vet or clinic</div><div class="value">${visit.vet_or_clinic_name ? escapeHtml(visit.vet_or_clinic_name) : "Not recorded"}</div></div>
-  <div class="field"><div class="label">Notes</div><div class="value">${visit.notes ? escapeHtml(visit.notes) : "Not recorded"}</div></div>
-  <div class="field"><div class="label">Created</div><div class="value">${escapeHtml(visit.created_at)}</div></div>
+  <main class="mp-card detail-shell">
+    <div class="nav"><a class="mp-back" href="/dashboard/cats/${safeId}/cartilla?lang=${lang}">&larr; ${t(lang, "cartilla")}</a></div>
+    <h1>${t(lang, "vetVisit")}</h1>
+    <div class="field"><div class="label">${t(lang, "visitDate")}</div><div class="value">${dateOrEmpty(visit.visit_date)}</div></div>
+    <div class="field"><div class="label">Vet or clinic</div><div class="value">${visit.vet_or_clinic_name ? escapeHtml(visit.vet_or_clinic_name) : "Not recorded"}</div></div>
+    <div class="field"><div class="label">Notes</div><div class="value">${visit.notes ? escapeHtml(visit.notes) : "Not recorded"}</div></div>
+    <div class="field"><div class="label">Created</div><div class="value">${escapeHtml(visit.created_at)}</div></div>
+  </main>
 </body></html>`;
   return htmlResponse(html);
 }
