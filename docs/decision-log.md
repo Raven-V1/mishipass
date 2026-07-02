@@ -476,7 +476,7 @@ audit without adding new product scope or changing D1/R2 schema.
 
 Executor: Codex
 Branch: `fix/beta15-p1-i18n-catapi-layout-report`
-Commit: `c145a78`
+Commits: `c145a78`, `356da6a`
 
 Summary:
 - Fixed homepage and history page i18n leakage by routing visible copy through
@@ -490,6 +490,8 @@ Summary:
   the selected language.
 - Improved responsive layout/scaling for homepage, dashboard cards, breed/color
   selector grids, WhatsApp Card, and Recovery Board.
+- Added no-store HTML response headers so localized pages do not serve stale
+  language output after deploy.
 - Finalized the Beta 1.5 report draft.
 
 Validation:
