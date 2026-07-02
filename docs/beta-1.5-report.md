@@ -155,7 +155,6 @@ contributions.
 
 See `docs/design/zhanerke-page-inventory.md` for the full list of pages
 requiring design review.
-- Breed reference: TheCatAPI (optional, free tier)
 
 ## Submission Checklist
 
