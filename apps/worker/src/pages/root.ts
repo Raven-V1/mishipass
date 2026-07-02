@@ -1,39 +1,20 @@
-import { MISHIPASS_DESIGN_CSS, htmlResponse } from "../utils/html.js";
+import { iconApple, iconDocument, iconEmail, iconGoogle, iconLock, iconMegaphone, iconQrCode, iconStethoscope } from "../utils/icons.js";
+import { MISHIPASS_DESIGN_CSS, brandLockupHtml, brandLogoHtml, htmlResponse } from "../utils/html.js";
 import { getLanguageFromRequest, LANGUAGE_SCRIPT, languageSelectHtml, t } from "../utils/i18n.js";
-
-function catPeekSvg(): string {
-  return `<svg viewBox="0 0 64 64" role="img" aria-label="Black cat peeking icon"><path d="M16 48V28L24 12L32 28L40 12L48 28V48H16Z" fill="#111"/><circle cx="26" cy="38" r="3" fill="#fff8ee"/><circle cx="38" cy="38" r="3" fill="#fff8ee"/><path d="M30 46Q32 48 34 46" fill="none" stroke="#fff8ee" stroke-width="3" stroke-linecap="round"/></svg>`;
-}
-
-function heroCatSvg(): string {
-  return `<svg viewBox="0 0 420 320" role="img" aria-label="Illustrated black cat mascot with MishiPass QR tag">
-    <ellipse cx="210" cy="192" rx="124" ry="78" fill="#111"/>
-    <circle cx="172" cy="122" r="64" fill="#111"/>
-    <path d="M130 80 104 40 104 104Z" fill="#111"/>
-    <path d="M208 78 240 40 228 104Z" fill="#111"/>
-    <circle cx="148" cy="120" r="8" fill="#e9f5ef"/><circle cx="196" cy="120" r="8" fill="#e9f5ef"/>
-    <path d="M168 142 176 142 172 150Z" fill="#f06f61"/>
-    <path d="M134 168Q172 196 210 168" fill="none" stroke="#fff8ee" stroke-width="6" stroke-linecap="round"/>
-    <path d="M288 154C336 104 384 150 352 198C328 234 276 216 296 178" fill="none" stroke="#111" stroke-width="18" stroke-linecap="round"/>
-    <rect x="160" y="216" width="72" height="72" rx="16" fill="#fff8ee" stroke="#0f6b63" stroke-width="6"/>
-    <rect x="176" y="232" width="16" height="16" fill="#0f6b63"/><rect x="204" y="232" width="12" height="12" fill="#0f6b63"/>
-    <rect x="176" y="260" width="12" height="12" fill="#0f6b63"/><rect x="204" y="256" width="16" height="16" fill="#0f6b63"/>
-    <circle cx="92" cy="246" r="16" fill="#ffe4e8"/><circle cx="328" cy="80" r="24" fill="#e9f5ef"/>
-  </svg>`;
-}
+import type { LogtoEnv } from "../routes/logto.js";
 
 function featureIcon(kind: string): string {
-  const labels: Record<string, string> = {
-    lock: "Lock",
-    record: "Record",
-    qr: "QR",
-    alert: "!",
-    vet: "+",
-    board: "List",
-    profile: "Cat",
-    message: "Chat",
+  const icons: Record<string, string> = {
+    lock: iconLock(24),
+    record: iconDocument(24),
+    qr: iconQrCode(24),
+    alert: iconMegaphone(24),
+    vet: iconStethoscope(24),
+    board: iconDocument(24),
+    profile: iconQrCode(24),
+    message: iconEmail(24),
   };
-  return labels[kind] || "Cat";
+  return icons[kind] || iconQrCode(24);
 }
 
 function featureCard(title: string, copy: string, kind: string): string {
@@ -44,8 +25,20 @@ function stepCard(number: string, title: string): string {
   return `<article class="mp-card step"><div class="step-num">${number}</div><h3>${title}</h3></article>`;
 }
 
-function buildRootHtml(request: Request): string {
+function socialButtonsHtml(env: LogtoEnv): string {
+  const baseConfigured = !!(env.LOGTO_ENDPOINT && env.LOGTO_APP_ID && env.LOGTO_CLIENT_SECRET && env.LOGTO_REDIRECT_URI);
+  const google = baseConfigured
+    ? `<a class="social-btn" href="/api/auth/logto/google">${iconGoogle(18)}<span>Continue with Google</span></a>`
+    : `<button class="social-btn provider-pending" type="button" disabled aria-disabled="true" title="Google login config pending">${iconGoogle(18)}<span>Continue with Google</span></button>`;
+  const apple = baseConfigured && !!env.LOGTO_APPLE_CONNECTOR_TARGET
+    ? `<a class="social-btn" href="/api/auth/logto/apple">${iconApple(18)}<span>Continue with Apple</span></a>`
+    : `<button class="social-btn provider-pending" type="button" disabled aria-disabled="true" title="Apple login config pending">${iconApple(18)}<span>Continue with Apple</span></button>`;
+  return `${google}${apple}${baseConfigured ? "" : `<p class="provider-note">Google and Apple sign-in are code-complete and config pending.</p>`}`;
+}
+
+function buildRootHtml(request: Request, env: LogtoEnv = {}): string {
   const lang = getLanguageFromRequest(request);
+  const socialButtons = socialButtonsHtml(env);
   return `<!DOCTYPE html>
 <html lang="${lang}">
 <head>
@@ -56,13 +49,8 @@ function buildRootHtml(request: Request): string {
   <style>
     ${MISHIPASS_DESIGN_CSS}
     body{background-color:var(--cream)}
-    .site-header{position:sticky;top:0;z-index:5;background:rgba(255,248,238,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+    .site-header{position:sticky;top:0;z-index:5;background:rgba(255,248,243,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
     .header-inner{height:80px;display:grid;grid-template-columns:1fr auto auto;gap:var(--space-3);align-items:center}
-    .brand{display:grid;grid-template-columns:48px minmax(0,1fr);gap:var(--space-2);align-items:center;color:var(--ink);text-decoration:none;min-width:0}
-    .brand-icon{width:48px;height:48px;border-radius:16px;background:#111;display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
-    .brand-icon svg{width:40px;height:40px}
-    .wordmark{display:block;font-size:1.25rem;font-weight:900;line-height:1;color:var(--teal)}
-    .brand-tag{display:block;font-size:.75rem;color:var(--muted);margin-top:var(--space-1);overflow-wrap:anywhere}
     .nav{display:flex;gap:var(--space-3);align-items:center}
     .nav a{font-weight:800;text-decoration:none;color:var(--ink)}
     .header-cta{display:flex;gap:var(--space-2);align-items:center}
@@ -81,14 +69,15 @@ function buildRootHtml(request: Request): string {
     p{overflow-wrap:anywhere}
     .hero-copy{font-size:1.125rem;color:var(--muted);margin:0 0 var(--space-3)}
     .hero-actions{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-3)}
-    .cat-card{position:relative;margin-top:var(--space-4);min-height:320px;padding:var(--space-4);overflow:hidden}
-    .cat-card:before{content:"";position:absolute;inset:auto -48px -64px auto;width:224px;height:224px;border-radius:50%;background:var(--pink)}
-    .cat-illustration{position:relative;display:flex;align-items:center;justify-content:center;min-height:224px}
-    .cat-illustration svg{width:min(100%,360px);height:auto}
+    .mobile-brand-mark{display:none;margin:0 auto var(--space-2)}
+    .cat-card{position:relative;margin-top:var(--space-4);min-height:280px;padding:var(--space-4);overflow:hidden;background:linear-gradient(135deg,#fffdf9,#fff0e9)}
+    .cat-card:before{content:"";position:absolute;inset:auto -48px -64px auto;width:224px;height:224px;border-radius:50%;background:rgba(102,209,195,.34)}
+    .cat-illustration{position:relative;display:flex;align-items:center;justify-content:center;min-height:208px}
+    .cat-illustration .brand-logo-large{width:min(100%,208px);height:min(100%,208px)}
     .feature-zone .headline{font-size:clamp(2rem,4vw,3.5rem);line-height:1.05;margin:0 0 var(--space-3);color:var(--ink)}
     .feature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-2)}
     .feature-card{padding:var(--space-3);min-height:192px}
-    .feature-icon{width:64px;height:64px;border-radius:16px;background:#e9f5ef;display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-2);font-size:1.75rem;color:var(--teal)}
+    .feature-icon{width:48px;height:48px;border-radius:8px;background:#e8faf7;display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-2);font-size:1.75rem;color:var(--teal)}
     .feature-card p{margin:0;color:var(--muted)}
     .login-card{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:0;overflow:hidden}
     .login-left{grid-column:1/span 7;padding:var(--space-4)}
@@ -99,7 +88,8 @@ function buildRootHtml(request: Request): string {
     .check-label input{width:16px;min-height:16px}
     .divider{display:flex;align-items:center;gap:var(--space-2);color:var(--muted);font-weight:900}
     .divider:before,.divider:after{content:"";height:1px;background:var(--line);flex:1}
-    .social-btn{display:inline-flex;align-items:center;justify-content:center;min-height:var(--touch-target);padding:var(--space-1) var(--space-2);border-radius:8px;background:#fff;color:var(--ink);border:1px solid var(--line);font:inherit}
+    .social-btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-1);min-height:var(--touch-target);padding:var(--space-1) var(--space-2);border-radius:8px;background:#fff;color:var(--ink);border:1px solid var(--line);font:inherit;text-decoration:none;font-weight:800}
+    .provider-note{margin:0;color:var(--muted);font-size:.875rem}
     .section-intro{max-width:736px;color:var(--muted);font-size:1.05rem;margin:0 0 var(--space-4)}
     .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-3)}
     .card{padding:var(--space-3);min-width:0}
@@ -109,20 +99,17 @@ function buildRootHtml(request: Request): string {
     .contact-panel{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:var(--space-3);align-items:center;padding:var(--space-4)}
     .contact-panel>div{grid-column:1/span 8}
     .contact-panel>a{grid-column:9/span 4}
-    .visual-only{font-size:.875rem;color:var(--muted);margin:0}
+    .site-footer{padding:var(--space-4) var(--space-2);text-align:center;color:var(--muted);font-size:.875rem}
     @media(max-width:900px){.header-inner{height:auto;min-height:80px;grid-template-columns:1fr auto;gap:var(--space-2);padding:var(--space-2) 0}.nav,.header-cta{display:none}.mobile-nav{display:block;grid-column:1/-1}.mobile-nav summary{min-height:44px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:8px;background:#fff;font-weight:900;cursor:pointer}.mobile-nav div{display:grid;gap:var(--space-1);padding:var(--space-2) 0}.mobile-nav a{min-height:44px;display:flex;align-items:center;color:var(--ink);font-weight:800;text-decoration:none}.hero-grid{grid-template-columns:repeat(8,minmax(0,1fr))}.welcome-zone,.feature-zone{grid-column:1/-1}.feature-grid,.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.step-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.login-left,.login-right{grid-column:1/-1}.login-right{border-left:0;border-top:1px solid var(--line)}.contact-panel>div,.contact-panel>a{grid-column:1/-1}}
-    @media(max-width:600px){body{overflow-x:hidden}.mp-container{width:100%;max-width:100%;overflow:hidden}.hero-grid{display:block;max-width:100%}.welcome-zone,.feature-zone,.feature-card,.card,.step,.login-card,.cat-card{width:calc(100vw - 32px);max-width:calc(100vw - 32px)}.feature-grid,.cards,.step-grid{grid-template-columns:minmax(0,1fr);max-width:100%}.hero-copy,.feature-zone .headline,.feature-card p,.section-intro{width:calc(100vw - 32px);max-width:calc(100vw - 32px);overflow-wrap:anywhere}.hero-actions .mp-btn,.social-btn{width:100%}}
-    @media(max-width:430px){.brand{grid-template-columns:40px minmax(0,1fr)}.brand-icon{width:40px;height:40px;border-radius:8px}.brand-icon svg{width:32px;height:32px}.brand-tag{font-size:.7rem}.hero{padding:var(--space-4) 0}.cat-card{min-height:264px;padding:var(--space-3)}.feature-grid,.cards,.step-grid{grid-template-columns:1fr}.feature-card{min-height:160px}.hero-actions .mp-btn{width:100%}.login-left,.login-right,.contact-panel{padding:var(--space-3)}}
+    @media(max-width:600px){body{overflow-x:hidden}.mp-container{width:100%;max-width:100%;overflow:hidden}.hero-grid{display:block;max-width:100%}.welcome-zone,.feature-zone,.feature-card,.card,.step,.login-card,.cat-card{width:calc(100vw - 32px);max-width:calc(100vw - 32px)}.feature-grid,.cards,.step-grid{grid-template-columns:minmax(0,1fr);max-width:100%}.hero-copy,.feature-zone .headline,.feature-card p,.section-intro{width:calc(100vw - 32px);max-width:calc(100vw - 32px);overflow-wrap:anywhere}.hero-actions,.cat-card,.feature-zone{display:none}.mobile-brand-mark{display:block}.welcome-zone{text-align:center}.welcome-zone .eyebrow{display:none}.hero-copy{margin-left:auto;margin-right:auto}.social-btn{width:100%}.login-card{margin-top:0}.login-left{display:none}.login-right{background:var(--card);border-top:0;text-align:center}.login-right h2{display:block}.provider-note{text-align:center}}
+    @media(max-width:430px){.hero{padding:var(--space-4) 0 var(--space-2)}.cat-card{min-height:264px;padding:var(--space-3)}.feature-grid,.cards,.step-grid{grid-template-columns:1fr}.feature-card{min-height:160px}.hero-actions .mp-btn{width:100%}.login-left,.login-right,.contact-panel{padding:var(--space-3)}h1{font-size:2.5rem}.hero-copy{font-size:1rem}}
   </style>
 </head>
 <body>
   <div class="mp-page">
   <header class="site-header">
     <div class="mp-container header-inner">
-      <a class="brand" href="/?lang=${lang}" aria-label="MishiPass home">
-        <span class="brand-icon" aria-hidden="true">${catPeekSvg()}</span>
-        <span><span class="wordmark">MishiPass</span><span class="brand-tag">The digital passport for your cat</span></span>
-      </a>
+      ${brandLockupHtml(`/?lang=${lang}`)}
       <nav class="nav" aria-label="Primary">
         <a href="#about">About</a>
         <a href="#features">Features</a>
@@ -149,16 +136,17 @@ function buildRootHtml(request: Request): string {
     <section class="hero" data-section="hero">
       <div class="mp-container hero-grid">
         <div class="welcome-zone">
-          <span class="eyebrow">Welcome back!</span>
+          <div class="mobile-brand-mark">${brandLogoHtml("brand-logo-large")}</div>
+          <span class="eyebrow">Welcome to MishiPass</span>
           <h1>MishiPass</h1>
-          <p class="hero-copy">Sign in to continue managing your cat's passport.</p>
+          <p class="hero-copy">The digital passport for your cat</p>
           <p class="hero-copy">A privacy-first dynamic QR system for everyday cat care, missing alerts, and documentation-only records.</p>
           <div class="hero-actions">
             <a class="mp-btn mp-btn-primary" href="/dashboard?lang=${lang}">${t(lang, "dashboard")}</a>
             <a class="mp-btn mp-btn-secondary" href="/recovery-board?lang=${lang}">${t(lang, "recoveryBoard")}</a>
           </div>
           <div class="mp-card cat-card" aria-label="${t(lang, "rootHeroAlt")}">
-            <div class="cat-illustration">${heroCatSvg()}</div>
+            <div class="cat-illustration">${brandLogoHtml("brand-logo-large")}</div>
           </div>
         </div>
         <div class="feature-zone">
@@ -185,11 +173,11 @@ function buildRootHtml(request: Request): string {
             <a class="mp-btn mp-btn-primary" href="/dashboard?lang=${lang}">Log in</a>
           </div>
           <div class="login-right">
+            <h2>Create your account</h2>
+            <a class="social-btn" href="/dashboard?lang=${lang}">${iconEmail(18)}<span>Sign up with Email</span></a>
+            ${socialButtons}
             <div class="divider">OR</div>
-            <button class="social-btn" type="button" aria-disabled="true">Continue with Google</button>
-            <button class="social-btn" type="button" aria-disabled="true">Continue with Apple</button>
-            <p>Don't have an account? <a href="/dashboard?lang=${lang}">Sign up</a></p>
-            <p class="visual-only">Provider buttons are visual only in this design pass.</p>
+            <p>Already have an account? <a href="/dashboard?lang=${lang}">Log in</a></p>
           </div>
         </div>
       </div>
@@ -239,6 +227,7 @@ function buildRootHtml(request: Request): string {
       </div>
     </section>
   </main>
+  <footer class="site-footer">&copy; 2026 Belvenar Analytics | All Rights Reserved</footer>
   </div>
   ${LANGUAGE_SCRIPT}
 </body>
@@ -250,7 +239,7 @@ function buildHistoryHtml(request: Request): string {
   return `<!DOCTYPE html><html lang="${lang}"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>${t(lang, "history")} — MishiPass</title><style>*{box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.65;color:#111}a{color:#111}.language{margin-bottom:1rem}.language label{display:block;font-size:.8rem;font-weight:700}.language select{padding:.55rem;border:1px solid #ccc;border-radius:6px;min-height:42px}h1{font-size:clamp(1.8rem,6vw,2.5rem);overflow-wrap:anywhere}p{overflow-wrap:anywhere}</style></head><body><div class="language">${languageSelectHtml(lang)}</div><p><a href="/?lang=${lang}">&larr; ${t(lang, "home")}</a></p><h1>${t(lang, "history")}</h1><p>${t(lang, "historyIntro1")}</p><p>${t(lang, "historyIntro2")}</p><p>${t(lang, "historyIntro3")}</p>${LANGUAGE_SCRIPT}</body></html>`;
 }
 
-export function handleRoot(request: Request): Response {
+export function handleRoot(request: Request, env: LogtoEnv = {}): Response {
   const method = request.method;
   if (method === "HEAD") {
     return new Response(null, {
@@ -262,7 +251,7 @@ export function handleRoot(request: Request): Response {
       },
     });
   }
-  return htmlResponse(buildRootHtml(request));
+  return htmlResponse(buildRootHtml(request, env));
 }
 
 export function handleHistory(request: Request): Response {
