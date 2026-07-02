@@ -168,6 +168,7 @@ export interface RecoveryBoardEntry {
   public_id: string;
   name: string;
   country_code: string;
+  photo_r2_key: string | null;
   city: string | null;
   area: string | null;
   last_seen_at: string | null;

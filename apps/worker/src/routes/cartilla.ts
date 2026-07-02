@@ -109,7 +109,7 @@ export async function handleVaccineStickerUpload(
     return Response.json({ error: "Invalid form data" }, { status: 400 });
   }
 
-  const file = formData.get("photo") as unknown;
+  const file = (formData.get("photo") || formData.get("photoCapture") || formData.get("photoUpload")) as unknown;
   if (!file || typeof file === "string") return Response.json({ error: "No photo file provided" }, { status: 400 });
   const photoFile = file as File;
   if (!ALLOWED_TYPES.has(photoFile.type)) return Response.json({ error: "Invalid file type. Allowed: JPEG, PNG, WebP" }, { status: 400 });

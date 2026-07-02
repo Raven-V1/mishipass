@@ -1,6 +1,6 @@
 # MishiPass — Security Model
 
-Scope: MishiPass Beta 1.4. This document records the security and privacy
+Scope: MishiPass Beta 1.5. This document records the security and privacy
 properties of the system, the controls enforcing them, and the governance
 frameworks used to organize this documentation. Sections derived from locked
 Constitution decisions are final. Sections marked **(WIP — Day 13)** are
@@ -97,7 +97,8 @@ changes the mode. The QR never changes.
   They are documentation-only records: MishiPass does not recommend
   medications, calculate dosage, check interactions, provide reminders, or
   offer treatment advice. A dose as entered by the vet or owner may be recorded.
-- The Recovery Board is owner opt-in and not shown by default.
+- The Recovery Board is shown for Missing alerts by default. It lists only
+  active Missing alerts and only exposes public-safe fields.
 - The reward amount is hidden by default; the owner may choose to reveal it.
 - No nearby-user pings. No automatic user location tracking.
 
@@ -138,7 +139,7 @@ changes the mode. The QR never changes.
   - Save & Finish Visit immediately ends the session and returns to Active Profile
   - No existing medical/cartilla history is shown on the public Vet Visit page
   - No public exposure of cartilla, medication, or vaccine data
-  The risk is intentionally accepted for Beta 1.4 by the project owner and is recorded
+  The risk is intentionally accepted for MishiPass Beta 1.5 by the project owner and is recorded
   in `docs/decision-log.md`. (Vet Visit mode is now implemented.)
 
 ---
@@ -191,7 +192,8 @@ security pass for controlled compatibility verification, and are tracked in
 
 **Goal 1 — MFA:** Owner authentication backend exists (PBKDF2-SHA256 password
 hash, opaque session token, HttpOnly cookie — see `apps/worker/src/routes/auth.ts`).
-MFA is not implemented and is deferred to V2.
+MFA is not implemented in MishiPass Beta 1.5 and remains outside the current
+Version 1 scope.
 
 **Goal 2 — Default passwords:** MishiPass does not ship default or hardcoded
 credentials. `wrangler.toml` uses a placeholder `database_id`; all secrets are
@@ -214,14 +216,14 @@ upgrades are deferred with decision-log entries and tracked in
 or critical findings once committed.
 
 **Goal 5 — Vulnerability disclosure policy:** MishiPass does not publish a
-formal VDP for Beta 1.4. Known Beta limitations are disclosed in Section 5, and
+formal VDP for MishiPass Beta 1.5. Known Beta limitations are disclosed in Section 5, and
 the Aikido scan report is scheduled for the submission. **(WIP — Day 13.)**
 
 **Goal 6 — CVE accuracy:** MishiPass tracks third-party advisories via
 `npm audit`, GitHub Advisory references, and decision-log entries. MishiPass
-does not issue its own CVEs for Beta 1.4.
+does not issue its own CVEs for MishiPass Beta 1.5.
 
-**Goal 7 — Evidence of intrusions:** Not claimed for Beta 1.4. Current evidence
+**Goal 7 — Evidence of intrusions:** Not claimed for MishiPass Beta 1.5. Current evidence
 is limited to development and audit artifacts: CI logs, dependency-audit
 output, decision-log entries, and the scheduled Aikido report.
 
@@ -237,7 +239,8 @@ keeping a living control-status table (Section 8) updated at each milestone.
 
 ## 8. Secure development lifecycle control status
 
-Day 7 of 14 coding days. Updated 2026-06-30 for Day 1–6 closure.
+Current MishiPass Beta 1.5 control status. Updated 2026-07-01 for Day 10
+Recovery Board and WhatsApp-ready Missing Card closure.
 
 | Control | Implementation | Status |
 |---|---|---|
@@ -261,7 +264,9 @@ Day 7 of 14 coding days. Updated 2026-06-30 for Day 1–6 closure.
 | HMAC-SHA256 reporter IP hashing | `SIGHTING_IP_HMAC_SECRET` environment variable | Active — missing secret fails closed |
 | R2 key non-exposure | Worker media routes serve photos; raw keys never in responses | Active |
 | Sighting photo owner-only access | Authenticated owner check on photo route | Active |
-| Owner language preference | `owner_settings.language_code` allowlist (`en`, `es`, `kk-KZ`) | Active — dashboard/settings only |
+| Owner language preference | `owner_settings.language_code` allowlist (`en`, `es`, `kk-KZ`) | Active |
+| WhatsApp-ready Missing Card | Owner-only generated share link, public fields only | Active |
+| Recovery Board | Missing-mode only, city/age filters, public-safe fields only | Active |
 | Owner auth backend | PBKDF2-SHA256, opaque session token, HttpOnly cookie | Active |
 | Aikido security scan | — | Scheduled for Day 13 |
 
@@ -269,7 +274,7 @@ Day 7 of 14 coding days. Updated 2026-06-30 for Day 1–6 closure.
 
 ## 9. Prompt-injection and untrusted text posture
 
-MishiPass Beta currently has no LLM runtime or AI decision-making feature in
+MishiPass Beta 1.5 currently has no LLM runtime or AI decision-making feature in
 the production Worker request path.
 
 Public and user-submitted text (cat names, missing alert notes, sighting report

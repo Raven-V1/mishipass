@@ -1,4 +1,4 @@
-# MishiPass — Demo Flow
+# MishiPass Beta 1.5 — Demo Flow
 
 Derived from Constitution Section 21 (LOCKED).
 
@@ -15,25 +15,25 @@ interface.
 | 2 | QR card displays actual QR SVG/image | Real scannable QR, not just a printable URL |
 | 3 | Scan QR / open public URL — Active Profile | Cat name, photo, country badge, privacy-controlled contact |
 | 4 | Upload/display cat profile photo | R2-backed photo with MIME/size/magic-byte validation |
-| 5 | Switch to Missing Alert | City, area, optional reward setting |
+| 5 | Switch to Missing Alert | City, area, optional reward setting, Recovery Board visibility follows Missing Alert |
 | 6 | Scan the same URL — Missing Alert | A different experience from the same URL |
 | 7 | Finder submits text sighting report | Location and message; owner receives it in inbox |
 | 8 | Finder submits optional photo sighting report | Photo stored in R2; rate-limited and validated |
 | 9 | Owner opens sighting inbox and sees report/photo | Owner-only access to sighting photos |
 | 10 | Privacy/contact settings remain owner-controlled | Relay default; owner can toggle visibility |
-| 11 | Owner starts Vet Visit mode | Dashboard confirms activation; QR changes behavior |
-| 12 | Scan the same QR — Vet Visit form | Temporary form with clinic, vet, reason, weight, notes |
-| 13 | Save & Finish Visit | Visit record saved privately; QR returns to Active Profile |
-| 14 | Scan the same QR again — Active Profile | Confirms auto-return after vet visit |
+| 11 | Owner opens WhatsApp-ready Missing Card | Privacy-safe card includes only approved public fields and public alert link |
+| 12 | Open Recovery Board | Missing alerts appear by mode; city and alert-age filters work |
+| 13 | Owner starts Vet Visit mode | Dashboard confirms activation; QR changes behavior |
+| 14 | Scan the same QR — Vet Visit form | Temporary form with clinic, vet, reason, weight, notes, vaccine, sticker photo, and Medication Record |
+| 15 | Save & Finish Visit | Visit/cartilla records saved privately; QR returns to Active Profile |
+| 16 | Scan the same QR again — Active Profile | Confirms auto-return after vet visit |
 
-## Planned, not yet built
+## Deferred Version 1 optional items
 
 | Feature | Status |
 |---|---|
-| WhatsApp card | Not built |
-| Digital cartilla | Not built |
-| Recovery Board | Not built |
-| Optional modes (Travel, Adoption, Memorial, Celebration) | Not built |
+| Optional modes (Travel, Adoption, Memorial, Celebration) | Deferred |
+| Public Preview mode | Deferred |
 
 ## Recording notes (for Day 14)
 

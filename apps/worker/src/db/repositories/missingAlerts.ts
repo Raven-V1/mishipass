@@ -107,25 +107,43 @@ export async function upsertMissingAlert(
 
 /**
  * List cats published to the Recovery Board.
- * Only returns cats where recovery_board_opt_in = 1 AND current_mode = 'missing'.
+ * Only returns cats where current_mode = 'missing'.
  * Optionally filtered by city. Returns only public-safe columns; no internal ids.
  */
 export async function listRecoveryBoardAlerts(
   db: D1Database,
   city?: string,
+  maxAgeDays?: number,
 ): Promise<RecoveryBoardEntry[]> {
   const result = await db
     .prepare(
-      `SELECT c.public_id, c.name, c.country_code,
+      `SELECT c.public_id, c.name, c.country_code, c.photo_r2_key,
               a.city, a.area, a.last_seen_at, a.activated_at
        FROM missing_alerts a
        JOIN cats c ON c.id = a.cat_id
-       WHERE a.recovery_board_opt_in = 1
-         AND c.current_mode = 'missing'
+       WHERE c.current_mode = 'missing'
          AND (? IS NULL OR a.city = ?)
+         AND (? IS NULL OR a.activated_at >= datetime('now', '-' || ? || ' days'))
        ORDER BY a.activated_at DESC`,
     )
-    .bind(city ?? null, city ?? null)
+    .bind(city ?? null, city ?? null, maxAgeDays ?? null, maxAgeDays ?? null)
     .all<RecoveryBoardEntry>();
   return result.results;
+}
+
+export async function updateRecoveryBoardOptIn(
+  db: D1Database,
+  catPublicId: string,
+  ownerId: number,
+  optIn: 0 | 1,
+): Promise<boolean> {
+  const result = await db
+    .prepare(
+      `UPDATE missing_alerts
+       SET recovery_board_opt_in = ?
+       WHERE cat_id = (SELECT id FROM cats WHERE public_id = ? AND owner_id = ?)`,
+    )
+    .bind(optIn, catPublicId, ownerId)
+    .run();
+  return result.meta.changes > 0;
 }

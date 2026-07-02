@@ -343,23 +343,28 @@ describe("missing_alerts", () => {
     expect(nonOwnerView).toBeNull();
   });
 
-  it("Recovery Board returns only opt-in missing cats", async () => {
+  it("Recovery Board returns missing cats by default and hides active cats", async () => {
     const ownerId = await createOwner(OWNER_A_EMAIL);
     await insertCat(env.DB, { public_id: PUBLIC_ID_A, owner_id: ownerId, name: "Mishi", country_code: "MX" });
     await insertCat(env.DB, { public_id: PUBLIC_ID_B, owner_id: ownerId, name: "Luna", country_code: "MX" });
 
-    // Only PUBLIC_ID_A opts in to the board.
+    // Beta 1.5 correction: Missing mode cats appear on the board by default.
     await upsertMissingAlert(env.DB, PUBLIC_ID_A, ownerId, { city: "Juárez", recovery_board_opt_in: 1, activated_at: NOW });
     await upsertMissingAlert(env.DB, PUBLIC_ID_B, ownerId, { city: "Juárez", recovery_board_opt_in: 0, activated_at: NOW });
     await updateCatMode(env.DB, PUBLIC_ID_A, ownerId, "missing");
     await updateCatMode(env.DB, PUBLIC_ID_B, ownerId, "missing");
 
     const board = await listRecoveryBoardAlerts(env.DB);
-    expect(board).toHaveLength(1);
-    expect(board[0]!.public_id).toBe(PUBLIC_ID_A);
+    expect(board).toHaveLength(2);
+    expect(board.map(entry => entry.public_id).sort()).toEqual([PUBLIC_ID_A, PUBLIC_ID_B].sort());
+
+    await updateCatMode(env.DB, PUBLIC_ID_B, ownerId, "active");
+    const activeHiddenBoard = await listRecoveryBoardAlerts(env.DB);
+    expect(activeHiddenBoard).toHaveLength(1);
+    expect(activeHiddenBoard[0]!.public_id).toBe(PUBLIC_ID_A);
     // Internal ids must not be present.
-    expect((board[0] as unknown as Record<string, unknown>)["id"]).toBeUndefined();
-    expect((board[0] as unknown as Record<string, unknown>)["owner_id"]).toBeUndefined();
+    expect((activeHiddenBoard[0] as unknown as Record<string, unknown>)["id"]).toBeUndefined();
+    expect((activeHiddenBoard[0] as unknown as Record<string, unknown>)["owner_id"]).toBeUndefined();
   });
 });
 

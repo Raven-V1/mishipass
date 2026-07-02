@@ -9,6 +9,7 @@ import { checkRateLimit } from "../middleware/rateLimit.js";
 import { checkDurableRateLimit } from "../middleware/durableRateLimit.js";
 import { hmacSha256Hex } from "../utils/crypto.js";
 import { checkMagicBytes } from "./photos.js";
+import { type LanguageCode, getLanguageFromRequest, t } from "../utils/i18n.js";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -26,11 +27,8 @@ function escapeHtml(s: string): string {
 export async function handleSightingForm(
   publicId: string,
   db: D1Database,
+  lang: LanguageCode = "en",
 ): Promise<Response> {
-  if (!validateId(publicId)) {
-    return new Response("Not Found", { status: 404 });
-  }
-
   const cat = await getCatPublicProfile(db, publicId);
   if (!cat) {
     return new Response("Not Found", { status: 404 });
@@ -38,7 +36,7 @@ export async function handleSightingForm(
 
   if (cat.current_mode !== "missing") {
     return new Response(
-      renderNotAcceptingPage(),
+      renderNotAcceptingPage(lang),
       {
         status: 200,
         headers: {
@@ -50,7 +48,7 @@ export async function handleSightingForm(
   }
 
   return new Response(
-    renderSightingForm(publicId, cat.name),
+    renderSightingForm(publicId, cat.name, lang),
     {
       status: 200,
       headers: {
@@ -70,6 +68,7 @@ export async function handleSightingSubmit(
   photos: R2Bucket,
   hmacSecret?: string,
 ): Promise<Response> {
+  const lang = getLanguageFromRequest(request);
   if (!validateId(publicId)) {
     return new Response("Not Found", { status: 404 });
   }
@@ -150,7 +149,7 @@ export async function handleSightingSubmit(
     reporterContact = (formData.get("reporterContact") as string) || "";
 
     // Optional photo
-    const photoField = formData.get("photo");
+    const photoField = formData.get("photo") || formData.get("photoCapture") || formData.get("photoUpload");
     if (photoField && typeof photoField !== "string") {
       sightingPhoto = photoField as File;
     }
@@ -254,7 +253,7 @@ export async function handleSightingSubmit(
   });
 
   return new Response(
-    renderSuccessPage(publicId),
+    renderSuccessPage(publicId, lang),
     {
       status: 200,
       headers: {
@@ -288,30 +287,30 @@ export async function handleListSightingsForOwner(
 
 // ── HTML renderers ──────────────────────────────────────────────────────────
 
-function renderNotAcceptingPage(): string {
+function renderNotAcceptingPage(lang: LanguageCode): string {
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${lang}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sighting Report — MishiPass</title>
+  <title>${t(lang, "reportSighting")} — MishiPass</title>
   <style>body{font-family:sans-serif;max-width:480px;margin:2rem auto;padding:0 1rem}</style>
 </head>
 <body>
-  <p>This cat is not currently accepting sighting reports.</p>
+  <p>${t(lang, "sightingClosed")}</p>
 </body>
 </html>`;
 }
 
-function renderSightingForm(publicId: string, catName: string): string {
+function renderSightingForm(publicId: string, catName: string, lang: LanguageCode): string {
   const safeName = escapeHtml(catName);
   const safeId = escapeHtml(publicId);
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${lang}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Report a sighting — ${safeName} — MishiPass</title>
+  <title>${t(lang, "reportSighting")} — ${safeName} — MishiPass</title>
   <style>
     body{font-family:sans-serif;max-width:480px;margin:2rem auto;padding:0 1rem;line-height:1.5}
     h1{font-size:1.5rem;margin-bottom:1rem}
@@ -319,44 +318,50 @@ function renderSightingForm(publicId: string, catName: string): string {
     input,textarea{width:100%;padding:0.5rem;border:1px solid #ccc;border-radius:4px;margin-bottom:0.75rem;font-size:1rem;box-sizing:border-box}
     textarea{resize:vertical;min-height:80px}
     button{padding:0.75rem 1.5rem;background:#111;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:1rem}
+    .photo-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem}.photo-choice{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:.55rem .8rem;background:#eee;border-radius:6px;cursor:pointer}.photo-actions input{width:auto;margin:0}
   </style>
 </head>
 <body>
-  <h1>Report a sighting of ${safeName}</h1>
-  <form method="POST" action="/c/${safeId}/sighting" enctype="multipart/form-data">
-    <label for="city">City (required)</label>
+  <h1>${t(lang, "reportSightingOf")} ${safeName}</h1>
+  <form method="POST" action="/c/${safeId}/sighting?lang=${lang}" enctype="multipart/form-data">
+    <label for="city">${t(lang, "city")} (required)</label>
     <input type="text" id="city" name="city" required maxlength="80" />
-    <label for="area">Area / neighborhood</label>
+    <label for="area">${t(lang, "area")}</label>
     <input type="text" id="area" name="area" maxlength="120" />
     <label for="sightedAt">When was the cat sighted?</label>
     <input type="text" id="sightedAt" name="sightedAt" maxlength="80" />
-    <label for="message">Additional details</label>
+    <label for="message">${t(lang, "additionalDetails")}</label>
     <textarea id="message" name="message" maxlength="1000"></textarea>
     <label for="reporterName">Your name (optional)</label>
     <input type="text" id="reporterName" name="reporterName" maxlength="80" />
     <label for="reporterContact">Your contact info (optional)</label>
     <input type="text" id="reporterContact" name="reporterContact" maxlength="120" />
-    <label for="photo">Photo (optional, max 3 MB)</label>
-    <input type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/webp" />
-    <button type="submit">Submit sighting report</button>
+    <label>${t(lang, "photo")} (optional, max 3 MB)</label>
+    <div class="photo-actions">
+      <label for="photo-capture" class="photo-choice">${t(lang, "takePhoto")}</label>
+      <input type="file" id="photo-capture" name="photoCapture" accept="image/*" capture="environment" />
+      <label for="photo-upload" class="photo-choice">${t(lang, "chooseExistingPhoto")}</label>
+      <input type="file" id="photo-upload" name="photoUpload" accept="image/*" />
+    </div>
+    <button type="submit">${t(lang, "submitSighting")}</button>
   </form>
 </body>
 </html>`;
 }
 
-function renderSuccessPage(publicId: string): string {
+function renderSuccessPage(publicId: string, lang: LanguageCode): string {
   const safeId = escapeHtml(publicId);
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${lang}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sighting Submitted — MishiPass</title>
+  <title>${t(lang, "sightingSubmitted")} — MishiPass</title>
   <style>body{font-family:sans-serif;max-width:480px;margin:2rem auto;padding:0 1rem}</style>
 </head>
 <body>
-  <p>Thank you. Your sighting report has been submitted.</p>
-  <p><a href="/c/${safeId}">Back to profile</a></p>
+  <p>${t(lang, "sightingSubmitted")}</p>
+  <p><a href="/c/${safeId}?lang=${lang}">${t(lang, "backToProfile")}</a></p>
 </body>
 </html>`;
 }

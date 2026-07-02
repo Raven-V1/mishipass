@@ -10,6 +10,8 @@ import {
 import type { ContactSettingsPublicView, MissingAlertPublicView } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
 import { renderVetVisitPage } from "./vetVisit.js";
+import { type LanguageCode, t } from "../utils/i18n.js";
+import { getCountryBadgeLabel } from "../data/countries.js";
 
 // ── GET /api/cats ───────────────────────────────────────────────────────────
 
@@ -127,25 +129,22 @@ export async function handleCreateCat(
 
 export async function handlePublicProfile(
   publicId: string,
-  db: D1Database
+  db: D1Database,
+  lang: LanguageCode = "en",
 ): Promise<Response> {
   // Validate format before querying D1 — don't leak whether a malformed ID
   // vs a valid-but-missing ID returns 404.
-  if (!validateId(publicId)) {
-    return new Response("Not Found", { status: 404 });
-  }
-
   const cat = await getCatPublicProfile(db, publicId);
   if (!cat) {
     return new Response("Not Found", { status: 404 });
   }
 
   if (cat.current_mode === "missing") {
-    return handlePublicMissingProfile(publicId, cat.name, db);
+    return handlePublicMissingProfile(publicId, cat.name, db, lang);
   }
 
   if (cat.current_mode === "vet") {
-    return renderVetVisitPage(publicId, cat.name, cat.country_code, cat.photo_r2_key, db);
+    return renderVetVisitPage(publicId, cat.name, cat.country_code, cat.photo_r2_key, db, lang);
   }
 
   if (cat.current_mode !== "active") {
@@ -164,7 +163,7 @@ export async function handlePublicProfile(
       color_markings: cat.color_markings,
       breed_mix: cat.breed_mix,
       weight: cat.weight,
-    }),
+    }, lang),
     {
       status: 200,
       headers: { "Content-Type": "text/html;charset=UTF-8", "X-Content-Type-Options": "nosniff" },
@@ -178,17 +177,18 @@ async function handlePublicMissingProfile(
   publicId: string,
   catName: string,
   db: D1Database,
+  lang: LanguageCode,
 ): Promise<Response> {
   const alert = await getMissingAlertPublic(db, publicId);
   if (!alert) {
     // Shouldn't happen if current_mode is missing, but defensive fallback.
-    return new Response(renderUnbuiltMode(catName), {
+    return new Response(renderUnbuiltMode(catName, lang), {
       status: 200,
       headers: { "Content-Type": "text/html;charset=UTF-8", "X-Content-Type-Options": "nosniff" },
     });
   }
 
-  return new Response(renderMissingProfile(catName, alert, publicId), {
+  return new Response(renderMissingProfile(catName, alert, publicId, lang), {
     status: 200,
     headers: { "Content-Type": "text/html;charset=UTF-8", "X-Content-Type-Options": "nosniff" },
   });
@@ -209,6 +209,7 @@ function renderMissingProfile(
   name: string,
   alert: MissingAlertPublicView,
   publicId?: string,
+  lang: LanguageCode = "en",
 ): string {
   const safeName = escapeHtml(name);
   const safeCity = alert.city ? escapeHtml(alert.city) : null;
@@ -218,19 +219,19 @@ function renderMissingProfile(
   let rewardSection = "";
   if (alert.reward_amount !== null) {
     const safeReward = escapeHtml(alert.reward_amount);
-    rewardSection = `<p class="reward">Reward: ${safeReward}</p>`;
+    rewardSection = `<p class="reward">${t(lang, "reward")}: ${safeReward}</p>`;
   }
 
   const sightingLink = publicId
-    ? `<p><a href="/c/${escapeHtml(publicId)}/sighting">Report a sighting</a></p>`
+    ? `<p><a href="/c/${escapeHtml(publicId)}/sighting?lang=${lang}">${t(lang, "reportSighting")}</a></p>`
     : "";
 
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${lang}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${safeName} — Missing — MishiPass</title>
+  <title>${safeName} — ${t(lang, "missing")} — MishiPass</title>
   <style>
     body { font-family: sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
     h1 { margin-bottom: 0.25rem; }
@@ -240,10 +241,10 @@ function renderMissingProfile(
   </style>
 </head>
 <body>
-  <h1>${safeName} <span class="status">MISSING</span></h1>
-  ${safeCity ? `<p class="detail">City: ${safeCity}</p>` : ""}
-  ${safeArea ? `<p class="detail">Area: ${safeArea}</p>` : ""}
-  ${safeLastSeen ? `<p class="detail">Last seen: ${safeLastSeen}</p>` : ""}
+  <h1>${safeName} <span class="status">${t(lang, "missing").toUpperCase()}</span></h1>
+  ${safeCity ? `<p class="detail">${t(lang, "city")}: ${safeCity}</p>` : ""}
+  ${safeArea ? `<p class="detail">${t(lang, "area")}: ${safeArea}</p>` : ""}
+  ${safeLastSeen ? `<p class="detail">${t(lang, "lastSeen")}: ${safeLastSeen}</p>` : ""}
   ${rewardSection}
   ${sightingLink}
 </body>
@@ -257,39 +258,40 @@ function renderActiveProfile(
   photoR2Key: string | null,
   contact: ContactSettingsPublicView,
   catView: { sex: string | null; color_markings: string | null; breed_mix: string | null; weight: string | null },
+  lang: LanguageCode = "en",
 ): string {
   const safeName = escapeHtml(name);
-  const safeCountry = escapeHtml(countryCode);
+  const safeCountry = escapeHtml(getCountryBadgeLabel(countryCode));
 
   const photoSection = photoR2Key
     ? `<div class="photo"><img src="/media/cats/${escapeHtml(publicId)}/photo" alt="${safeName}" /></div>`
-    : `<div class="photo-placeholder" aria-label="No photo available"></div>`;
+    : `<div class="photo-placeholder" aria-label="${t(lang, "noPhoto")}"></div>`;
 
   let contactSection = "";
   if (contact.contact_mode === "phone" && contact.public_phone) {
     const safePhone = escapeHtml(contact.public_phone);
-    contactSection = `<a class="contact-btn" href="tel:${safePhone}">📞 Call owner</a>`;
+    contactSection = `<a class="contact-btn" href="tel:${safePhone}">${t(lang, "callOwner")}</a>`;
   } else if (contact.contact_mode === "relay") {
-    contactSection = `<p class="contact-info">Contact the owner through MishiPass</p>`;
+    contactSection = `<p class="contact-info">${t(lang, "contactOwner")}</p>`;
   }
 
   // Expanded fields
   let detailLines = "";
   if (catView.sex) {
-    detailLines += `<p class="detail">Sex: ${escapeHtml(catView.sex)}</p>`;
+    detailLines += `<p class="detail">${t(lang, "sex")}: ${escapeHtml(catView.sex)}</p>`;
   }
   if (catView.color_markings) {
-    detailLines += `<p class="detail">Color / Markings: ${escapeHtml(catView.color_markings)}</p>`;
+    detailLines += `<p class="detail">${t(lang, "colorMarkings")}: ${escapeHtml(catView.color_markings)}</p>`;
   }
   if (catView.breed_mix) {
-    detailLines += `<p class="detail">Breed / Mix: ${escapeHtml(catView.breed_mix)}</p>`;
+    detailLines += `<p class="detail">${t(lang, "breedMix")}: ${escapeHtml(catView.breed_mix)}</p>`;
   }
   if (catView.weight) {
-    detailLines += `<p class="detail">Weight: ${escapeHtml(catView.weight)}</p>`;
+    detailLines += `<p class="detail">${t(lang, "weight")}: ${escapeHtml(catView.weight)}</p>`;
   }
 
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${lang}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -314,10 +316,10 @@ function renderActiveProfile(
 </html>`;
 }
 
-function renderUnbuiltMode(name: string): string {
+function renderUnbuiltMode(name: string, lang: LanguageCode = "en"): string {
   const safeName = escapeHtml(name);
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${lang}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
