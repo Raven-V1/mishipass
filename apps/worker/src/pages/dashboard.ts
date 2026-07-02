@@ -7,8 +7,27 @@ function buildCountryOptions(): string {
   ).join("\n          ");
 }
 
+function buildColorOptions(): string {
+  const colors = [
+    "Black",
+    "White",
+    "Gray",
+    "Orange",
+    "Cream",
+    "Brown",
+    "Calico",
+    "Tortoiseshell",
+    "Tabby",
+    "Tuxedo",
+    "Pointed / Siamese-style",
+    "Mixed / Other",
+  ];
+  return colors.map(color => `<option value="${color}">${color}</option>`).join("\n            ");
+}
+
 function buildDashboardHtml(): string {
   const countryOptions = buildCountryOptions();
+  const colorOptions = buildColorOptions();
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,7 +36,7 @@ function buildDashboardHtml(): string {
   <title>MishiPass - Owner Dashboard</title>
   <style>
     *{box-sizing:border-box}
-    body{font-family:system-ui,-apple-system,sans-serif;max-width:640px;margin:2rem auto;padding:0 1rem;color:#111;line-height:1.5}
+    body{font-family:system-ui,-apple-system,sans-serif;max-width:1040px;margin:2rem auto;padding:0 1rem;color:#111;line-height:1.5}
     h1{font-size:1.75rem;margin-bottom:1rem}
     h2{font-size:1.25rem;margin-top:1.5rem;margin-bottom:0.75rem}
     .hidden{display:none}
@@ -30,10 +49,13 @@ function buildDashboardHtml(): string {
     .btn-warn{background:#e90;color:#fff}
     .error{color:#c00;font-size:0.875rem;margin-bottom:0.75rem}
     .success{color:#060;font-size:0.875rem;margin-bottom:0.75rem}
-    .cat-card{border:1px solid #ddd;border-radius:6px;padding:1rem;margin-bottom:1rem}
+    .cat-board{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;align-items:stretch}
+    .cat-card{border:1px solid #ddd;border-radius:6px;padding:1rem;min-height:100%;display:flex;flex-direction:column}
     .cat-card h3{margin:0 0 0.5rem 0;font-size:1rem}
     .cat-meta{font-size:0.875rem;color:#555;margin-bottom:0.5rem}
     .cat-actions{margin-top:0.5rem}
+    .cat-photo{width:100%;aspect-ratio:4/3;border-radius:6px;object-fit:cover;background:#eee;margin-bottom:0.75rem}
+    .cat-photo-placeholder{width:100%;aspect-ratio:4/3;border-radius:6px;background:#eee;display:flex;align-items:center;justify-content:center;color:#666;font-size:0.85rem;margin-bottom:0.75rem}
     .mode-fields{margin-top:0.5rem}
     .mode-fields input{margin-bottom:0.5rem}
     a{color:#111}
@@ -51,6 +73,9 @@ function buildDashboardHtml(): string {
     details summary{cursor:pointer;font-size:1.25rem;font-weight:600;margin-top:1.5rem;margin-bottom:0.75rem}
     .contact-card{border:1px solid #ddd;border-radius:6px;padding:1rem;margin-bottom:1rem}
     .contact-card h4{margin:0 0 0.5rem 0}
+    .settings-card{border:1px solid #ddd;border-radius:6px;padding:1rem;max-width:420px}
+    .breed-preview{display:none;max-width:160px;max-height:110px;object-fit:cover;border-radius:6px;margin:0.25rem 0 0.75rem}
+    @media (max-width:560px){body{margin:1rem auto}.tab-nav{overflow-x:auto}.tab-btn{white-space:nowrap;padding:0.5rem 0.75rem}}
   </style>
 </head>
 <body>
@@ -93,6 +118,7 @@ function buildDashboardHtml(): string {
     <div class="tab-nav">
       <button class="tab-btn active" data-tab="cats-tab">Your Cats</button>
       <button class="tab-btn" data-tab="contact-tab">Contact &amp; Privacy</button>
+      <button class="tab-btn" data-tab="settings-tab">Settings</button>
     </div>
 
     <div id="cats-tab" class="tab-panel active">
@@ -116,8 +142,16 @@ function buildDashboardHtml(): string {
             <option value="male">Male</option>
           </select>
           <label for="cat-color">Color / Markings</label>
-          <input type="text" id="cat-color" name="colorMarkings" maxlength="200" />
+          <select id="cat-color-select">
+            <option value="">Select color / markings...</option>
+            ${colorOptions}
+          </select>
+          <input type="text" id="cat-color" name="colorMarkings" maxlength="200" placeholder="Optional markings notes" />
           <label for="cat-breed">Breed / Mix</label>
+          <select id="cat-breed-select">
+            <option value="">Loading breed options...</option>
+          </select>
+          <img id="breed-preview" class="breed-preview" alt="Breed sample" />
           <input type="text" id="cat-breed" name="breedMix" maxlength="100" />
           <button type="submit" class="btn-primary">Register Cat</button>
         </form>
@@ -126,6 +160,19 @@ function buildDashboardHtml(): string {
 
     <div id="contact-tab" class="tab-panel">
       <div id="contact-list"><p>Loading contact settings...</p></div>
+    </div>
+
+    <div id="settings-tab" class="tab-panel">
+      <div class="settings-card">
+        <label for="language-select">Language</label>
+        <select id="language-select">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="kk-KZ">Қазақша</option>
+        </select>
+        <button id="language-save-btn" class="btn-primary">Save</button>
+        <span id="language-status" style="font-size:0.85rem"></span>
+      </div>
     </div>
   </div>
 
@@ -143,6 +190,23 @@ function buildDashboardHtml(): string {
       var registerError = document.getElementById("register-error");
       var registerSuccess = document.getElementById("register-success");
       var createError = document.getElementById("create-error");
+      var languageSelect = document.getElementById("language-select");
+      var languageSaveBtn = document.getElementById("language-save-btn");
+      var languageStatus = document.getElementById("language-status");
+      var breedSelect = document.getElementById("cat-breed-select");
+      var breedInput = document.getElementById("cat-breed");
+      var breedPreview = document.getElementById("breed-preview");
+      var colorSelect = document.getElementById("cat-color-select");
+      var colorInput = document.getElementById("cat-color");
+      var breedImages = {};
+
+      var currentLanguage = "en";
+      var labels = {
+        en: { dashboard: "Dashboard", cats: "Your Cats", contact: "Contact & Privacy", settings: "Settings", register: "Register a Cat", details: "Details", qr: "QR Card", sightings: "Sightings", upload: "Upload Photo", remove: "Remove", languageSaved: "Saved" },
+        es: { dashboard: "Panel", cats: "Tus gatos", contact: "Contacto y privacidad", settings: "Configuración", register: "Registrar un gato", details: "Detalles", qr: "Tarjeta QR", sightings: "Avistamientos", upload: "Subir foto", remove: "Eliminar", languageSaved: "Guardado" },
+        "kk-KZ": { dashboard: "Басқару", cats: "Мысықтар", contact: "Байланыс және құпиялылық", settings: "Баптаулар", register: "Мысықты тіркеу", details: "Мәліметтер", qr: "QR картасы", sightings: "Көрулер", upload: "Фото жүктеу", remove: "Жою", languageSaved: "Сақталды" }
+      };
+      function tr(key) { return (labels[currentLanguage] && labels[currentLanguage][key]) || labels.en[key] || key; }
 
       var tabBtns = document.querySelectorAll(".tab-btn");
       for (var t = 0; t < tabBtns.length; t++) {
@@ -156,11 +220,12 @@ function buildDashboardHtml(): string {
           var panel = document.getElementById(target);
           if (panel) panel.classList.add("active");
           if (target === "contact-tab") loadContactSettings();
+          if (target === "settings-tab") loadSettings();
         });
       }
 
       function showAuth() { authSection.classList.remove("hidden"); dashSection.classList.add("hidden"); }
-      function showDash() { authSection.classList.add("hidden"); dashSection.classList.remove("hidden"); loadCats(); }
+      function showDash() { authSection.classList.add("hidden"); dashSection.classList.remove("hidden"); loadSettings(); loadBreeds(); loadCats(); }
       function hideMsg(el) { el.classList.add("hidden"); el.textContent = ""; }
       function showMsg(el, msg) { el.textContent = msg; el.classList.remove("hidden"); }
       function escHtml(s) { var d = document.createElement("div"); d.appendChild(document.createTextNode(s)); return d.innerHTML; }
@@ -172,22 +237,25 @@ function buildDashboardHtml(): string {
         }).then(function(cats) {
           if (!cats) return;
           if (cats.length === 0) { catList.innerHTML = "<p>No cats registered yet.</p>"; return; }
-          var html = "";
+          var html = '<div class="cat-board">';
           for (var i = 0; i < cats.length; i++) {
             var c = cats[i];
             html += '<div class="cat-card">';
+            if (c.photoUrl) html += '<img class="cat-photo" src="' + escHtml(c.photoUrl) + '" alt="' + escHtml(c.name) + '" loading="lazy" />';
+            else html += '<div class="cat-photo-placeholder" aria-label="No photo available">No photo</div>';
             html += '<h3><a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '">' + escHtml(c.name) + '</a></h3>';
             html += '<p class="cat-meta">Mode: ' + escHtml(c.currentMode) + '</p>';
             html += '<div class="cat-actions">';
-            html += '<a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '" class="btn-secondary" style="text-decoration:none;display:inline-block;padding:0.4rem 0.8rem">Details</a> ';
-            html += '<a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '/qr" class="btn-secondary" style="text-decoration:none;display:inline-block;padding:0.4rem 0.8rem">QR Card</a> ';
+            html += '<a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '" class="btn-secondary" style="text-decoration:none;display:inline-block;padding:0.4rem 0.8rem">' + tr("details") + '</a> ';
+            html += '<a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '/qr" class="btn-secondary" style="text-decoration:none;display:inline-block;padding:0.4rem 0.8rem">' + tr("qr") + '</a> ';
+            html += '<a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '/cartilla" class="btn-secondary" style="text-decoration:none;display:inline-block;padding:0.4rem 0.8rem">Cartilla</a> ';
             if (c.currentMode === "missing") {
-              html += '<a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '/sightings" class="btn-secondary" style="text-decoration:none;display:inline-block;padding:0.4rem 0.8rem">Sightings</a>';
+              html += '<a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '/sightings" class="btn-secondary" style="text-decoration:none;display:inline-block;padding:0.4rem 0.8rem">' + tr("sightings") + '</a>';
             }
             html += '</div>';
             html += '<div class="cat-actions" data-photo-id="' + escHtml(c.publicId) + '" style="margin-top:0.5rem">';
             html += '<input type="file" accept="image/jpeg,image/png,image/webp" class="photo-file-input" id="photo-input-' + escHtml(c.publicId) + '" />';
-            html += '<label for="photo-input-' + escHtml(c.publicId) + '" class="photo-label">Upload Photo</label>';
+            html += '<label for="photo-input-' + escHtml(c.publicId) + '" class="photo-label">' + tr("upload") + '</label>';
             html += '</div>';
             html += '<div class="cat-actions">';
             if (c.currentMode === "missing") {
@@ -206,12 +274,54 @@ function buildDashboardHtml(): string {
               html += '</div>';
             }
             html += '</div>';
-            html += '<div class="cat-actions" style="margin-top:0.75rem"><button class="btn-danger remove-cat-btn" data-id="' + escHtml(c.publicId) + '">Remove</button></div>';
+            html += '<div class="cat-actions" style="margin-top:0.75rem"><button class="btn-danger remove-cat-btn" data-id="' + escHtml(c.publicId) + '">' + tr("remove") + '</button></div>';
             html += '</div>';
           }
+          html += '</div>';
           catList.innerHTML = html;
           attachCatActions();
         }).catch(function() { showMsg(createError, "Network error. Try again."); });
+      }
+
+      function loadSettings() {
+        fetch("/api/settings", { credentials: "same-origin" }).then(function(r) {
+          if (r.status === 401) return null;
+          return r.json();
+        }).then(function(d) {
+          if (!d) return;
+          currentLanguage = d.language_code || "en";
+          languageSelect.value = currentLanguage;
+          applyLanguage();
+        }).catch(function() {});
+      }
+
+      function applyLanguage() {
+        document.querySelector('[data-tab="cats-tab"]').textContent = tr("cats");
+        document.querySelector('[data-tab="contact-tab"]').textContent = tr("contact");
+        document.querySelector('[data-tab="settings-tab"]').textContent = tr("settings");
+        var h2 = document.querySelector("#dashboard-section h2");
+        if (h2) h2.textContent = tr("dashboard");
+        var summary = document.querySelector("#cats-tab details summary");
+        if (summary) summary.textContent = tr("register");
+      }
+
+      function loadBreeds() {
+        if (!breedSelect || breedSelect.getAttribute("data-loaded")) return;
+        function setFallback() {
+          var fallback = ["Mixed / Unknown","Domestic Shorthair","Domestic Longhair","Siamese","Persian","Maine Coon","Bengal","Abyssinian"];
+          breedSelect.innerHTML = '<option value="">Select breed / mix...</option>';
+          for (var i=0;i<fallback.length;i++) breedSelect.innerHTML += '<option value="' + escHtml(fallback[i]) + '">' + escHtml(fallback[i]) + '</option>';
+          breedSelect.setAttribute("data-loaded","1");
+        }
+        fetch("/api/cat-reference/breeds", { credentials: "same-origin" }).then(function(r) { return r.json(); }).then(function(d) {
+          if (!d || !d.breeds || !d.breeds.length) { setFallback(); return; }
+          breedSelect.innerHTML = '<option value="">Select breed / mix...</option>';
+          for (var i=0;i<d.breeds.length;i++) {
+            var b=d.breeds[i]; breedImages[b.name] = b.referenceImageUrl || "";
+            breedSelect.innerHTML += '<option value="' + escHtml(b.name) + '">' + escHtml(b.name) + '</option>';
+          }
+          breedSelect.setAttribute("data-loaded","1");
+        }).catch(setFallback);
       }
 
       function attachCatActions() {
@@ -230,6 +340,26 @@ function buildDashboardHtml(): string {
         var removeBtns = document.querySelectorAll(".remove-cat-btn");
         for (var i = 0; i < removeBtns.length; i++) removeBtns[i].addEventListener("click", function() { var btn = this; var id = btn.getAttribute("data-id"); if (!confirm("Remove this cat from MishiPass? This will hide the public profile and dashboard entry.")) return; btn.disabled = true; btn.textContent = "Removing..."; fetch("/api/cats/" + encodeURIComponent(id) + "/remove", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) }).then(function(r) { if (r.ok) loadCats(); else { r.text().then(function(t) { alert(t || "Could not remove cat"); }); btn.disabled = false; btn.textContent = "Remove"; } }).catch(function() { btn.disabled = false; btn.textContent = "Remove"; }); });
       }
+
+      languageSaveBtn.addEventListener("click", function() {
+        languageSaveBtn.disabled = true;
+        fetch("/api/settings", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ language_code: languageSelect.value }) }).then(function(r) {
+          languageSaveBtn.disabled = false;
+          if (r.ok) { currentLanguage = languageSelect.value; applyLanguage(); loadCats(); languageStatus.textContent = tr("languageSaved"); }
+          else languageStatus.textContent = "Error";
+        }).catch(function() { languageSaveBtn.disabled = false; languageStatus.textContent = "Network error"; });
+      });
+
+      breedSelect.addEventListener("change", function() {
+        breedInput.value = breedSelect.value;
+        var imageUrl = breedImages[breedSelect.value];
+        if (imageUrl) { breedPreview.src = imageUrl; breedPreview.style.display = "block"; }
+        else { breedPreview.removeAttribute("src"); breedPreview.style.display = "none"; }
+      });
+      colorSelect.addEventListener("change", function() {
+        if (!colorSelect.value) return;
+        colorInput.value = colorInput.value ? colorSelect.value + " - " + colorInput.value : colorSelect.value;
+      });
 
       function loadContactSettings() {
         contactList.innerHTML = "<p>Loading...</p>";

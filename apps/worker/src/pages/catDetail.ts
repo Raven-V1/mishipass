@@ -62,7 +62,8 @@ export async function handleCatDetail(
   // Links — sightings only if missing
   let linksHtml = `
     <a href="/c/${safeId}" class="secondary">View Public Profile</a>
-    <a href="/dashboard/cats/${safeId}/qr" class="secondary">QR Card</a>`;
+    <a href="/dashboard/cats/${safeId}/qr" class="secondary">QR Card</a>
+    <a href="/dashboard/cats/${safeId}/cartilla" class="secondary">Digital Cartilla</a>`;
   if (cat.current_mode === "missing") {
     linksHtml += `\n    <a href="/dashboard/cats/${safeId}/sightings" class="secondary">Sighting Reports</a>`;
   }

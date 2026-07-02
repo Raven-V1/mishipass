@@ -24,6 +24,7 @@ import {
   getContactSettingsPublic,
   getMissingAlertForOwner,
   getMissingAlertPublic,
+  getOwnerSettings,
   insertCat,
   insertMedication,
   insertOwner,
@@ -40,6 +41,7 @@ import {
   listVetVisits,
   updateCatMode,
   updateCatPhoto,
+  upsertOwnerSettings,
   upsertContactSettings,
   upsertMissingAlert,
 } from "../index.js";
@@ -91,6 +93,7 @@ beforeEach(async () => {
   await env.DB.prepare("DELETE FROM sighting_reports").run();
   await env.DB.prepare("DELETE FROM missing_alerts").run();
   await env.DB.prepare("DELETE FROM contact_settings").run();
+  await env.DB.prepare("DELETE FROM owner_settings").run();
   await env.DB.prepare("DELETE FROM cats").run();
   await env.DB.prepare("DELETE FROM sessions").run();
   await env.DB.prepare("DELETE FROM owners").run();
@@ -279,6 +282,19 @@ describe("contact_settings", () => {
     await upsertContactSettings(env.DB, PUBLIC_ID_A, ownerA, { contact_mode: "phone", public_phone: "+52111" });
 
     expect(await getContactSettingsForOwner(env.DB, PUBLIC_ID_A, ownerB)).toBeNull();
+  });
+});
+
+describe("owner_settings", () => {
+  it("defaults to English and persists allowed language preferences", async () => {
+    const ownerId = await createOwner(OWNER_A_EMAIL);
+    expect(await getOwnerSettings(env.DB, ownerId)).toEqual({ language_code: "en" });
+
+    await upsertOwnerSettings(env.DB, ownerId, "kk-KZ");
+    expect(await getOwnerSettings(env.DB, ownerId)).toEqual({ language_code: "kk-KZ" });
+
+    await upsertOwnerSettings(env.DB, ownerId, "es");
+    expect(await getOwnerSettings(env.DB, ownerId)).toEqual({ language_code: "es" });
   });
 });
 

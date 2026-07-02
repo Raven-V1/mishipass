@@ -75,6 +75,8 @@ describe("handleListCats", () => {
       countryCode: "MX",
       currentMode: "active",
       qrUrl: "https://mishipass.example.com/c/MP-MX-1234-ABCD",
+      hasPhoto: false,
+      photoUrl: null,
     });
 
     expect(json[1]).toEqual({
@@ -83,6 +85,8 @@ describe("handleListCats", () => {
       countryCode: "ES",
       currentMode: "missing",
       qrUrl: "https://mishipass.example.com/c/MP-ES-5678-EFGH",
+      hasPhoto: true,
+      photoUrl: "/media/cats/MP-ES-5678-EFGH/photo",
     });
   });
 
@@ -104,6 +108,7 @@ describe("handleListCats", () => {
       expect(cat).not.toHaveProperty("id");
       expect(cat).not.toHaveProperty("owner_id");
       expect(cat).not.toHaveProperty("photo_r2_key");
+      expect(cat).toHaveProperty("photoUrl");
     }
   });
 

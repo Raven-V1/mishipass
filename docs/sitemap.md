@@ -66,7 +66,7 @@ MishiPass
 
 ## Implementation status
 
-### Implemented (Day 1–7 complete)
+### Implemented (Day 1–8 partial closure)
 
 - Worker root page (landing)
 - Owner dashboard home
@@ -81,13 +81,17 @@ MishiPass
 - Cat profile photo upload and display (R2-backed)
 - Sighting photo owner-only display (R2-backed)
 - Privacy & Contact Settings
+- Owner Settings language selector (English, Español, Қазақша)
+- Digital Cartilla owner UI (vet visits, vaccines, Medication Record)
+- Clickable owner-only vet visit details
+- Vaccine sticker photo upload and owner-only display
+- Optional breed reference assist with local fallback
 - D1-backed rate limiting (sighting submit + public cat lookup)
 - HMAC-SHA256 reporter IP hashing
 - MIME/size/magic-byte image validation
 
 ### Planned (not yet built)
 
-- Digital Cartilla (vet visits, vaccines, medications)
 - WhatsApp Card Generator
 - Recovery Board Publishing
 - Community Recovery Board with filters

@@ -8,9 +8,13 @@ import { handleSwitchToActive, handleSwitchToMissing } from "./routes/missingAle
 import { handleSightingForm, handleSightingSubmit, handleListSightingsForOwner } from "./routes/sightingReports.js";
 import { handleCatPhotoUpload, handleCatPhotoServe, handleSightingPhotoServe } from "./routes/photos.js";
 import { handleStartVetVisit, handleCancelVetVisit, handleVetVisitFinish } from "./routes/vetVisit.js";
+import { handleCartillaSummaryJson, handleCreateMedication, handleCreateVaccine, handleVaccineStickerServe, handleVaccineStickerUpload } from "./routes/cartilla.js";
+import { handleGetOwnerSettings, handleUpsertOwnerSettings } from "./routes/ownerSettings.js";
+import { handleCatReferenceBreeds } from "./routes/catReference.js";
 import { handleRoot } from "./pages/root.js";
 import { handleDashboard } from "./pages/dashboard.js";
 import { handleCatDetail } from "./pages/catDetail.js";
+import { handleCartillaPage, handleVetVisitDetailPage } from "./pages/cartilla.js";
 import { handleQrPage } from "./pages/qrPage.js";
 import { handleSightingInbox } from "./pages/sightingInbox.js";
 
@@ -22,6 +26,8 @@ export interface Env {
   SIGHTING_IP_HMAC_SECRET?: string;
   /** R2 bucket for cat profile photos and sighting report photos. */
   PHOTOS: R2Bucket;
+  /** Optional TheCatAPI key for reference-data assist. */
+  THE_CAT_API_KEY?: string;
 }
 
 // Route patterns
@@ -35,12 +41,19 @@ const CAT_PHOTO_UPLOAD = /^\/api\/cats\/([^/]+)\/photo$/;
 const CAT_PHOTO_SERVE = /^\/media\/cats\/([^/]+)\/photo$/;
 const SIGHTING_PHOTO_SERVE = /^\/api\/cats\/([^/]+)\/sightings\/([^/]+)\/photo$/;
 const DASHBOARD_CAT_DETAIL = /^\/dashboard\/cats\/([^/]+)$/;
+const DASHBOARD_CAT_CARTILLA = /^\/dashboard\/cats\/([^/]+)\/cartilla$/;
+const DASHBOARD_CAT_VET_VISIT_DETAIL = /^\/dashboard\/cats\/([^/]+)\/cartilla\/vet-visits\/([^/]+)$/;
 const DASHBOARD_CAT_QR = /^\/dashboard\/cats\/([^/]+)\/qr$/;
 const DASHBOARD_CAT_SIGHTINGS = /^\/dashboard\/cats\/([^/]+)\/sightings$/;
 const VET_VISIT_START = /^\/api\/cats\/([^/]+)\/vet-visit\/start$/;
 const VET_VISIT_CANCEL = /^\/api\/cats\/([^/]+)\/vet-visit\/cancel$/;
 const VET_VISIT_FINISH = /^\/api\/cats\/([^/]+)\/vet-visit\/finish$/;
 const CAT_REMOVE = /^\/api\/cats\/([^/]+)\/remove$/;
+const VACCINES_API = /^\/api\/cats\/([^/]+)\/vaccines$/;
+const MEDICATIONS_API = /^\/api\/cats\/([^/]+)\/medications$/;
+const CARTILLA_API = /^\/api\/cats\/([^/]+)\/cartilla$/;
+const VACCINE_STICKER_UPLOAD = /^\/api\/cats\/([^/]+)\/vaccines\/([^/]+)\/sticker-photo$/;
+const VACCINE_STICKER_SERVE = /^\/media\/cats\/([^/]+)\/vaccines\/([^/]+)\/sticker-photo$/;
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -65,6 +78,18 @@ export default {
       return handleCatDetail(detailMatch[1]!, env.DB, ctx, env.PUBLIC_BASE_URL);
     }
 
+    const cartillaPageMatch = DASHBOARD_CAT_CARTILLA.exec(pathname);
+    if (method === "GET" && cartillaPageMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleCartillaPage(cartillaPageMatch[1]!, env.DB, ctx);
+    }
+
+    const vetVisitDetailMatch = DASHBOARD_CAT_VET_VISIT_DETAIL.exec(pathname);
+    if (method === "GET" && vetVisitDetailMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleVetVisitDetailPage(vetVisitDetailMatch[1]!, vetVisitDetailMatch[2]!, env.DB, ctx);
+    }
+
     const qrMatch = DASHBOARD_CAT_QR.exec(pathname);
     if (method === "GET" && qrMatch) {
       const ctx = await resolveSession(request, env.DB);
@@ -87,6 +112,20 @@ export default {
     }
     if (method === "POST" && pathname === "/api/auth/logout") {
       return handleLogout(request, env.DB);
+    }
+
+    // -- Owner settings API --
+
+    if (pathname === "/api/settings") {
+      const ctx = await resolveSession(request, env.DB);
+      if (method === "GET") return handleGetOwnerSettings(env.DB, ctx);
+      if (method === "POST") return handleUpsertOwnerSettings(request, env.DB, ctx);
+    }
+
+    // -- Cat reference API --
+
+    if (method === "GET" && pathname === "/api/cat-reference/breeds") {
+      return handleCatReferenceBreeds(env.THE_CAT_API_KEY);
     }
 
     // -- Cat mode API --
@@ -147,6 +186,32 @@ export default {
       return handleVetVisitFinish(vetFinishMatch[1]!, request, env.DB);
     }
 
+    // -- Digital Cartilla API --
+
+    const cartillaApiMatch = CARTILLA_API.exec(pathname);
+    if (method === "GET" && cartillaApiMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleCartillaSummaryJson(cartillaApiMatch[1]!, env.DB, ctx);
+    }
+
+    const vaccinesApiMatch = VACCINES_API.exec(pathname);
+    if (method === "POST" && vaccinesApiMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleCreateVaccine(vaccinesApiMatch[1]!, request, env.DB, ctx);
+    }
+
+    const medicationsApiMatch = MEDICATIONS_API.exec(pathname);
+    if (method === "POST" && medicationsApiMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleCreateMedication(medicationsApiMatch[1]!, request, env.DB, ctx);
+    }
+
+    const stickerUploadMatch = VACCINE_STICKER_UPLOAD.exec(pathname);
+    if (method === "POST" && stickerUploadMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleVaccineStickerUpload(stickerUploadMatch[1]!, stickerUploadMatch[2]!, request, env.DB, env.PHOTOS, ctx);
+    }
+
     // -- Cat remove API --
 
     const catRemoveMatch = CAT_REMOVE.exec(pathname);
@@ -166,6 +231,12 @@ export default {
     const photoServeMatch = CAT_PHOTO_SERVE.exec(pathname);
     if (method === "GET" && photoServeMatch) {
       return handleCatPhotoServe(photoServeMatch[1]!, env.DB, env.PHOTOS);
+    }
+
+    const stickerServeMatch = VACCINE_STICKER_SERVE.exec(pathname);
+    if (method === "GET" && stickerServeMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleVaccineStickerServe(stickerServeMatch[1]!, stickerServeMatch[2]!, env.DB, env.PHOTOS, ctx);
     }
 
     const sightingPhotoMatch = SIGHTING_PHOTO_SERVE.exec(pathname);
