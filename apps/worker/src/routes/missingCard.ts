@@ -1,6 +1,6 @@
 import { getCatForOwner, getContactSettingsForOwner, getMissingAlertForOwner } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
-import { MISHIPASS_DESIGN_CSS, escapeHtml, htmlResponse } from "../utils/html.js";
+import { MISHIPASS_DESIGN_CSS, brandLockupHtml, escapeHtml, htmlResponse } from "../utils/html.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
 
 export async function handleMissingCardPage(
@@ -45,9 +45,10 @@ export async function handleMissingCardPage(
   const html = `<!DOCTYPE html>
 <html lang="${lang}"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>${t(lang, "whatsappCard")} — ${safeName}</title>
-<style>${MISHIPASS_DESIGN_CSS}body{padding:var(--space-3)}.missing-card-shell{max-width:704px;margin:var(--space-4) auto}.back{margin-bottom:var(--space-2)}h1{color:var(--teal);font-size:clamp(2rem,6vw,3rem);line-height:1.08}.card{padding:var(--space-3);display:grid;gap:var(--space-2)}.photo{width:min(100%,320px);aspect-ratio:4/3;object-fit:cover;border-radius:16px;background:#fff7f0;display:flex;align-items:center;justify-content:center;text-align:center;padding:var(--space-2)}.share{margin-top:var(--space-3)}.muted{font-size:.875rem;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:var(--space-2)}h1,h2,p{overflow-wrap:anywhere}@media(max-width:430px){body{padding:var(--space-2)}.share{width:100%}}</style></head>
+<style>${MISHIPASS_DESIGN_CSS}body{padding:var(--space-3)}.missing-card-shell{max-width:704px;margin:var(--space-4) auto}.back{margin-bottom:var(--space-2)}h1{color:var(--teal);font-size:clamp(2rem,6vw,3rem);line-height:1.08}.card{padding:var(--space-3);display:grid;gap:var(--space-2)}.photo{width:min(100%,320px);aspect-ratio:4/3;object-fit:cover;border-radius:8px;background:#fff7f0;display:flex;align-items:center;justify-content:center;text-align:center;padding:var(--space-2)}.share{margin-top:var(--space-3)}.muted{font-size:.875rem;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:var(--space-2)}h1,h2,p{overflow-wrap:anywhere}@media(max-width:430px){body{padding:var(--space-2)}.share{width:100%}}</style></head>
 <body>
   <main class="missing-card-shell">
+    ${brandLockupHtml(`/?lang=${lang}`)}
     <a class="mp-back back" href="/dashboard/cats/${escapeHtml(publicId)}?lang=${lang}">&larr; ${t(lang, "backToDashboard")}</a>
     <h1>${t(lang, "whatsappCard")}</h1>
     <div class="mp-card card">

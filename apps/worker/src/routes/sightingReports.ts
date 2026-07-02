@@ -10,7 +10,7 @@ import { checkDurableRateLimit } from "../middleware/durableRateLimit.js";
 import { hmacSha256Hex } from "../utils/crypto.js";
 import { checkMagicBytes } from "./photos.js";
 import { type LanguageCode, getLanguageFromRequest, t } from "../utils/i18n.js";
-import { MISHIPASS_DESIGN_CSS } from "../utils/html.js";
+import { MISHIPASS_DESIGN_CSS, brandLockupHtml } from "../utils/html.js";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -295,10 +295,10 @@ function renderNotAcceptingPage(lang: LanguageCode): string {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${t(lang, "reportSighting")} — MishiPass</title>
-  <style>${MISHIPASS_DESIGN_CSS}body{padding:var(--space-3)}.message-card{max-width:560px;margin:var(--space-6) auto;padding:var(--space-4)}@media(max-width:430px){body{padding:var(--space-2)}.message-card{padding:var(--space-3)}}</style>
+  <style>${MISHIPASS_DESIGN_CSS}body{padding:var(--space-3)}.message-shell{max-width:560px;margin:var(--space-6) auto}.message-card{padding:var(--space-4);margin-top:var(--space-3)}@media(max-width:430px){body{padding:var(--space-2)}.message-card{padding:var(--space-3)}}</style>
 </head>
 <body>
-  <main class="mp-card message-card"><p>${t(lang, "sightingClosed")}</p></main>
+  <main class="message-shell">${brandLockupHtml(`/?lang=${lang}`)}<section class="mp-card message-card"><p>${t(lang, "sightingClosed")}</p></section></main>
 </body>
 </html>`;
 }
@@ -315,7 +315,7 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
   <style>
     ${MISHIPASS_DESIGN_CSS}
     body{padding:var(--space-3)}
-    .form-shell{max-width:608px;margin:var(--space-4) auto;padding:var(--space-4)}
+    .page-shell{max-width:608px;margin:var(--space-4) auto}.form-shell{padding:var(--space-4);margin-top:var(--space-3)}
     h1{font-size:clamp(2rem,6vw,3rem);line-height:1.08;margin:0 0 var(--space-3);color:var(--teal)}
     input,textarea{margin-bottom:var(--space-2)}
     .photo-picker{margin:var(--space-1) 0 var(--space-3)}.photo-picker-actions{display:flex;gap:var(--space-1);flex-wrap:wrap}.photo-action{flex:1 1 160px}.photo-input-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}.photo-status{margin-top:var(--space-1);overflow-wrap:anywhere}
@@ -323,7 +323,9 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
   </style>
 </head>
 <body>
-  <main class="mp-card form-shell">
+  <main class="page-shell">
+  ${brandLockupHtml(`/?lang=${lang}`)}
+  <section class="mp-card form-shell">
   <h1>${t(lang, "reportSightingOf")} ${safeName}</h1>
   <form method="POST" action="/c/${safeId}/sighting?lang=${lang}" enctype="multipart/form-data">
     <label for="city">${t(lang, "city")} (required)</label>
@@ -350,6 +352,7 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
     </div>
     <button class="mp-btn mp-btn-primary" type="submit">${t(lang, "submitSighting")}</button>
   </form>
+  </section>
   </main>
 </body>
 </html>`;
@@ -363,12 +366,15 @@ function renderSuccessPage(publicId: string, lang: LanguageCode): string {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${t(lang, "sightingSubmitted")} — MishiPass</title>
-  <style>${MISHIPASS_DESIGN_CSS}body{padding:var(--space-3)}.message-card{max-width:560px;margin:var(--space-6) auto;padding:var(--space-4)}@media(max-width:430px){body{padding:var(--space-2)}.message-card{padding:var(--space-3)}}</style>
+  <style>${MISHIPASS_DESIGN_CSS}body{padding:var(--space-3)}.message-shell{max-width:560px;margin:var(--space-6) auto}.message-card{padding:var(--space-4);margin-top:var(--space-3)}@media(max-width:430px){body{padding:var(--space-2)}.message-card{padding:var(--space-3)}}</style>
 </head>
 <body>
-  <main class="mp-card message-card">
+  <main class="message-shell">
+    ${brandLockupHtml(`/?lang=${lang}`)}
+  <section class="mp-card message-card">
     <p>${t(lang, "sightingSubmitted")}</p>
     <p><a class="mp-btn mp-btn-primary" href="/c/${safeId}?lang=${lang}">${t(lang, "backToProfile")}</a></p>
+  </section>
   </main>
 </body>
 </html>`;
