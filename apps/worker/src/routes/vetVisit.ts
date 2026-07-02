@@ -17,7 +17,8 @@ import {
   getCatPublicProfile,
 } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
-import { MISHIPASS_DESIGN_CSS, escapeHtml, htmlResponse } from "../utils/html.js";
+import { iconStethoscope } from "../utils/icons.js";
+import { MISHIPASS_DESIGN_CSS, brandLockupHtml, escapeHtml, htmlResponse } from "../utils/html.js";
 import { getLanguageFromRequest, type LanguageCode, t } from "../utils/i18n.js";
 import { getCountryBadgeLabel } from "../data/countries.js";
 import { checkMagicBytes } from "./photos.js";
@@ -316,25 +317,29 @@ function renderVetForm(
   <style>
     ${MISHIPASS_DESIGN_CSS}
     body{padding:var(--space-3)}
-    .vet-shell{max-width:704px;margin:var(--space-4) auto;padding:var(--space-4)}
-    h1{font-size:clamp(2rem,6vw,3rem);line-height:1.08;margin:0 0 var(--space-1);color:var(--teal)}
+    .vet-shell{max-width:704px;margin:var(--space-4) auto}
+    .vet-card{padding:var(--space-4);margin-top:var(--space-3)}
+    h1{display:flex;align-items:center;gap:var(--space-1);font-size:clamp(2rem,6vw,3rem);line-height:1.08;margin:0 0 var(--space-1);color:var(--teal)}
     .vet-badge{background:#e9f5ef;color:var(--teal);margin:var(--space-2) 0}
-    .photo img{width:144px;height:144px;border-radius:16px;object-fit:cover;margin:var(--space-3) 0}
-    .expiry{font-size:0.875rem;color:var(--muted);margin-bottom:var(--space-3)}
+    .photo img{width:144px;height:144px;border-radius:8px;object-fit:cover;margin:var(--space-3) 0}
+    .status-panel{padding:var(--space-2);border:1px solid var(--line);border-radius:8px;background:#fff7f0;margin:var(--space-2) 0 var(--space-3)}
+    .expiry{font-size:0.875rem;color:var(--muted);margin:0}
     label{margin-top:var(--space-2)}
     .submit-btn{width:100%;margin-top:var(--space-3)}
     .note{font-size:0.875rem;color:var(--muted);margin-top:var(--space-3);padding:var(--space-2);background:#fff7f0;border-radius:8px}
     .photo-picker{margin:var(--space-1) 0 var(--space-3)}.photo-picker-actions{display:flex;gap:var(--space-1);flex-wrap:wrap}.photo-action{flex:1 1 160px}.photo-input-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}.photo-status{margin-top:var(--space-1);overflow-wrap:anywhere}
-    @media(max-width:430px){body{padding:var(--space-2)}.vet-shell{padding:var(--space-3)}.photo-action{flex-basis:100%}}
+    @media(max-width:430px){body{padding:var(--space-2)}.vet-card{padding:var(--space-3)}.photo-action{flex-basis:100%}}
   </style>
 </head>
 <body>
-  <main class="mp-card vet-shell">
-  <h1>${safeName}</h1>
+  <main class="vet-shell">
+  ${brandLockupHtml(`/?lang=${lang}`)}
+  <section class="mp-card vet-card">
+  <h1>${iconStethoscope(32)} <span>${t(lang, "vetVisit")}</span></h1>
+  <h2>${safeName}</h2>
   <span class="badge">${safeCountry}</span>
   ${photoSection}
-  <span class="vet-badge">${t(lang, "vetVisit")}</span>
-  <p class="expiry">Session expires: ${safeExpiry} UTC</p>
+  <div class="status-panel"><span class="vet-badge">${t(lang, "vetVisitActive")}</span><p class="expiry">Session expires: ${safeExpiry} UTC</p></div>
 
   <form method="POST" action="/api/cats/${safeId}/vet-visit/finish?lang=${lang}" enctype="multipart/form-data">
     <label for="clinic_name">${t(lang, "clinicName")} (optional)</label>
@@ -389,6 +394,7 @@ function renderVetForm(
   </form>
 
   <p class="note">This visit record will be saved to the cat's private history. No medical history is shown on this page. The QR will return to Active Profile after submission.</p>
+  </section>
   </main>
 </body>
 </html>`;
@@ -445,19 +451,22 @@ function renderExpiredPage(name: string, lang: LanguageCode = "en"): string {
   <style>
     ${MISHIPASS_DESIGN_CSS}
     body{padding:var(--space-3)}
-    .message-card{max-width:560px;margin:var(--space-6) auto;padding:var(--space-4)}
+    .message-shell{max-width:560px;margin:var(--space-6) auto}.message-card{padding:var(--space-4);margin-top:var(--space-3)}
     h1{color:var(--teal)}
     .expired{background:#fff7d6;color:#6b4a00;padding:var(--space-2);border-radius:8px;margin:var(--space-2) 0}
     @media(max-width:430px){body{padding:var(--space-2)}.message-card{padding:var(--space-3)}}
   </style>
 </head>
 <body>
-  <main class="mp-card message-card">
+  <main class="message-shell">
+    ${brandLockupHtml(`/?lang=${lang}`)}
+  <section class="mp-card message-card">
     <h1>${safeName}</h1>
     <div class="expired">
       <strong>Vet Visit session has expired or been completed.</strong>
       <p>The owner can start a new Vet Visit from their dashboard if needed.</p>
     </div>
+  </section>
   </main>
 </body>
 </html>`;
@@ -474,15 +483,18 @@ function renderNotVetModePage(name: string, lang: LanguageCode = "en"): string {
   <style>
     ${MISHIPASS_DESIGN_CSS}
     body{padding:var(--space-3)}
-    .message-card{max-width:560px;margin:var(--space-6) auto;padding:var(--space-4)}
+    .message-shell{max-width:560px;margin:var(--space-6) auto}.message-card{padding:var(--space-4);margin-top:var(--space-3)}
     h1{color:var(--teal)}
     @media(max-width:430px){body{padding:var(--space-2)}.message-card{padding:var(--space-3)}}
   </style>
 </head>
 <body>
-  <main class="mp-card message-card">
+  <main class="message-shell">
+    ${brandLockupHtml(`/?lang=${lang}`)}
+  <section class="mp-card message-card">
     <h1>${safeName}</h1>
     <p>This cat is not currently in Vet Visit mode. The visit cannot be submitted.</p>
+  </section>
   </main>
 </body>
 </html>`;
@@ -499,19 +511,22 @@ function renderSuccessPage(name: string, lang: LanguageCode = "en"): string {
   <style>
     ${MISHIPASS_DESIGN_CSS}
     body{padding:var(--space-3)}
-    .message-card{max-width:560px;margin:var(--space-6) auto;padding:var(--space-4)}
+    .message-shell{max-width:560px;margin:var(--space-6) auto}.message-card{padding:var(--space-4);margin-top:var(--space-3)}
     h1{color:var(--teal)}
     .success{background:#e9f5ef;color:var(--teal);padding:var(--space-2);border-radius:8px;margin:var(--space-2) 0}
     @media(max-width:430px){body{padding:var(--space-2)}.message-card{padding:var(--space-3)}}
   </style>
 </head>
 <body>
-  <main class="mp-card message-card">
+  <main class="message-shell">
+    ${brandLockupHtml(`/?lang=${lang}`)}
+  <section class="mp-card message-card">
     <h1>${safeName}</h1>
     <div class="success">
       <strong>Visit saved.</strong>
       <p>This QR has returned to Active Profile. The visit record is stored in the owner's private history.</p>
     </div>
+  </section>
   </main>
 </body>
 </html>`;
