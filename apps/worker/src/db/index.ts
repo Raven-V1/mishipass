@@ -19,6 +19,7 @@ export type {
   MedicationInsert,
   MissingAlertPublicView,
   MissingAlertUpsert,
+  OwnerIdentityInsert,
   OwnerInsert,
   RecoveryBoardEntry,
   SessionInsert,
@@ -35,6 +36,14 @@ export type { OwnerLanguageCode, OwnerSettingsView } from "./repositories/ownerS
 
 // Owners
 export { findOwnerByEmail, insertOwner } from "./repositories/owners.js";
+
+// Owner identities (OIDC/Logto)
+export {
+  findOwnerIdentity,
+  insertOwnerForOidc,
+  insertOwnerIdentity,
+  updateOwnerIdentityEmail,
+} from "./repositories/ownerIdentities.js";
 
 // Sessions
 export {

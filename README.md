@@ -119,6 +119,24 @@ npx tsc --noEmit --project apps/worker/tsconfig.json
 | `THE_CAT_API_KEY` | Optional — breed image CDN assist | `wrangler secret` |
 | `PUBLIC_BASE_URL` | Worker's canonical public URL | `wrangler.toml` env |
 
+### Optional — Logto OIDC (Google / Apple login)
+
+All six must be set for social login to activate. Buttons render as disabled
+when any are absent.
+
+| Variable | Purpose | Where set |
+|---|---|---|
+| `LOGTO_ENDPOINT` | Logto tenant URL (e.g. `https://tenant.logto.app`) | `wrangler secret` |
+| `LOGTO_APP_ID` | Logto application client ID | `wrangler secret` |
+| `LOGTO_CLIENT_SECRET` | Logto application client secret | `wrangler secret` |
+| `LOGTO_REDIRECT_URI` | Absolute callback URL registered in Logto | `wrangler secret` |
+| `LOGTO_GOOGLE_CONNECTOR_TARGET` | Logto connector target for Google (default: `"google"`) | `wrangler secret` |
+| `LOGTO_APPLE_CONNECTOR_TARGET` | Logto connector target for Apple (default: `"apple"`) | `wrangler secret` |
+
+Google requires a Logto Google connector configured with Google Cloud OAuth 2.0
+credentials. Apple requires a Logto Apple connector and an Apple Developer
+Program account. Provider credentials are never committed to this repository.
+
 ## Production deployment
 
 ```bash
