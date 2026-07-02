@@ -508,6 +508,23 @@ Decided by: Project Owner
 
 ---
 
+## [2026-07-02] — Submission branding docs update process correction
+
+Decision: Commit 2b363b3 updated registered team branding to Belvenar Analytics
+Development and added Zhanerke's design page inventory. It was pushed directly
+to main as a docs-only update, bypassing the repository PR rule.
+
+Reason: The content was valid and main/dev were synced, but the process was
+incorrect because branch protection requires pull requests.
+
+Correction: Future documentation and code changes must go through a PR,
+including docs-only changes. Kiro/non-design commits must use Raven-V1 local
+Git identity; design implementation work remains under zhanerke06/Codex.
+
+Decided by: Carlos
+
+---
+
 ## Open items (not yet decided)
 
 Tracked in Constitution Section 23; each will be logged here when resolved:
