@@ -21,7 +21,7 @@ beforeEach(() => {
 });
 
 describe("Recovery Board", () => {
-  it("renders only repository-returned opted-in missing alerts and no private data", async () => {
+  it("renders repository-returned missing alerts with public-safe fields only", async () => {
     mockListRecoveryBoardAlerts.mockResolvedValue([{ public_id: ID, name: "Mishi", country_code: "MX", photo_r2_key: "cats/private.jpg", city: "Almaty", area: "Bostandyk", last_seen_at: "2026-07-01", activated_at: "2026-07-01T00:00:00Z" }]);
     const res = await handleRecoveryBoardPage(new Request("https://example.com/recovery-board?city=Almaty&ageDays=7"), fakeDb);
     expect(res.status).toBe(200);
@@ -29,10 +29,24 @@ describe("Recovery Board", () => {
     const html = await res.text();
     expect(html).toContain("Recovery Board");
     expect(html).toContain("Mishi");
+    expect(html).toContain("🇲🇽 Mexico");
+    expect(html).toContain("Report a sighting");
     expect(html).toContain(`/c/${ID}`);
     expect(html).not.toContain("owner_id");
     expect(html).not.toContain("Medication Record");
     expect(html).not.toContain("cats/private.jpg");
+  });
+
+  it("renders translated board labels and preserves language in public links", async () => {
+    mockListRecoveryBoardAlerts.mockResolvedValue([{ public_id: ID, name: "Mishi", country_code: "KZ", photo_r2_key: null, city: "Almaty", area: "Bostandyk", last_seen_at: null, activated_at: "2026-07-01T00:00:00Z" }]);
+    const res = await handleRecoveryBoardPage(new Request("https://example.com/recovery-board?lang=kk-KZ"), fakeDb);
+    const html = await res.text();
+    expect(html).toContain('html lang="kk-KZ"');
+    expect(html).toContain("Қайтару тақтасы");
+    expect(html).toContain("Қала");
+    expect(html).toContain("Қоғамдық ескертуді ашу");
+    expect(html).toContain(`/c/${ID}?lang=kk-KZ`);
+    expect(html).toContain(`/c/${ID}/sighting?lang=kk-KZ`);
   });
 
   it("owner opt-in route defaults off unless explicitly true", async () => {

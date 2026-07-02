@@ -46,7 +46,7 @@ MishiPass
 │   │   ├── Reward Settings
 │   │   ├── WhatsApp Card Generator
 │   │   ├── Public Alert Link
-│   │   └── Recovery Board Publishing
+│   │   └── Recovery Board View
 │   ├── Sighting Reports
 │   ├── Digital Cartilla
 │   │   ├── Vet Visits
@@ -76,8 +76,7 @@ MishiPass
 - Active Profile public view
 - Missing Alert public view with mode switching
 - WhatsApp-ready Missing Card with public alert link
-- Recovery Board Publishing
-- Community Recovery Board with city and alert-age filters
+- Recovery Board with city and alert-age filters
 - Vet Visit mode (owner activation, public form, Save & Finish, 24h expiry)
 - Vet Visit Save & Finish can add vaccine, sticker photo, and Medication Record
 - Sighting Report Form (text + optional photo)

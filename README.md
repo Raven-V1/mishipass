@@ -18,7 +18,7 @@ physical tag behaves differently depending on what the cat needs.
 - Active Profile public page
 - Missing Alert mode with mode switching
 - WhatsApp-ready missing card with public alert link
-- Opt-in Recovery Board with city and alert-age filters
+- Recovery Board with city and alert-age filters
 - Vet Visit mode with temporary 24-hour session
 - Save & Finish Visit can record vet visit, vaccines, vaccine sticker photo, and Medication Record before auto-return to Active Profile
 - Owner-only Digital Cartilla for vet visits, vaccines, Medication Record, and sticker photos
@@ -48,7 +48,7 @@ physical tag behaves differently depending on what the cat needs.
 - Medication Record entries are documentation-only records. MishiPass does not
   provide dosage recommendations, interaction checks, reminders, refill tracking,
   treatment plans, or medical advice.
-- Recovery Board is off by default and owner opt-in only.
+- Recovery Board is visible for cats in Missing Alert mode and only shows public-safe fields.
 - No owner full name, email, or exact address is shown publicly.
 - Reporter IP addresses are hashed with HMAC-SHA256 using a dedicated secret
   before storage. No raw IP is ever persisted.

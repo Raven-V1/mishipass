@@ -35,6 +35,12 @@ function photoRequest(bytes: number[], type: string): Request {
   return new Request("https://example.com/test", { method: "POST", body: fd });
 }
 
+function photoCaptureRequest(bytes: number[], type: string): Request {
+  const fd = new FormData();
+  fd.set("photoCapture", new File([new Uint8Array(bytes)], "sticker", { type }));
+  return new Request("https://example.com/test", { method: "POST", body: fd });
+}
+
 beforeEach(() => {
   mockGetCatForOwner.mockReset();
   mockGetVaccineForOwner.mockReset();
@@ -71,5 +77,21 @@ describe("cartilla routes", () => {
     expect(res.status).toBe(400);
     expect(photos.put).not.toHaveBeenCalled();
     expect(mockUpdateVaccineStickerPhoto).not.toHaveBeenCalled();
+  });
+
+  it("accepts camera-capture vaccine sticker photo fields", async () => {
+    mockGetVaccineForOwner.mockResolvedValue({ id: 5, sticker_photo_r2_key: null });
+    const photos = { put: vi.fn().mockResolvedValue(undefined) } as unknown as R2Bucket & { put: ReturnType<typeof vi.fn> };
+    const res = await handleVaccineStickerUpload(
+      TEST_ID,
+      "5",
+      photoCaptureRequest([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A], "image/png"),
+      fakeDb,
+      photos,
+      authed,
+    );
+    expect(res.status).toBe(200);
+    expect(photos.put).toHaveBeenCalledOnce();
+    expect(mockUpdateVaccineStickerPhoto).toHaveBeenCalledOnce();
   });
 });

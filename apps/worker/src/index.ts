@@ -13,7 +13,7 @@ import { handleGetOwnerSettings, handleUpsertOwnerSettings } from "./routes/owne
 import { handleCatReferenceBreeds } from "./routes/catReference.js";
 import { handleMissingCardPage } from "./routes/missingCard.js";
 import { handleRecoveryBoardOptIn, handleRecoveryBoardPage } from "./routes/recoveryBoard.js";
-import { handleRoot } from "./pages/root.js";
+import { handleHistory, handleRoot } from "./pages/root.js";
 import { handleDashboard } from "./pages/dashboard.js";
 import { handleCatDetail } from "./pages/catDetail.js";
 import { handleCartillaPage, handleVetVisitDetailPage } from "./pages/cartilla.js";
@@ -71,6 +71,10 @@ export default {
       return handleRoot(request);
     }
 
+    if ((method === "GET" || method === "HEAD") && pathname === "/history") {
+      return handleHistory(request);
+    }
+
     if (method === "GET" && pathname === "/dashboard") {
       return handleDashboard();
     }
@@ -84,31 +88,31 @@ export default {
     const detailMatch = DASHBOARD_CAT_DETAIL.exec(pathname);
     if (method === "GET" && detailMatch) {
       const ctx = await resolveSession(request, env.DB);
-      return handleCatDetail(detailMatch[1]!, env.DB, ctx, env.PUBLIC_BASE_URL);
+      return handleCatDetail(detailMatch[1]!, env.DB, ctx, env.PUBLIC_BASE_URL, getLanguageFromRequest(request));
     }
 
     const cartillaPageMatch = DASHBOARD_CAT_CARTILLA.exec(pathname);
     if (method === "GET" && cartillaPageMatch) {
       const ctx = await resolveSession(request, env.DB);
-      return handleCartillaPage(cartillaPageMatch[1]!, env.DB, ctx);
+      return handleCartillaPage(cartillaPageMatch[1]!, env.DB, ctx, getLanguageFromRequest(request));
     }
 
     const vetVisitDetailMatch = DASHBOARD_CAT_VET_VISIT_DETAIL.exec(pathname);
     if (method === "GET" && vetVisitDetailMatch) {
       const ctx = await resolveSession(request, env.DB);
-      return handleVetVisitDetailPage(vetVisitDetailMatch[1]!, vetVisitDetailMatch[2]!, env.DB, ctx);
+      return handleVetVisitDetailPage(vetVisitDetailMatch[1]!, vetVisitDetailMatch[2]!, env.DB, ctx, getLanguageFromRequest(request));
     }
 
     const qrMatch = DASHBOARD_CAT_QR.exec(pathname);
     if (method === "GET" && qrMatch) {
       const ctx = await resolveSession(request, env.DB);
-      return handleQrPage(qrMatch[1]!, env.DB, ctx, env.PUBLIC_BASE_URL);
+      return handleQrPage(qrMatch[1]!, env.DB, ctx, env.PUBLIC_BASE_URL, getLanguageFromRequest(request));
     }
 
     const sightingsPageMatch = DASHBOARD_CAT_SIGHTINGS.exec(pathname);
     if (method === "GET" && sightingsPageMatch) {
       const ctx = await resolveSession(request, env.DB);
-      return handleSightingInbox(sightingsPageMatch[1]!, env.DB, ctx);
+      return handleSightingInbox(sightingsPageMatch[1]!, env.DB, ctx, getLanguageFromRequest(request));
     }
 
     // -- Auth API --
@@ -198,7 +202,7 @@ export default {
     const missingCardMatch = DASHBOARD_CAT_MISSING_CARD.exec(pathname);
     if (method === "GET" && missingCardMatch) {
       const ctx = await resolveSession(request, env.DB);
-      return handleMissingCardPage(missingCardMatch[1]!, env.DB, ctx, env.PUBLIC_BASE_URL);
+      return handleMissingCardPage(missingCardMatch[1]!, env.DB, ctx, env.PUBLIC_BASE_URL, getLanguageFromRequest(request));
     }
 
     // -- Digital Cartilla API --

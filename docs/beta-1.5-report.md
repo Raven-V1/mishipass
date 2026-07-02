@@ -21,8 +21,9 @@ the cat needs.
 *(To be completed. List the delivered must-build features: owner accounts, cat
 registration, public ID generation, Active Profile, Missing Alert + sighting
 reports, Vet Visit + Save & Finish, Digital Cartilla, WhatsApp-ready missing
-card, Recovery Board, and language support. Optional Version 1 modes are
-deferred unless separately completed inside the Beta 1.x scope.)*
+card, Recovery Board, language support, and public-facing media polish.
+Optional Version 1 modes are deferred unless separately completed inside the
+Beta 1.x scope.)*
 
 ## 3. Architecture
 
