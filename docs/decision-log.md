@@ -469,6 +469,45 @@ Decided by: Project Owner
 
 ---
 
+## [2026-07-02T02:04:33.3683832-06:00] — fix: close Beta 1.5 P1 acceptance findings
+
+Decision: Close the P1 findings from the Beta 1.5 Local/GitHub/Constitution
+audit without adding new product scope or changing D1/R2 schema.
+
+Executor: Codex
+Branch: `fix/beta15-p1-i18n-catapi-layout-report`
+Commits: `c145a78`, `356da6a`
+
+Summary:
+- Fixed homepage and history page i18n leakage by routing visible copy through
+  the centralized English, Spanish, and Kazakh dictionary.
+- Fixed CatAPI breed image handling so reference IDs are not blindly converted
+  to `.jpg`; Bengal uses the known correct `.png` fallback and unknown images
+  render clean placeholders.
+- Updated the homepage cat visual to local generated white-cat-with-brown-spots
+  artwork and documented asset origin in `docs/assets-licenses.md`.
+- Fixed WhatsApp Card visible labels, back navigation, and share text to preserve
+  the selected language.
+- Improved responsive layout/scaling for homepage, dashboard cards, breed/color
+  selector grids, WhatsApp Card, and Recovery Board.
+- Added no-store HTML response headers so localized pages do not serve stale
+  language output after deploy.
+- Finalized the Beta 1.5 report draft.
+
+Validation:
+- `npx tsc --noEmit --project apps/worker/tsconfig.json` passed.
+- `npm test --workspace=mishipass-worker` passed: 215 tests.
+- `npm test --workspace=@mishipass/shared-validation` passed: 43 tests.
+- `npm run typecheck --workspace=@mishipass/shared-validation` passed.
+- Production deploy and smoke are recorded in the PR/final status for this pass.
+
+Reason: Carlos accepted the audit verdict as FAIL, not BLOCKER, and requested a
+focused P1 acceptance fix pass before any judge-safe completion claim.
+
+Decided by: Project Owner
+
+---
+
 ## Open items (not yet decided)
 
 Tracked in Constitution Section 23; each will be logged here when resolved:

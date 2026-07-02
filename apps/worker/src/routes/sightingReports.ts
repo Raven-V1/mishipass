@@ -312,13 +312,14 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${t(lang, "reportSighting")} — ${safeName} — MishiPass</title>
   <style>
-    body{font-family:sans-serif;max-width:480px;margin:2rem auto;padding:0 1rem;line-height:1.5}
+    *{box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;max-width:520px;margin:1.5rem auto;padding:0 1rem;line-height:1.5;color:#111}
     h1{font-size:1.5rem;margin-bottom:1rem}
     label{display:block;margin-bottom:0.25rem;font-size:0.875rem;font-weight:500}
-    input,textarea{width:100%;padding:0.5rem;border:1px solid #ccc;border-radius:4px;margin-bottom:0.75rem;font-size:1rem;box-sizing:border-box}
+    input,textarea{width:100%;padding:0.65rem;border:1px solid #ccc;border-radius:6px;margin-bottom:0.75rem;font-size:1rem;min-height:44px}
     textarea{resize:vertical;min-height:80px}
-    button{padding:0.75rem 1.5rem;background:#111;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:1rem}
-    .photo-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem}.photo-choice{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:.55rem .8rem;background:#eee;border-radius:6px;cursor:pointer}.photo-actions input{width:auto;margin:0}
+    button{min-height:44px;padding:0.75rem 1.5rem;background:#111;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:1rem}
+    .photo-picker{margin:.35rem 0 .85rem}.photo-picker-actions{display:flex;gap:.55rem;flex-wrap:wrap}.photo-action{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:.62rem .85rem;background:#eee;border-radius:6px;cursor:pointer;font-weight:700;text-align:center;line-height:1.2;flex:1 1 155px}.photo-input-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}.photo-status{font-size:.85rem;color:#666;margin-top:.4rem;overflow-wrap:anywhere}
+    @media(max-width:430px){body{margin:1rem auto;padding:0 .85rem}.photo-action,button{width:100%;flex-basis:100%}h1{font-size:1.35rem}}
   </style>
 </head>
 <body>
@@ -337,11 +338,14 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
     <label for="reporterContact">Your contact info (optional)</label>
     <input type="text" id="reporterContact" name="reporterContact" maxlength="120" />
     <label>${t(lang, "photo")} (optional, max 3 MB)</label>
-    <div class="photo-actions">
-      <label for="photo-capture" class="photo-choice">${t(lang, "takePhoto")}</label>
-      <input type="file" id="photo-capture" name="photoCapture" accept="image/*" capture="environment" />
-      <label for="photo-upload" class="photo-choice">${t(lang, "chooseExistingPhoto")}</label>
-      <input type="file" id="photo-upload" name="photoUpload" accept="image/*" />
+    <div class="photo-picker">
+      <div class="photo-picker-actions">
+        <label for="photo-capture" class="photo-action">${t(lang, "takePhoto")}</label>
+        <label for="photo-upload" class="photo-action">${t(lang, "chooseExistingPhoto")}</label>
+      </div>
+      <input class="photo-input-visually-hidden" type="file" id="photo-capture" name="photoCapture" accept="image/*" capture="environment" data-photo-status="sighting-photo-status" />
+      <input class="photo-input-visually-hidden" type="file" id="photo-upload" name="photoUpload" accept="image/*" data-photo-status="sighting-photo-status" />
+      <div id="sighting-photo-status" class="photo-status">${t(lang, "noPhotoSelected")}</div>
     </div>
     <button type="submit">${t(lang, "submitSighting")}</button>
   </form>
