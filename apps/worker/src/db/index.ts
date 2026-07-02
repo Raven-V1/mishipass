@@ -31,6 +31,7 @@ export type {
   VetVisitEntry,
   VetVisitInsert,
 } from "./types.js";
+export type { OwnerLanguageCode, OwnerSettingsView } from "./repositories/ownerSettings.js";
 
 // Owners
 export { findOwnerByEmail, insertOwner } from "./repositories/owners.js";
@@ -60,6 +61,13 @@ export {
   upsertContactSettings,
 } from "./repositories/contactSettings.js";
 
+// Owner settings
+export {
+  getOwnerSettings,
+  isOwnerLanguageCode,
+  upsertOwnerSettings,
+} from "./repositories/ownerSettings.js";
+
 // Missing alerts
 export {
   getMissingAlertForOwner,
@@ -83,10 +91,13 @@ export {
 
 // Cartilla
 export {
+  getVaccineForOwner,
+  getVetVisitForOwner,
   insertMedication,
   insertVaccine,
   insertVetVisit,
   listMedications,
   listVaccines,
   listVetVisits,
+  updateVaccineStickerPhoto,
 } from "./repositories/cartilla.js";

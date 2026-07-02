@@ -29,6 +29,8 @@ export async function handleListCats(
     countryCode: cat.country_code,
     currentMode: cat.current_mode,
     qrUrl: `${publicBaseUrl}/c/${cat.public_id}`,
+    hasPhoto: Boolean(cat.photo_r2_key),
+    photoUrl: cat.photo_r2_key ? `/media/cats/${cat.public_id}/photo` : null,
   }));
 
   return Response.json(result, { status: 200 });
