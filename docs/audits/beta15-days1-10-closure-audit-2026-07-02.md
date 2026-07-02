@@ -4,7 +4,7 @@ Date: 2026-07-02
 Auditor: Codex  
 Branch: `fix/beta15-p1-i18n-catapi-layout-report`  
 PR: #66  
-Deployment version: `d826997a-cfb0-410d-a881-ceebb8a74a06`  
+Deployment version: `22429e9a-cd77-4da0-89cc-143e842401fc`  
 Final status: PASS pending Carlos visual acceptance
 
 ## Commit Evidence
@@ -15,7 +15,7 @@ Final status: PASS pending Carlos visual acceptance
   - `356da6a` - fix(worker): prevent stale localized html responses
   - `c7f2ec5` - docs: update beta 1.5 p1 cache-control decision
 - Final Days 1-10 closure commit: `7be3988`
-- Final acceptance patch commit: pending
+- Final acceptance patch commit: `1f6e458`
 
 ## Tests Run
 
