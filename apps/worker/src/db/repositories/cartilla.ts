@@ -77,6 +77,22 @@ export async function listVetVisits(
   return result.results;
 }
 
+export async function getVetVisitForOwner(
+  db: D1Database,
+  catPublicId: string,
+  ownerId: number,
+  visitId: number,
+): Promise<VetVisitEntry | null> {
+  return db
+    .prepare(
+      `SELECT vv.id, vv.visit_date, vv.vet_or_clinic_name, vv.notes, vv.created_at
+       FROM vet_visits vv
+       WHERE vv.cat_id = ${OWNED_CAT_ID} AND vv.id = ?`,
+    )
+    .bind(catPublicId, ownerId, visitId)
+    .first<VetVisitEntry>();
+}
+
 // ── vaccines ──────────────────────────────────────────────────────────────────
 
 /**
@@ -123,6 +139,40 @@ export async function listVaccines(
     .bind(catPublicId, ownerId)
     .all<VaccineEntry>();
   return result.results;
+}
+
+export async function getVaccineForOwner(
+  db: D1Database,
+  catPublicId: string,
+  ownerId: number,
+  vaccineId: number,
+): Promise<VaccineEntry | null> {
+  return db
+    .prepare(
+      `SELECT v.id, v.vaccine_name, v.date_given, v.sticker_photo_r2_key, v.created_at
+       FROM vaccines v
+       WHERE v.cat_id = ${OWNED_CAT_ID} AND v.id = ?`,
+    )
+    .bind(catPublicId, ownerId, vaccineId)
+    .first<VaccineEntry>();
+}
+
+export async function updateVaccineStickerPhoto(
+  db: D1Database,
+  catPublicId: string,
+  ownerId: number,
+  vaccineId: number,
+  stickerPhotoR2Key: string,
+): Promise<boolean> {
+  const result = await db
+    .prepare(
+      `UPDATE vaccines
+       SET sticker_photo_r2_key = ?
+       WHERE id = ? AND cat_id = ${OWNED_CAT_ID}`,
+    )
+    .bind(stickerPhotoR2Key, vaccineId, catPublicId, ownerId)
+    .run();
+  return result.meta.changes > 0;
 }
 
 // ── medications (documentation only) ─────────────────────────────────────────

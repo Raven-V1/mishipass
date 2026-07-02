@@ -152,6 +152,21 @@ describe("GET /dashboard", () => {
     expect(body).toContain("contact-save-btn");
   });
 
+  it("contains board photo, language, and assisted breed/color controls without exposing API keys", async () => {
+    const res = await worker.fetch(new Request("https://example.com/dashboard"), fakeEnv);
+    const body = await res.text();
+    expect(body).toContain("cat-board");
+    expect(body).toContain("cat-photo-placeholder");
+    expect(body).toContain('id="language-select"');
+    expect(body).toContain("Español");
+    expect(body).toContain("Қазақша");
+    expect(body).toContain('id="cat-breed-select"');
+    expect(body).toContain('id="cat-color-select"');
+    expect(body).toContain("/api/cat-reference/breeds");
+    expect(body).not.toContain("THE_CAT_API_KEY");
+    expect(body).not.toContain("x-api-key");
+  });
+
   it("does not contain .toUpperCase() in submit handler", async () => {
     const res = await worker.fetch(new Request("https://example.com/dashboard"), fakeEnv);
     const body = await res.text();
@@ -182,6 +197,15 @@ describe("dashboard sub-routes (unauthenticated)", () => {
   it("GET /dashboard/cats/MP-MX-0000-0000/sightings redirects without auth", async () => {
     const res = await worker.fetch(
       new Request("https://example.com/dashboard/cats/MP-MX-0000-0000/sightings"),
+      fakeEnv,
+    );
+    expect(res.status).toBe(302);
+    expect(res.headers.get("Location")).toContain("/dashboard");
+  });
+
+  it("GET /dashboard/cats/MP-MX-0000-0000/cartilla redirects without auth", async () => {
+    const res = await worker.fetch(
+      new Request("https://example.com/dashboard/cats/MP-MX-0000-0000/cartilla"),
       fakeEnv,
     );
     expect(res.status).toBe(302);
@@ -260,11 +284,33 @@ describe("media route wiring", () => {
     expect(numeric.status).toBe(404);
     expect(rawR2Key.status).toBe(404);
   });
+
+  it("GET /media/cats/:publicId/vaccines/:vaccineId/sticker-photo is owner gated", async () => {
+    const res = await worker.fetch(
+      new Request("https://example.com/media/cats/MP-MX-0000-0000/vaccines/1/sticker-photo"),
+      fakeEnv,
+    );
+    expect(res.status).toBe(401);
+  });
+});
+
+describe("settings and reference route wiring", () => {
+  it("GET /api/settings is auth gated", async () => {
+    const res = await worker.fetch(new Request("https://example.com/api/settings"), fakeEnv);
+    expect(res.status).toBe(401);
+  });
+
+  it("GET /api/cat-reference/breeds returns fallback reference data without a secret", async () => {
+    const res = await worker.fetch(new Request("https://example.com/api/cat-reference/breeds"), fakeEnv);
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain("breeds");
+    expect(body).not.toContain("THE_CAT_API_KEY");
+  });
 });
 
 describe("scope guard route wiring", () => {
   it.each([
-    "/cartilla",
     "/whatsapp",
     "/recovery-board",
     "/travel",
