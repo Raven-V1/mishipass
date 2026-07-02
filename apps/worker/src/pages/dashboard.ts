@@ -1,5 +1,6 @@
 import { COUNTRIES } from "../data/countries.js";
 import { MISHIPASS_DESIGN_CSS, htmlResponse } from "../utils/html.js";
+import type { LogtoEnv } from "../routes/logto.js";
 
 function buildCountryOptions(): string {
   return COUNTRIES.map(c => `<option value="${c.code}">${c.name} (${c.code})</option>`).join("");
@@ -59,10 +60,8 @@ function buildDashboardHtml(): string {
       </div>
       <aside class="auth-side">
         <div class="divider">OR</div>
-        <button class="social-btn" type="button" aria-disabled="true">Continue with Google</button>
-        <button class="social-btn" type="button" aria-disabled="true">Continue with Apple</button>
+        <!--SOCIAL_BUTTONS-->
         <p>Don't have an account? Use the register form on this page.</p>
-        <p class="visual-only">Provider buttons are visual only until safe OAuth routes exist.</p>
       </aside>
     </section>
   </div>
@@ -160,8 +159,31 @@ function buildDashboardHtml(): string {
 </html>`;
 }
 
-const DASHBOARD_HTML = buildDashboardHtml();
+const DASHBOARD_HTML_TEMPLATE = buildDashboardHtml();
 
-export function handleDashboard(): Response {
-  return htmlResponse(DASHBOARD_HTML);
+function buildSocialButtons(env: LogtoEnv): string {
+  const googleConfigured = !!(env.LOGTO_ENDPOINT && env.LOGTO_APP_ID && env.LOGTO_CLIENT_SECRET && env.LOGTO_REDIRECT_URI);
+  const appleConfigured = googleConfigured && !!env.LOGTO_APPLE_CONNECTOR_TARGET;
+
+  const googleBtn = googleConfigured
+    ? `<a href="/api/auth/logto/google" class="btn social-btn">Continue with Google</a>`
+    : `<button class="social-btn" type="button" disabled aria-disabled="true" title="Google login not configured">Continue with Google</button>`;
+
+  const appleBtn = appleConfigured
+    ? `<a href="/api/auth/logto/apple" class="btn social-btn">Continue with Apple</a>`
+    : `<button class="social-btn" type="button" disabled aria-disabled="true" title="Apple login not configured">Continue with Apple</button>`;
+
+  const note = googleConfigured
+    ? ""
+    : `<p class="muted" style="font-size:.8rem;margin:.25rem 0">Social login not configured in this deployment.</p>`;
+
+  return googleBtn + appleBtn + note;
+}
+
+export function handleDashboard(env: LogtoEnv = {}): Response {
+  const html = DASHBOARD_HTML_TEMPLATE.replace(
+    "<!--SOCIAL_BUTTONS-->",
+    buildSocialButtons(env),
+  );
+  return htmlResponse(html);
 }

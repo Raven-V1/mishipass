@@ -40,6 +40,28 @@ export interface OwnerInsert {
   password_hash: string;
 }
 
+// ── owner_identities ──────────────────────────────────────────────────────────
+// Maps OIDC provider subjects to MishiPass owner accounts.
+
+export interface OwnerIdentityRow {
+  /** @internal Never serialize to any client response. */
+  id: number;
+  /** @internal Internal FK; never expose. */
+  owner_id: number;
+  provider: string;
+  provider_sub: string;
+  email: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OwnerIdentityInsert {
+  owner_id: number;
+  provider: string;
+  provider_sub: string;
+  email?: string | null;
+}
+
 // ── sessions ──────────────────────────────────────────────────────────────────
 
 export interface SessionRow {
