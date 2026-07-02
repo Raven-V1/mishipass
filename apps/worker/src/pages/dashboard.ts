@@ -75,6 +75,16 @@ function buildDashboardHtml(): string {
     .contact-card h4{margin:0 0 0.5rem 0}
     .settings-card{border:1px solid #ddd;border-radius:6px;padding:1rem;max-width:420px}
     .breed-preview{display:none;max-width:160px;max-height:110px;object-fit:cover;border-radius:6px;margin:0.25rem 0 0.75rem}
+    .guest-language{max-width:220px;margin-bottom:1rem}.guest-language label{font-size:0.8rem}.guest-language select{margin-bottom:0}
+    .breed-card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.5rem;margin:0 0 0.75rem 0}
+    .breed-card{border:1px solid #ddd;border-radius:6px;background:#fff;padding:0.4rem;text-align:left;cursor:pointer;min-height:92px}
+    .breed-card.active{border-color:#111;box-shadow:0 0 0 1px #111}
+    .breed-card img,.breed-card .breed-fallback{width:100%;height:62px;object-fit:cover;border-radius:4px;background:#eee;display:flex;align-items:center;justify-content:center;color:#666;font-size:0.75rem}
+    .breed-card span{display:block;margin-top:0.25rem;font-size:0.78rem;line-height:1.2}
+    .swatch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(74px,1fr));gap:0.45rem;margin:0 0 0.75rem 0}
+    .swatch-card{border:1px solid #ddd;border-radius:6px;background:#fff;padding:0.35rem;cursor:pointer;font-size:0.75rem;text-align:center}
+    .swatch-card.active{border-color:#111;box-shadow:0 0 0 1px #111}.swatch{height:34px;border-radius:4px;margin-bottom:0.25rem;border:1px solid #ddd}
+    .swatch.black{background:#111}.swatch.white{background:#fff}.swatch.gray{background:#9ca3af}.swatch.orange{background:#f97316}.swatch.cream{background:#f5deb3}.swatch.brown{background:#8b5e3c}.swatch.calico{background:linear-gradient(135deg,#fff 0 32%,#111 32% 58%,#f97316 58%)}.swatch.tortoiseshell{background:linear-gradient(135deg,#111,#8b5e3c 45%,#f97316)}.swatch.tabby{background:repeating-linear-gradient(90deg,#9ca3af 0 8px,#555 8px 12px)}.swatch.tuxedo{background:linear-gradient(90deg,#111 0 35%,#fff 35% 65%,#111 65%)}.swatch.pointed{background:radial-gradient(circle at 50% 50%,#f5deb3 0 45%,#6b4f3a 46%)}.swatch.mixed{background:linear-gradient(135deg,#111,#fff,#f97316,#9ca3af)}
     @media (max-width:560px){body{margin:1rem auto}.tab-nav{overflow-x:auto}.tab-btn{white-space:nowrap;padding:0.5rem 0.75rem}}
   </style>
 </head>
@@ -83,6 +93,14 @@ function buildDashboardHtml(): string {
   <div class="nav"><a href="/">&larr; Home</a></div>
 
   <div id="auth-section">
+    <div class="guest-language">
+      <label for="guest-language-select">Language</label>
+      <select id="guest-language-select">
+        <option value="en">English</option>
+        <option value="es">Español</option>
+        <option value="kk-KZ">Қазақша</option>
+      </select>
+    </div>
     <div id="login-section">
       <h2>Login</h2>
       <div id="login-error" class="error hidden"></div>
@@ -142,12 +160,14 @@ function buildDashboardHtml(): string {
             <option value="male">Male</option>
           </select>
           <label for="cat-color">Color / Markings</label>
+          <div id="color-swatch-grid" class="swatch-grid"></div>
           <select id="cat-color-select">
             <option value="">Select color / markings...</option>
             ${colorOptions}
           </select>
           <input type="text" id="cat-color" name="colorMarkings" maxlength="200" placeholder="Optional markings notes" />
           <label for="cat-breed">Breed / Mix</label>
+          <div id="breed-card-grid" class="breed-card-grid"></div>
           <select id="cat-breed-select">
             <option value="">Loading breed options...</option>
           </select>
@@ -193,11 +213,14 @@ function buildDashboardHtml(): string {
       var languageSelect = document.getElementById("language-select");
       var languageSaveBtn = document.getElementById("language-save-btn");
       var languageStatus = document.getElementById("language-status");
+      var guestLanguageSelect = document.getElementById("guest-language-select");
       var breedSelect = document.getElementById("cat-breed-select");
       var breedInput = document.getElementById("cat-breed");
       var breedPreview = document.getElementById("breed-preview");
+      var breedCardGrid = document.getElementById("breed-card-grid");
       var colorSelect = document.getElementById("cat-color-select");
       var colorInput = document.getElementById("cat-color");
+      var colorSwatchGrid = document.getElementById("color-swatch-grid");
       var breedImages = {};
 
       var currentLanguage = "en";
@@ -207,6 +230,14 @@ function buildDashboardHtml(): string {
         "kk-KZ": { dashboard: "Басқару", cats: "Мысықтар", contact: "Байланыс және құпиялылық", settings: "Баптаулар", register: "Мысықты тіркеу", details: "Мәліметтер", qr: "QR картасы", sightings: "Көрулер", upload: "Фото жүктеу", remove: "Жою", languageSaved: "Сақталды" }
       };
       function tr(key) { return (labels[currentLanguage] && labels[currentLanguage][key]) || labels.en[key] || key; }
+      function setLang(value) {
+        currentLanguage = value || "en";
+        try { localStorage.setItem("mp_lang", currentLanguage); } catch(e) {}
+        document.cookie = "mp_lang=" + encodeURIComponent(currentLanguage) + "; Path=/; Max-Age=31536000; SameSite=Lax";
+        languageSelect.value = currentLanguage;
+        guestLanguageSelect.value = currentLanguage;
+        applyLanguage();
+      }
 
       var tabBtns = document.querySelectorAll(".tab-btn");
       for (var t = 0; t < tabBtns.length; t++) {
@@ -251,6 +282,7 @@ function buildDashboardHtml(): string {
             html += '<a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '/cartilla" class="btn-secondary" style="text-decoration:none;display:inline-block;padding:0.4rem 0.8rem">Cartilla</a> ';
             if (c.currentMode === "missing") {
               html += '<a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '/sightings" class="btn-secondary" style="text-decoration:none;display:inline-block;padding:0.4rem 0.8rem">' + tr("sightings") + '</a>';
+              html += '<a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '/missing-card" class="btn-secondary" style="text-decoration:none;display:inline-block;padding:0.4rem 0.8rem">WhatsApp Card</a>';
             }
             html += '</div>';
             html += '<div class="cat-actions" data-photo-id="' + escHtml(c.publicId) + '" style="margin-top:0.5rem">';
@@ -270,6 +302,7 @@ function buildDashboardHtml(): string {
               html += '<input type="text" placeholder="City" class="missing-city" />';
               html += '<input type="text" placeholder="Area / neighborhood" class="missing-area" />';
               html += '<input type="text" placeholder="Reward (optional)" class="missing-reward" />';
+              html += '<label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem"><input type="checkbox" class="missing-board-opt-in" style="width:auto;margin:0" /> Recovery Board opt-in</label>';
               html += '<button class="btn-danger confirm-missing-btn" data-id="' + escHtml(c.publicId) + '">Confirm Missing</button>';
               html += '</div>';
             }
@@ -290,8 +323,7 @@ function buildDashboardHtml(): string {
         }).then(function(d) {
           if (!d) return;
           currentLanguage = d.language_code || "en";
-          languageSelect.value = currentLanguage;
-          applyLanguage();
+          setLang(currentLanguage);
         }).catch(function() {});
       }
 
@@ -312,6 +344,7 @@ function buildDashboardHtml(): string {
           breedSelect.innerHTML = '<option value="">Select breed / mix...</option>';
           for (var i=0;i<fallback.length;i++) breedSelect.innerHTML += '<option value="' + escHtml(fallback[i]) + '">' + escHtml(fallback[i]) + '</option>';
           breedSelect.setAttribute("data-loaded","1");
+          renderBreedCards(fallback.map(function(name){ return { name:name, referenceImageUrl:"" }; }));
         }
         fetch("/api/cat-reference/breeds", { credentials: "same-origin" }).then(function(r) { return r.json(); }).then(function(d) {
           if (!d || !d.breeds || !d.breeds.length) { setFallback(); return; }
@@ -321,14 +354,56 @@ function buildDashboardHtml(): string {
             breedSelect.innerHTML += '<option value="' + escHtml(b.name) + '">' + escHtml(b.name) + '</option>';
           }
           breedSelect.setAttribute("data-loaded","1");
+          renderBreedCards(d.breeds.slice(0, 12));
         }).catch(setFallback);
+      }
+
+      function renderBreedCards(breeds) {
+        var html = "";
+        for (var i = 0; i < breeds.length; i++) {
+          var b = breeds[i];
+          html += '<button type="button" class="breed-card" data-breed="' + escHtml(b.name) + '">';
+          html += b.referenceImageUrl ? '<img src="' + escHtml(b.referenceImageUrl) + '" alt="' + escHtml(b.name) + '" loading="lazy" />' : '<div class="breed-fallback">Sample</div>';
+          html += '<span>' + escHtml(b.name) + '</span></button>';
+        }
+        breedCardGrid.innerHTML = html;
+        var cards = breedCardGrid.querySelectorAll(".breed-card");
+        for (var i = 0; i < cards.length; i++) cards[i].addEventListener("click", function() {
+          var name = this.getAttribute("data-breed");
+          breedSelect.value = name;
+          breedInput.value = name;
+          var imageUrl = breedImages[name];
+          if (imageUrl) { breedPreview.src = imageUrl; breedPreview.style.display = "block"; }
+          else { breedPreview.removeAttribute("src"); breedPreview.style.display = "none"; }
+          var all = breedCardGrid.querySelectorAll(".breed-card");
+          for (var j = 0; j < all.length; j++) all[j].classList.remove("active");
+          this.classList.add("active");
+        });
+      }
+
+      function renderColorSwatches() {
+        var colors = [
+          ["Black","black"],["White","white"],["Gray","gray"],["Orange","orange"],["Cream","cream"],["Brown","brown"],["Calico","calico"],["Tortoiseshell","tortoiseshell"],["Tabby","tabby"],["Tuxedo","tuxedo"],["Pointed / Siamese-style","pointed"],["Mixed / Other","mixed"]
+        ];
+        var html = "";
+        for (var i = 0; i < colors.length; i++) html += '<button type="button" class="swatch-card" data-color="' + escHtml(colors[i][0]) + '"><div class="swatch ' + colors[i][1] + '"></div>' + escHtml(colors[i][0]) + '</button>';
+        colorSwatchGrid.innerHTML = html;
+        var cards = colorSwatchGrid.querySelectorAll(".swatch-card");
+        for (var i = 0; i < cards.length; i++) cards[i].addEventListener("click", function() {
+          var value = this.getAttribute("data-color");
+          colorSelect.value = value;
+          colorInput.value = value;
+          var all = colorSwatchGrid.querySelectorAll(".swatch-card");
+          for (var j = 0; j < all.length; j++) all[j].classList.remove("active");
+          this.classList.add("active");
+        });
       }
 
       function attachCatActions() {
         var missingBtns = document.querySelectorAll(".switch-missing-btn");
         for (var i = 0; i < missingBtns.length; i++) missingBtns[i].addEventListener("click", function() { var id = this.getAttribute("data-id"); var f = document.getElementById("missing-fields-" + id); if (f) f.classList.toggle("hidden"); });
         var confirmBtns = document.querySelectorAll(".confirm-missing-btn");
-        for (var i = 0; i < confirmBtns.length; i++) confirmBtns[i].addEventListener("click", function() { var btn = this; var id = btn.getAttribute("data-id"); var f = document.getElementById("missing-fields-" + id); var city = f.querySelector(".missing-city").value; var area = f.querySelector(".missing-area").value; var reward = f.querySelector(".missing-reward").value; btn.disabled = true; btn.textContent = "Working..."; fetch("/api/cats/" + encodeURIComponent(id) + "/missing", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ city: city || null, area: area || null, rewardAmount: reward || null, rewardVisible: reward ? 1 : 0 }) }).then(function(r) { if (r.ok) loadCats(); btn.disabled = false; btn.textContent = "Confirm Missing"; }).catch(function() { btn.disabled = false; btn.textContent = "Confirm Missing"; }); });
+        for (var i = 0; i < confirmBtns.length; i++) confirmBtns[i].addEventListener("click", function() { var btn = this; var id = btn.getAttribute("data-id"); var f = document.getElementById("missing-fields-" + id); var city = f.querySelector(".missing-city").value; var area = f.querySelector(".missing-area").value; var reward = f.querySelector(".missing-reward").value; var board = f.querySelector(".missing-board-opt-in").checked; btn.disabled = true; btn.textContent = "Working..."; fetch("/api/cats/" + encodeURIComponent(id) + "/missing", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ city: city || null, area: area || null, rewardAmount: reward || null, rewardVisible: reward ? 1 : 0, recoveryBoardOptIn: board }) }).then(function(r) { if (r.ok) loadCats(); btn.disabled = false; btn.textContent = "Confirm Missing"; }).catch(function() { btn.disabled = false; btn.textContent = "Confirm Missing"; }); });
         var activeBtns = document.querySelectorAll(".switch-active-btn");
         for (var i = 0; i < activeBtns.length; i++) activeBtns[i].addEventListener("click", function() { var btn = this; var id = btn.getAttribute("data-id"); btn.disabled = true; btn.textContent = "Working..."; fetch("/api/cats/" + encodeURIComponent(id) + "/active", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) }).then(function(r) { if (r.ok) loadCats(); btn.disabled = false; btn.textContent = "Switch to Active"; }).catch(function() { btn.disabled = false; btn.textContent = "Switch to Active"; }); });
         var startVetBtns = document.querySelectorAll(".start-vet-btn");
@@ -345,7 +420,7 @@ function buildDashboardHtml(): string {
         languageSaveBtn.disabled = true;
         fetch("/api/settings", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ language_code: languageSelect.value }) }).then(function(r) {
           languageSaveBtn.disabled = false;
-          if (r.ok) { currentLanguage = languageSelect.value; applyLanguage(); loadCats(); languageStatus.textContent = tr("languageSaved"); }
+          if (r.ok) { setLang(languageSelect.value); loadCats(); languageStatus.textContent = tr("languageSaved"); }
           else languageStatus.textContent = "Error";
         }).catch(function() { languageSaveBtn.disabled = false; languageStatus.textContent = "Network error"; });
       });
@@ -360,6 +435,9 @@ function buildDashboardHtml(): string {
         if (!colorSelect.value) return;
         colorInput.value = colorInput.value ? colorSelect.value + " - " + colorInput.value : colorSelect.value;
       });
+      guestLanguageSelect.addEventListener("change", function() { setLang(guestLanguageSelect.value); });
+      try { setLang(localStorage.getItem("mp_lang") || "en"); } catch(e) { setLang("en"); }
+      renderColorSwatches();
 
       function loadContactSettings() {
         contactList.innerHTML = "<p>Loading...</p>";

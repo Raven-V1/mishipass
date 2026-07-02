@@ -183,10 +183,10 @@ describe("renderVetVisitPage", () => {
     // No internal IDs
     expect(html).not.toContain("owner_id");
     expect(html).not.toContain("cat_id");
-    // No medical history
+    // No existing medical history
     expect(html).not.toContain("cartilla");
-    expect(html).not.toContain("medication");
-    expect(html).not.toContain("vaccine");
+    expect(html).toContain("Medication Record");
+    expect(html).toContain("Vaccine");
   });
 
   it("renders expired page when session is expired", async () => {
@@ -448,6 +448,61 @@ describe("handleVetVisitFinish", () => {
     expect(fakeDb.prepare).toHaveBeenCalledWith(expect.stringContaining("INSERT INTO vet_visits"));
     expect(fakeDb.prepare).toHaveBeenCalledWith(expect.stringContaining("UPDATE vet_sessions"));
     expect(fakeDb.prepare).toHaveBeenCalledWith(expect.stringContaining("UPDATE cats SET current_mode = 'active'"));
+  });
+
+  it("saves vaccine, sticker photo, and Medication Record from multipart Vet Visit submission", async () => {
+    mockGetCatPublicProfile.mockResolvedValue({
+      public_id: TEST_CAT_ID,
+      name: "Mishi",
+      country_code: "MX",
+      photo_r2_key: null,
+      current_mode: "vet",
+    });
+    mockFindLatestVetSession.mockResolvedValue({
+      token_hash: null,
+      activated_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      status: "active",
+    });
+    const fd = new FormData();
+    fd.set("clinic_name", "Happy Paws");
+    fd.set("vaccine_name", "FVRCP");
+    fd.set("vaccine_date", "2026-07-01");
+    fd.set("vaccine_sticker_photo", new File([new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])], "sticker.png", { type: "image/png" }));
+    fd.set("medication_name", "Amoxicillin");
+    fd.set("medication_dose", "Recorded dose");
+    const photos = { put: vi.fn().mockResolvedValue(undefined) } as unknown as R2Bucket & { put: ReturnType<typeof vi.fn> };
+    const req = new Request("https://example.com/api/cats/test/vet-visit/finish", { method: "POST", body: fd });
+    const res = await handleVetVisitFinish(TEST_CAT_ID, req, fakeDb, photos);
+    expect(res.status).toBe(200);
+    expect(photos.put).toHaveBeenCalledOnce();
+    expect(fakeDb.prepare).toHaveBeenCalledWith(expect.stringContaining("INSERT INTO vaccines"));
+    expect(fakeDb.prepare).toHaveBeenCalledWith(expect.stringContaining("INSERT INTO medications"));
+    expect(fakeDb.prepare).toHaveBeenCalledWith(expect.stringContaining("UPDATE cats SET current_mode = 'active'"));
+  });
+
+  it("rejects advice-like Medication Record fields in Vet Visit submission", async () => {
+    mockGetCatPublicProfile.mockResolvedValue({
+      public_id: TEST_CAT_ID,
+      name: "Mishi",
+      country_code: "MX",
+      photo_r2_key: null,
+      current_mode: "vet",
+    });
+    mockFindLatestVetSession.mockResolvedValue({
+      token_hash: null,
+      activated_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      status: "active",
+    });
+    const req = new Request("https://example.com/api/cats/test/vet-visit/finish", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ medication_name: "Amoxicillin", next_dose: "tomorrow" }),
+    });
+    const res = await handleVetVisitFinish(TEST_CAT_ID, req, fakeDb);
+    expect(res.status).toBe(400);
+    expect(await res.text()).toContain("Medication Record");
   });
 
   it("accepts JSON content type", async () => {

@@ -426,6 +426,27 @@ Decided by: Project Owner
 
 ---
 
+## [2026-07-01T20:29:52.5809857-06:00] — chore: move project documentation to Beta 1.5
+
+Decision: Move active product and documentation identity from Beta 1.4 to MishiPass Beta 1.5 while preserving historical entries that accurately describe earlier project state.
+
+Executor: Codex
+Branch: `fix/beta15-day10-v1-completion`
+Commit: `c95ae40`
+
+Summary:
+- Product/documentation identity moved to MishiPass Beta 1.5.
+- Day 7-8 correction gaps closed for guest/owner language support, visual breed/color registration help, and Vet Visit cartilla input.
+- Day 9 WhatsApp-ready Missing Card and public alert link implemented.
+- Day 10 opt-in Recovery Board implemented with city and alert-age filters.
+- Optional Version 1 items classified; optional modes remain deferred.
+
+Reason: The active public project version is now MishiPass Beta 1.5, and docs must describe the current implemented state without rewriting accurate historical records.
+
+Decided by: Project Owner
+
+---
+
 ## Open items (not yet decided)
 
 Tracked in Constitution Section 23; each will be logged here when resolved:

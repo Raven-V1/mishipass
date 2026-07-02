@@ -31,6 +31,7 @@ export async function handleSwitchToMissing(
     lastSeenAt,
     rewardAmount,
     rewardVisible,
+    recoveryBoardOptIn,
   } = body as Record<string, unknown>;
 
   const updated = await updateCatMode(db, catId, ctx.ownerId, "missing");
@@ -44,6 +45,7 @@ export async function handleSwitchToMissing(
     last_seen_at: typeof lastSeenAt === "string" ? lastSeenAt : null,
     reward_amount: typeof rewardAmount === "string" ? rewardAmount : null,
     reward_visible: rewardVisible ? 1 : 0,
+    recovery_board_opt_in: recoveryBoardOptIn ? 1 : 0,
     activated_at: new Date().toISOString(),
   });
 

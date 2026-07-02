@@ -18,11 +18,15 @@ import {
 } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
 import { escapeHtml, htmlResponse } from "../utils/html.js";
+import { type LanguageCode, t } from "../utils/i18n.js";
+import { checkMagicBytes } from "./photos.js";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const VET_SESSION_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 const MAX_FIELD_LENGTH = 500;
+const ALLOWED_STICKER_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const MAX_STICKER_PHOTO_SIZE = 2 * 1024 * 1024;
 
 // ── POST /api/cats/:publicId/vet-visit/start — Owner activation ─────────────
 
@@ -99,6 +103,7 @@ export async function renderVetVisitPage(
   countryCode: string,
   photoR2Key: string | null,
   db: D1Database,
+  lang: LanguageCode = "en",
 ): Promise<Response> {
   // Check for active, unexpired vet session
   const session = await findLatestVetSession(db, publicId);
@@ -109,7 +114,7 @@ export async function renderVetVisitPage(
   }
 
   // Render vet visit form
-  return htmlResponse(renderVetForm(publicId, catName, countryCode, photoR2Key, session.expires_at));
+  return htmlResponse(renderVetForm(publicId, catName, countryCode, photoR2Key, session.expires_at, lang));
 }
 
 // ── POST /api/cats/:publicId/vet-visit/finish — Public Save & Finish ────────
@@ -118,6 +123,7 @@ export async function handleVetVisitFinish(
   publicId: string,
   request: Request,
   db: D1Database,
+  photos?: R2Bucket,
 ): Promise<Response> {
   if (!validateId(publicId)) {
     return new Response("Not Found", { status: 404 });
@@ -142,6 +148,7 @@ export async function handleVetVisitFinish(
 
   // Parse form body
   let body: Record<string, string> = {};
+  let formData: FormData | null = null;
   const contentType = request.headers.get("Content-Type") || "";
 
   if (contentType.includes("application/x-www-form-urlencoded")) {
@@ -159,8 +166,21 @@ export async function handleVetVisitFinish(
     } catch {
       return new Response("Invalid JSON", { status: 400 });
     }
+  } else if (contentType.includes("multipart/form-data")) {
+    try {
+      formData = await request.formData();
+    } catch {
+      return new Response("Invalid form data", { status: 400 });
+    }
+    for (const [key, value] of formData.entries()) {
+      if (typeof value === "string") body[key] = value;
+    }
   } else {
     return new Response("Unsupported Content-Type", { status: 400 });
+  }
+
+  if (hasAdviceLikeFields(body)) {
+    return Response.json({ error: "Medication Record stores documentation only" }, { status: 400 });
   }
 
   // Validate and extract fields
@@ -199,6 +219,51 @@ export async function handleVetVisitFinish(
     .bind(publicId, visitDate, vetOrClinicName, composedNotes)
     .run();
 
+  const vaccineNames = collectIndexed(body, "vaccine_name");
+  for (let i = 0; i < vaccineNames.length; i++) {
+    const vaccineName = vaccineNames[i]!.slice(0, 100);
+    if (!vaccineName) continue;
+    let stickerKey: string | null = null;
+    const stickerField = i === 0 ? "vaccine_sticker_photo" : `vaccine_sticker_photo_${i + 1}`;
+    if (formData && photos) {
+      const file = formData.get(stickerField);
+      if (file && typeof file !== "string") {
+        const uploaded = await uploadVetStickerPhoto(publicId, file as File, photos);
+        if (uploaded instanceof Response) return uploaded;
+        stickerKey = uploaded;
+      }
+    }
+    await db
+      .prepare(
+        `INSERT INTO vaccines (cat_id, vaccine_name, date_given, sticker_photo_r2_key)
+         VALUES ((SELECT id FROM cats WHERE public_id = ?), ?, ?, ?)`,
+      )
+      .bind(publicId, vaccineName, indexedValue(body, "vaccine_date", i)?.slice(0, 30) ?? null, stickerKey)
+      .run();
+  }
+
+  const medicationNames = collectIndexed(body, "medication_name");
+  for (let i = 0; i < medicationNames.length; i++) {
+    const medicationName = medicationNames[i]!.slice(0, 100);
+    if (!medicationName) continue;
+    await db
+      .prepare(
+        `INSERT INTO medications
+           (cat_id, medication_name, dose, duration, start_date, prescriber_name, notes)
+         VALUES ((SELECT id FROM cats WHERE public_id = ?), ?, ?, ?, ?, ?, ?)`,
+      )
+      .bind(
+        publicId,
+        medicationName,
+        indexedValue(body, "medication_dose", i)?.slice(0, 100) ?? null,
+        indexedValue(body, "medication_duration", i)?.slice(0, 100) ?? null,
+        indexedValue(body, "medication_start_date", i)?.slice(0, 30) ?? null,
+        indexedValue(body, "medication_prescriber", i)?.slice(0, 100) ?? null,
+        indexedValue(body, "medication_notes", i)?.slice(0, MAX_FIELD_LENGTH) ?? null,
+      )
+      .run();
+  }
+
   // Mark vet session finished — use a direct query since there's no owner for public submit
   await db
     .prepare(
@@ -227,6 +292,7 @@ function renderVetForm(
   countryCode: string,
   photoR2Key: string | null,
   expiresAt: string,
+  lang: LanguageCode,
 ): string {
   const safeName = escapeHtml(name);
   const safeId = escapeHtml(publicId);
@@ -238,11 +304,11 @@ function renderVetForm(
     : "";
 
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${lang}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${safeName} — Vet Visit — MishiPass</title>
+  <title>${safeName} — ${t(lang, "vetVisit")} — MishiPass</title>
   <style>
     body{font-family:system-ui,-apple-system,sans-serif;max-width:520px;margin:2rem auto;padding:0 1rem;color:#111;line-height:1.5}
     h1{font-size:1.5rem;margin-bottom:0.25rem}
@@ -261,34 +327,96 @@ function renderVetForm(
 <body>
   <h1>${safeName} <span class="badge">${safeCountry}</span></h1>
   ${photoSection}
-  <span class="vet-badge">🩺 Vet Visit Mode</span>
+  <span class="vet-badge">${t(lang, "vetVisit")}</span>
   <p class="expiry">Session expires: ${safeExpiry} UTC</p>
 
   <form method="POST" action="/api/cats/${safeId}/vet-visit/finish">
-    <label for="clinic_name">Clinic name (optional)</label>
+    <label for="clinic_name">${t(lang, "clinicName")} (optional)</label>
     <input type="text" id="clinic_name" name="clinic_name" maxlength="500" />
 
-    <label for="vet_name">Vet name (optional)</label>
+    <label for="vet_name">${t(lang, "vetName")} (optional)</label>
     <input type="text" id="vet_name" name="vet_name" maxlength="500" />
 
-    <label for="visit_date">Visit date</label>
+    <label for="visit_date">${t(lang, "visitDate")}</label>
     <input type="date" id="visit_date" name="visit_date" />
 
-    <label for="reason">Reason for visit (optional)</label>
+    <label for="reason">${t(lang, "reason")} (optional)</label>
     <input type="text" id="reason" name="reason" maxlength="500" />
 
-    <label for="weight">Weight (optional)</label>
+    <label for="weight">${t(lang, "weight")} (optional)</label>
     <input type="text" id="weight" name="weight" maxlength="30" placeholder="e.g. 4.5 kg" />
 
     <label for="notes">Notes (optional)</label>
     <textarea id="notes" name="notes" maxlength="500"></textarea>
 
-    <button type="submit" class="submit-btn">Save &amp; Finish Visit</button>
+    <h2>Vaccines</h2>
+    <label for="vaccine_name">Vaccine name (optional)</label>
+    <input type="text" id="vaccine_name" name="vaccine_name" maxlength="100" />
+    <label for="vaccine_date">Date given (optional)</label>
+    <input type="date" id="vaccine_date" name="vaccine_date" />
+    <label for="vaccine_sticker_photo">Vaccine sticker photo (optional)</label>
+    <input type="file" id="vaccine_sticker_photo" name="vaccine_sticker_photo" accept="image/jpeg,image/png,image/webp" />
+
+    <h2>${t(lang, "medicationRecord")}</h2>
+    <label for="medication_name">Medication name (optional)</label>
+    <input type="text" id="medication_name" name="medication_name" maxlength="100" />
+    <label for="medication_dose">Dose as recorded (optional)</label>
+    <input type="text" id="medication_dose" name="medication_dose" maxlength="100" />
+    <label for="medication_duration">Duration (optional)</label>
+    <input type="text" id="medication_duration" name="medication_duration" maxlength="100" />
+    <label for="medication_start_date">Start date (optional)</label>
+    <input type="date" id="medication_start_date" name="medication_start_date" />
+    <label for="medication_prescriber">Prescriber (optional)</label>
+    <input type="text" id="medication_prescriber" name="medication_prescriber" maxlength="100" />
+    <label for="medication_notes">Medication notes (optional)</label>
+    <textarea id="medication_notes" name="medication_notes" maxlength="500"></textarea>
+
+    <button type="submit" class="submit-btn">${t(lang, "saveFinishVisit")}</button>
   </form>
 
   <p class="note">This visit record will be saved to the cat's private health history. No medical history is shown on this page. The QR will return to Active Profile after submission.</p>
 </body>
 </html>`;
+}
+
+function indexedValue(body: Record<string, string>, base: string, index: number): string | null {
+  const key = index === 0 ? base : `${base}_${index + 1}`;
+  const value = body[key];
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function collectIndexed(body: Record<string, string>, base: string): string[] {
+  const values: string[] = [];
+  for (let i = 0; i < 10; i++) {
+    const value = indexedValue(body, base, i);
+    if (value) values.push(value);
+  }
+  return values;
+}
+
+function hasAdviceLikeFields(body: Record<string, string>): boolean {
+  const blocked = ["recommendation", "reminder_at", "next_dose", "interaction_check", "refill_at", "treatment_plan", "advice"];
+  return blocked.some(key => key in body);
+}
+
+async function uploadVetStickerPhoto(publicId: string, file: File, photos: R2Bucket): Promise<string | Response> {
+  if (!ALLOWED_STICKER_TYPES.has(file.type)) {
+    return Response.json({ error: "Invalid file type. Allowed: JPEG, PNG, WebP" }, { status: 400 });
+  }
+  if (file.size > MAX_STICKER_PHOTO_SIZE) {
+    return Response.json({ error: "File too large. Maximum 2 MB" }, { status: 400 });
+  }
+  const buffer = await file.arrayBuffer();
+  const headerView = new Uint8Array(buffer, 0, Math.min(12, buffer.byteLength));
+  if (!checkMagicBytes(headerView, file.type)) {
+    return Response.json({ error: "File content does not match declared type" }, { status: 400 });
+  }
+  const ext = file.type === "image/jpeg" ? "jpg" : file.type === "image/png" ? "png" : "webp";
+  const randomBytes = crypto.getRandomValues(new Uint8Array(16));
+  const hex = Array.from(randomBytes).map(b => b.toString(16).padStart(2, "0")).join("");
+  const objectKey = `vaccines/${publicId}/vet-visit/${hex}.${ext}`;
+  await photos.put(objectKey, buffer, { httpMetadata: { contentType: file.type } });
+  return objectKey;
 }
 
 function renderExpiredPage(name: string): string {
