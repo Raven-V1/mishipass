@@ -107,7 +107,7 @@ export async function upsertMissingAlert(
 
 /**
  * List cats published to the Recovery Board.
- * Only returns cats where recovery_board_opt_in = 1 AND current_mode = 'missing'.
+ * Only returns cats where current_mode = 'missing'.
  * Optionally filtered by city. Returns only public-safe columns; no internal ids.
  */
 export async function listRecoveryBoardAlerts(
@@ -121,8 +121,7 @@ export async function listRecoveryBoardAlerts(
               a.city, a.area, a.last_seen_at, a.activated_at
        FROM missing_alerts a
        JOIN cats c ON c.id = a.cat_id
-       WHERE a.recovery_board_opt_in = 1
-         AND c.current_mode = 'missing'
+       WHERE c.current_mode = 'missing'
          AND (? IS NULL OR a.city = ?)
          AND (? IS NULL OR a.activated_at >= datetime('now', '-' || ? || ' days'))
        ORDER BY a.activated_at DESC`,

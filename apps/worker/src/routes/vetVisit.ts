@@ -18,7 +18,8 @@ import {
 } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
 import { escapeHtml, htmlResponse } from "../utils/html.js";
-import { type LanguageCode, t } from "../utils/i18n.js";
+import { getLanguageFromRequest, type LanguageCode, t } from "../utils/i18n.js";
+import { getCountryBadgeLabel } from "../data/countries.js";
 import { checkMagicBytes } from "./photos.js";
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -110,7 +111,7 @@ export async function renderVetVisitPage(
 
   if (!session || session.status !== "active" || new Date(session.expires_at) <= new Date()) {
     // Session expired or not active — show expired page
-    return htmlResponse(renderExpiredPage(catName));
+    return htmlResponse(renderExpiredPage(catName, lang));
   }
 
   // Render vet visit form
@@ -125,6 +126,7 @@ export async function handleVetVisitFinish(
   db: D1Database,
   photos?: R2Bucket,
 ): Promise<Response> {
+  const lang = getLanguageFromRequest(request);
   if (!validateId(publicId)) {
     return new Response("Not Found", { status: 404 });
   }
@@ -137,13 +139,13 @@ export async function handleVetVisitFinish(
 
   // Require vet mode
   if (cat.current_mode !== "vet") {
-    return htmlResponse(renderNotVetModePage(cat.name), 403);
+    return htmlResponse(renderNotVetModePage(cat.name, lang), 403);
   }
 
   // Check active unexpired session
   const session = await findLatestVetSession(db, publicId);
   if (!session || session.status !== "active" || new Date(session.expires_at) <= new Date()) {
-    return htmlResponse(renderExpiredPage(cat.name), 403);
+    return htmlResponse(renderExpiredPage(cat.name, lang), 403);
   }
 
   // Parse form body
@@ -225,8 +227,10 @@ export async function handleVetVisitFinish(
     if (!vaccineName) continue;
     let stickerKey: string | null = null;
     const stickerField = i === 0 ? "vaccine_sticker_photo" : `vaccine_sticker_photo_${i + 1}`;
+    const stickerCaptureField = i === 0 ? "vaccine_sticker_photo_capture" : `vaccine_sticker_photo_capture_${i + 1}`;
+    const stickerUploadField = i === 0 ? "vaccine_sticker_photo_upload" : `vaccine_sticker_photo_upload_${i + 1}`;
     if (formData && photos) {
-      const file = formData.get(stickerField);
+      const file = formData.get(stickerField) || formData.get(stickerCaptureField) || formData.get(stickerUploadField);
       if (file && typeof file !== "string") {
         const uploaded = await uploadVetStickerPhoto(publicId, file as File, photos);
         if (uploaded instanceof Response) return uploaded;
@@ -281,7 +285,7 @@ export async function handleVetVisitFinish(
     .bind(publicId)
     .run();
 
-  return htmlResponse(renderSuccessPage(cat.name));
+  return htmlResponse(renderSuccessPage(cat.name, lang));
 }
 
 // ── HTML Renderers ──────────────────────────────────────────────────────────
@@ -296,7 +300,7 @@ function renderVetForm(
 ): string {
   const safeName = escapeHtml(name);
   const safeId = escapeHtml(publicId);
-  const safeCountry = escapeHtml(countryCode);
+  const safeCountry = escapeHtml(getCountryBadgeLabel(countryCode));
   const safeExpiry = escapeHtml(new Date(expiresAt).toLocaleString("en-US", { timeZone: "UTC" }));
 
   const photoSection = photoR2Key
@@ -322,6 +326,7 @@ function renderVetForm(
     .submit-btn{display:block;width:100%;margin-top:1.25rem;padding:0.75rem;background:#036;color:#fff;border:none;border-radius:6px;font-size:1rem;cursor:pointer}
     .submit-btn:hover{background:#024}
     .note{font-size:0.8rem;color:#555;margin-top:1rem;padding:0.5rem;background:#f9f9f9;border-radius:4px}
+    .photo-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin:.35rem 0 .75rem}.photo-choice{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:.5rem .75rem;background:#eee;border-radius:6px;cursor:pointer;font-weight:600}.photo-actions input{width:auto}
   </style>
 </head>
 <body>
@@ -330,7 +335,7 @@ function renderVetForm(
   <span class="vet-badge">${t(lang, "vetVisit")}</span>
   <p class="expiry">Session expires: ${safeExpiry} UTC</p>
 
-  <form method="POST" action="/api/cats/${safeId}/vet-visit/finish">
+  <form method="POST" action="/api/cats/${safeId}/vet-visit/finish?lang=${lang}" enctype="multipart/form-data">
     <label for="clinic_name">${t(lang, "clinicName")} (optional)</label>
     <input type="text" id="clinic_name" name="clinic_name" maxlength="500" />
 
@@ -354,8 +359,13 @@ function renderVetForm(
     <input type="text" id="vaccine_name" name="vaccine_name" maxlength="100" />
     <label for="vaccine_date">Date given (optional)</label>
     <input type="date" id="vaccine_date" name="vaccine_date" />
-    <label for="vaccine_sticker_photo">Vaccine sticker photo (optional)</label>
-    <input type="file" id="vaccine_sticker_photo" name="vaccine_sticker_photo" accept="image/jpeg,image/png,image/webp" />
+    <label>Vaccine sticker photo (optional)</label>
+    <div class="photo-actions">
+      <label class="photo-choice" for="vaccine_sticker_photo_capture">${t(lang, "takePhoto")}</label>
+      <input type="file" id="vaccine_sticker_photo_capture" name="vaccine_sticker_photo_capture" accept="image/*" capture="environment" />
+      <label class="photo-choice" for="vaccine_sticker_photo_upload">${t(lang, "chooseExistingPhoto")}</label>
+      <input type="file" id="vaccine_sticker_photo_upload" name="vaccine_sticker_photo_upload" accept="image/*" />
+    </div>
 
     <h2>${t(lang, "medicationRecord")}</h2>
     <label for="medication_name">Medication name (optional)</label>
@@ -419,10 +429,10 @@ async function uploadVetStickerPhoto(publicId: string, file: File, photos: R2Buc
   return objectKey;
 }
 
-function renderExpiredPage(name: string): string {
+function renderExpiredPage(name: string, lang: LanguageCode = "en"): string {
   const safeName = escapeHtml(name);
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${lang}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -443,10 +453,10 @@ function renderExpiredPage(name: string): string {
 </html>`;
 }
 
-function renderNotVetModePage(name: string): string {
+function renderNotVetModePage(name: string, lang: LanguageCode = "en"): string {
   const safeName = escapeHtml(name);
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${lang}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -462,10 +472,10 @@ function renderNotVetModePage(name: string): string {
 </html>`;
 }
 
-function renderSuccessPage(name: string): string {
+function renderSuccessPage(name: string, lang: LanguageCode = "en"): string {
   const safeName = escapeHtml(name);
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${lang}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />

@@ -3,12 +3,14 @@ import { getCatForOwner } from "../db/index.js";
 import { escapeHtml, htmlResponse } from "../utils/html.js";
 import { generateQrSvg } from "../utils/qr.js";
 import type { RequestContext } from "../middleware/session.js";
+import { type LanguageCode, t } from "../utils/i18n.js";
 
 export async function handleQrPage(
   publicId: string,
   db: D1Database,
   ctx: RequestContext,
   publicBaseUrl: string,
+  lang: LanguageCode = "en",
 ): Promise<Response> {
   if (ctx.ownerId === null) {
     return new Response(null, { status: 302, headers: { Location: "/dashboard" } });
@@ -29,11 +31,11 @@ export async function handleQrPage(
   const qrSvg = generateQrSvg(publicUrl);
 
   const html = `<!DOCTYPE html>
-<html lang="en">
+<html lang="${lang}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>QR Card — ${safeName} — MishiPass</title>
+  <title>${t(lang, "qrCard")} — ${safeName} — MishiPass</title>
   <style>
     body{font-family:system-ui,-apple-system,sans-serif;max-width:480px;margin:2rem auto;padding:0 1rem;color:#111;line-height:1.5}
     .nav{margin-bottom:1.5rem;font-size:0.875rem}
@@ -56,14 +58,14 @@ export async function handleQrPage(
   </style>
 </head>
 <body>
-  <div class="nav"><a href="/dashboard/cats/${safeId}">&larr; Back to ${safeName}</a></div>
+  <div class="nav"><a href="/dashboard/cats/${safeId}?lang=${lang}">&larr; ${safeName}</a></div>
   <div class="card">
     <h2>${safeName}</h2>
     <div class="qr-image">${qrSvg}</div>
     <div class="id">${safeId}</div>
     <div class="url" style="font-size:0.6rem;color:#999;word-break:break-all;margin-top:2px">${escapeHtml(publicUrl)}</div>
   </div>
-  <button class="print-btn" onclick="window.print()">Print Collar Tag</button>
+  <button class="print-btn" onclick="window.print()">${t(lang, "qrCard")}</button>
   <p class="print-note">Prints at ~42mm width — fits a standard cat collar tag.</p>
 </body>
 </html>`;

@@ -1,14 +1,16 @@
 import { validateId } from "@mishipass/shared-validation";
 import { getCatForOwner, listVetVisits } from "../db/index.js";
-import { getCountryName } from "../data/countries.js";
+import { getCountryBadgeLabel } from "../data/countries.js";
 import { escapeHtml, htmlResponse } from "../utils/html.js";
 import type { RequestContext } from "../middleware/session.js";
+import { type LanguageCode, t } from "../utils/i18n.js";
 
 export async function handleCatDetail(
   publicId: string,
   db: D1Database,
   ctx: RequestContext,
   publicBaseUrl: string,
+  lang: LanguageCode = "en",
 ): Promise<Response> {
   if (ctx.ownerId === null) {
     return new Response(null, { status: 302, headers: { Location: "/dashboard" } });
@@ -25,15 +27,15 @@ export async function handleCatDetail(
 
   const safeName = escapeHtml(cat.name);
   const safeId = escapeHtml(publicId);
-  const safeCountry = escapeHtml(getCountryName(cat.country_code));
+  const safeCountry = escapeHtml(getCountryBadgeLabel(cat.country_code));
   const safeMode = escapeHtml(cat.current_mode);
 
   // Build cat info fields
   let infoHtml = "";
-  if (cat.sex) infoHtml += `<p class="info">Sex: ${escapeHtml(cat.sex)}</p>`;
-  if (cat.color_markings) infoHtml += `<p class="info">Color / Markings: ${escapeHtml(cat.color_markings)}</p>`;
-  if (cat.breed_mix) infoHtml += `<p class="info">Breed / Mix: ${escapeHtml(cat.breed_mix)}</p>`;
-  if (cat.weight) infoHtml += `<p class="info">Weight: ${escapeHtml(cat.weight)}</p>`;
+  if (cat.sex) infoHtml += `<p class="info">${t(lang, "sex")}: ${escapeHtml(cat.sex)}</p>`;
+  if (cat.color_markings) infoHtml += `<p class="info">${t(lang, "colorMarkings")}: ${escapeHtml(cat.color_markings)}</p>`;
+  if (cat.breed_mix) infoHtml += `<p class="info">${t(lang, "breedMix")}: ${escapeHtml(cat.breed_mix)}</p>`;
+  if (cat.weight) infoHtml += `<p class="info">${t(lang, "weight")}: ${escapeHtml(cat.weight)}</p>`;
   if (cat.birth_date) infoHtml += `<p class="info">Birth date: ${escapeHtml(cat.birth_date)}</p>`;
   if (cat.notes) infoHtml += `<p class="info">Notes: ${escapeHtml(cat.notes)}</p>`;
 
@@ -44,9 +46,9 @@ export async function handleCatDetail(
 
   // Vet visit records (owner-only)
   const vetVisits = await listVetVisits(db, publicId, ctx.ownerId);
-  let vetHtml = `<h2>Vet Visit Records</h2>`;
+  let vetHtml = `<h2>${t(lang, "vetVisit")} Records</h2>`;
   if (vetVisits.length === 0) {
-    vetHtml += `<p class="empty">No vet visit records yet.</p>`;
+    vetHtml += `<p class="empty">${t(lang, "noMatches")}</p>`;
   } else {
     vetHtml += `<div class="vet-list">`;
     for (const v of vetVisits) {
@@ -61,15 +63,15 @@ export async function handleCatDetail(
 
   // Links — sightings only if missing
   let linksHtml = `
-    <a href="/c/${safeId}" class="secondary">View Public Profile</a>
-    <a href="/dashboard/cats/${safeId}/qr" class="secondary">QR Card</a>
-    <a href="/dashboard/cats/${safeId}/cartilla" class="secondary">Digital Cartilla</a>`;
+    <a href="/c/${safeId}?lang=${lang}" class="secondary">${t(lang, "viewPublicProfile")}</a>
+    <a href="/dashboard/cats/${safeId}/qr?lang=${lang}" class="secondary">${t(lang, "qrCard")}</a>
+    <a href="/dashboard/cats/${safeId}/cartilla?lang=${lang}" class="secondary">${t(lang, "cartilla")}</a>`;
   if (cat.current_mode === "missing") {
-    linksHtml += `\n    <a href="/dashboard/cats/${safeId}/sightings" class="secondary">Sighting Reports</a>`;
+    linksHtml += `\n    <a href="/dashboard/cats/${safeId}/sightings?lang=${lang}" class="secondary">${t(lang, "reports")}</a>`;
   }
 
   const html = `<!DOCTYPE html>
-<html lang="en">
+<html lang="${lang}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -98,7 +100,7 @@ export async function handleCatDetail(
   </style>
 </head>
 <body>
-  <div class="nav"><a href="/dashboard">&larr; Dashboard</a></div>
+  <div class="nav"><a href="/dashboard?lang=${lang}">&larr; ${t(lang, "dashboard")}</a></div>
   <h1>${safeName}</h1>
   <p class="meta">${safeCountry} &middot; <span class="mode-badge mode-${safeMode}">${safeMode}</span></p>
   <p class="id-line">${safeId}</p>

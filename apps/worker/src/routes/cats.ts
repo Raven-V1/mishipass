@@ -11,6 +11,7 @@ import type { ContactSettingsPublicView, MissingAlertPublicView } from "../db/in
 import type { RequestContext } from "../middleware/session.js";
 import { renderVetVisitPage } from "./vetVisit.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
+import { getCountryBadgeLabel } from "../data/countries.js";
 
 // ── GET /api/cats ───────────────────────────────────────────────────────────
 
@@ -264,7 +265,7 @@ function renderActiveProfile(
   lang: LanguageCode = "en",
 ): string {
   const safeName = escapeHtml(name);
-  const safeCountry = escapeHtml(countryCode);
+  const safeCountry = escapeHtml(getCountryBadgeLabel(countryCode));
 
   const photoSection = photoR2Key
     ? `<div class="photo"><img src="/media/cats/${escapeHtml(publicId)}/photo" alt="${safeName}" /></div>`
@@ -281,16 +282,16 @@ function renderActiveProfile(
   // Expanded fields
   let detailLines = "";
   if (catView.sex) {
-    detailLines += `<p class="detail">Sex: ${escapeHtml(catView.sex)}</p>`;
+    detailLines += `<p class="detail">${t(lang, "sex")}: ${escapeHtml(catView.sex)}</p>`;
   }
   if (catView.color_markings) {
-    detailLines += `<p class="detail">Color / Markings: ${escapeHtml(catView.color_markings)}</p>`;
+    detailLines += `<p class="detail">${t(lang, "colorMarkings")}: ${escapeHtml(catView.color_markings)}</p>`;
   }
   if (catView.breed_mix) {
-    detailLines += `<p class="detail">Breed / Mix: ${escapeHtml(catView.breed_mix)}</p>`;
+    detailLines += `<p class="detail">${t(lang, "breedMix")}: ${escapeHtml(catView.breed_mix)}</p>`;
   }
   if (catView.weight) {
-    detailLines += `<p class="detail">Weight: ${escapeHtml(catView.weight)}</p>`;
+    detailLines += `<p class="detail">${t(lang, "weight")}: ${escapeHtml(catView.weight)}</p>`;
   }
 
   return `<!DOCTYPE html>

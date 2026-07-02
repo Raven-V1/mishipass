@@ -153,7 +153,7 @@ export async function handleSightingSubmit(
     reporterContact = (formData.get("reporterContact") as string) || "";
 
     // Optional photo
-    const photoField = formData.get("photo");
+    const photoField = formData.get("photo") || formData.get("photoCapture") || formData.get("photoUpload");
     if (photoField && typeof photoField !== "string") {
       sightingPhoto = photoField as File;
     }
@@ -322,6 +322,7 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
     input,textarea{width:100%;padding:0.5rem;border:1px solid #ccc;border-radius:4px;margin-bottom:0.75rem;font-size:1rem;box-sizing:border-box}
     textarea{resize:vertical;min-height:80px}
     button{padding:0.75rem 1.5rem;background:#111;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:1rem}
+    .photo-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem}.photo-choice{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:.55rem .8rem;background:#eee;border-radius:6px;cursor:pointer}.photo-actions input{width:auto;margin:0}
   </style>
 </head>
 <body>
@@ -339,8 +340,13 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
     <input type="text" id="reporterName" name="reporterName" maxlength="80" />
     <label for="reporterContact">Your contact info (optional)</label>
     <input type="text" id="reporterContact" name="reporterContact" maxlength="120" />
-    <label for="photo">${t(lang, "photo")} (optional, max 3 MB)</label>
-    <input type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/webp" />
+    <label>${t(lang, "photo")} (optional, max 3 MB)</label>
+    <div class="photo-actions">
+      <label for="photo-capture" class="photo-choice">${t(lang, "takePhoto")}</label>
+      <input type="file" id="photo-capture" name="photoCapture" accept="image/*" capture="environment" />
+      <label for="photo-upload" class="photo-choice">${t(lang, "chooseExistingPhoto")}</label>
+      <input type="file" id="photo-upload" name="photoUpload" accept="image/*" />
+    </div>
     <button type="submit">${t(lang, "submitSighting")}</button>
   </form>
 </body>

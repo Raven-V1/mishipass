@@ -97,8 +97,8 @@ changes the mode. The QR never changes.
   They are documentation-only records: MishiPass does not recommend
   medications, calculate dosage, check interactions, provide reminders, or
   offer treatment advice. A dose as entered by the vet or owner may be recorded.
-- The Recovery Board is owner opt-in and not shown by default. It lists only
-  active Missing alerts whose owner explicitly enabled board visibility.
+- The Recovery Board is shown for Missing alerts by default. It lists only
+  active Missing alerts and only exposes public-safe fields.
 - The reward amount is hidden by default; the owner may choose to reveal it.
 - No nearby-user pings. No automatic user location tracking.
 
@@ -266,7 +266,7 @@ Recovery Board and WhatsApp-ready Missing Card closure.
 | Sighting photo owner-only access | Authenticated owner check on photo route | Active |
 | Owner language preference | `owner_settings.language_code` allowlist (`en`, `es`, `kk-KZ`) | Active |
 | WhatsApp-ready Missing Card | Owner-only generated share link, public fields only | Active |
-| Recovery Board | Owner opt-in, Missing-mode only, city/age filters | Active |
+| Recovery Board | Missing-mode only, city/age filters, public-safe fields only | Active |
 | Owner auth backend | PBKDF2-SHA256, opaque session token, HttpOnly cookie | Active |
 | Aikido security scan | — | Scheduled for Day 13 |
 

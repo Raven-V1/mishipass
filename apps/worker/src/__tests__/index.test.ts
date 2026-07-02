@@ -140,7 +140,7 @@ describe("GET /dashboard", () => {
     const res = await worker.fetch(new Request("https://example.com/dashboard"), fakeEnv);
     const body = await res.text();
     expect(body).toContain('<select id="cat-country"');
-    expect(body).toContain("Select country...");
+    expect(body).toContain("Select country");
     expect(body).toContain('value="MX"');
     expect(body).toContain("Mexico (MX)");
   });
@@ -161,8 +161,12 @@ describe("GET /dashboard", () => {
     expect(body).toContain('id="language-select"');
     expect(body).toContain("Español");
     expect(body).toContain("Қазақша");
-    expect(body).toContain('id="cat-breed-select"');
-    expect(body).toContain('id="cat-color-select"');
+    expect(body).toContain('id="breed-card-grid"');
+    expect(body).toContain('id="breed-search"');
+    expect(body).toContain('id="cat-breed"');
+    expect(body).toContain('id="color-swatch-grid"');
+    expect(body).toContain('id="cat-color"');
+    expect(body).toContain("onerror=");
     expect(body).toContain("/api/cat-reference/breeds");
     expect(body).not.toContain("THE_CAT_API_KEY");
     expect(body).not.toContain("x-api-key");

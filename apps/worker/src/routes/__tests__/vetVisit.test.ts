@@ -187,6 +187,9 @@ describe("renderVetVisitPage", () => {
     expect(html).not.toContain("cartilla");
     expect(html).toContain("Medication Record");
     expect(html).toContain("Vaccine");
+    expect(html).toContain('name="vaccine_sticker_photo_capture"');
+    expect(html).toContain('capture="environment"');
+    expect(html).toContain('name="vaccine_sticker_photo_upload"');
   });
 
   it("renders expired page when session is expired", async () => {

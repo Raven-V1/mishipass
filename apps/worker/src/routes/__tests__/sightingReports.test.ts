@@ -107,6 +107,9 @@ describe("handleSightingForm", () => {
     expect(html).toContain("<form");
     expect(html).toContain('name="city"');
     expect(html).toContain(`/c/${TEST_CAT_ID}/sighting`);
+    expect(html).toContain('name="photoCapture"');
+    expect(html).toContain('capture="environment"');
+    expect(html).toContain('name="photoUpload"');
     expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
   });
 
