@@ -44,6 +44,7 @@ export async function handleSwitchToMissing(
     last_seen_at: typeof lastSeenAt === "string" ? lastSeenAt : null,
     reward_amount: typeof rewardAmount === "string" ? rewardAmount : null,
     reward_visible: rewardVisible ? 1 : 0,
+    recovery_board_opt_in: 1,
     activated_at: new Date().toISOString(),
   });
 

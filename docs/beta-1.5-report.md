@@ -1,4 +1,4 @@
-# MishiPass — Beta 1.4 Report
+# MishiPass Beta 1.5 — Report
 
 > **Status: WIP skeleton.** This report is finalized on Day 13 per Constitution
 > Section 19, once the build is complete. The headings below are the planned
@@ -14,14 +14,16 @@ Each cat has one permanent QR code linked to a secure public ID; the owner selec
 the active mode, and the same physical tag behaves differently depending on what
 the cat needs.
 
-*(Expand on outcome and scope of Beta 1.4 at finalization.)*
+*(Expand on outcome and scope of MishiPass Beta 1.5 at finalization.)*
 
 ## 2. What was built
 
 *(To be completed. List the delivered must-build features: owner accounts, cat
 registration, public ID generation, Active Profile, Missing Alert + sighting
-reports, Vet Visit + Save & Finish, digital cartilla, WhatsApp card, Recovery
-Board. Note any optional modes attempted and any features deferred to V2.)*
+reports, Vet Visit + Save & Finish, Digital Cartilla, WhatsApp-ready missing
+card, Recovery Board, language support, and public-facing media polish.
+Optional Version 1 modes are deferred unless separately completed inside the
+Beta 1.x scope.)*
 
 ## 3. Architecture
 

@@ -2,395 +2,114 @@ import { COUNTRIES } from "../data/countries.js";
 import { htmlResponse } from "../utils/html.js";
 
 function buildCountryOptions(): string {
-  return COUNTRIES.map(
-    c => `<option value="${c.code}">${c.name} (${c.code})</option>`
-  ).join("\n          ");
-}
-
-function buildColorOptions(): string {
-  const colors = [
-    "Black",
-    "White",
-    "Gray",
-    "Orange",
-    "Cream",
-    "Brown",
-    "Calico",
-    "Tortoiseshell",
-    "Tabby",
-    "Tuxedo",
-    "Pointed / Siamese-style",
-    "Mixed / Other",
-  ];
-  return colors.map(color => `<option value="${color}">${color}</option>`).join("\n            ");
+  return COUNTRIES.map(c => `<option value="${c.code}">${c.name} (${c.code})</option>`).join("");
 }
 
 function buildDashboardHtml(): string {
   const countryOptions = buildCountryOptions();
-  const colorOptions = buildColorOptions();
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MishiPass - Owner Dashboard</title>
+  <title>MishiPass Beta 1.5 - Owner Dashboard</title>
   <style>
-    *{box-sizing:border-box}
-    body{font-family:system-ui,-apple-system,sans-serif;max-width:1040px;margin:2rem auto;padding:0 1rem;color:#111;line-height:1.5}
-    h1{font-size:1.75rem;margin-bottom:1rem}
-    h2{font-size:1.25rem;margin-top:1.5rem;margin-bottom:0.75rem}
-    .hidden{display:none}
-    label{display:block;margin-bottom:0.25rem;font-size:0.875rem;font-weight:500}
-    input[type="text"],input[type="email"],input[type="password"],select{width:100%;padding:0.5rem;border:1px solid #ccc;border-radius:4px;margin-bottom:0.75rem;font-size:1rem}
-    button{padding:0.5rem 1rem;border:none;border-radius:4px;cursor:pointer;font-size:0.875rem;margin-right:0.5rem;margin-bottom:0.5rem}
-    .btn-primary{background:#111;color:#fff}
-    .btn-secondary{background:#eee;color:#111}
-    .btn-danger{background:#c00;color:#fff}
-    .btn-warn{background:#e90;color:#fff}
-    .error{color:#c00;font-size:0.875rem;margin-bottom:0.75rem}
-    .success{color:#060;font-size:0.875rem;margin-bottom:0.75rem}
-    .cat-board{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;align-items:stretch}
-    .cat-card{border:1px solid #ddd;border-radius:6px;padding:1rem;min-height:100%;display:flex;flex-direction:column}
-    .cat-card h3{margin:0 0 0.5rem 0;font-size:1rem}
-    .cat-meta{font-size:0.875rem;color:#555;margin-bottom:0.5rem}
-    .cat-actions{margin-top:0.5rem}
-    .cat-photo{width:100%;aspect-ratio:4/3;border-radius:6px;object-fit:cover;background:#eee;margin-bottom:0.75rem}
-    .cat-photo-placeholder{width:100%;aspect-ratio:4/3;border-radius:6px;background:#eee;display:flex;align-items:center;justify-content:center;color:#666;font-size:0.85rem;margin-bottom:0.75rem}
-    .mode-fields{margin-top:0.5rem}
-    .mode-fields input{margin-bottom:0.5rem}
-    a{color:#111}
-    .nav{margin-bottom:1.5rem;font-size:0.875rem}
-    hr{border:none;border-top:1px solid #eee;margin:1.5rem 0}
-    button:disabled{opacity:0.6;cursor:not-allowed}
-    .tab-nav{display:flex;gap:0;border-bottom:2px solid #ddd;margin-bottom:1.5rem}
-    .tab-btn{background:none;border:none;border-bottom:2px solid transparent;padding:0.5rem 1rem;cursor:pointer;font-size:0.875rem;font-weight:500;margin:0 0 -2px 0;color:#555}
-    .tab-btn.active{border-bottom-color:#111;color:#111}
-    .tab-panel{display:none}
-    .tab-panel.active{display:block}
-    .photo-label{display:inline-block;padding:0.4rem 0.8rem;background:#eee;color:#111;border-radius:4px;cursor:pointer;font-size:0.75rem;font-weight:500}
-    .photo-label:hover{background:#ddd}
-    .photo-file-input{display:none}
-    details summary{cursor:pointer;font-size:1.25rem;font-weight:600;margin-top:1.5rem;margin-bottom:0.75rem}
-    .contact-card{border:1px solid #ddd;border-radius:6px;padding:1rem;margin-bottom:1rem}
-    .contact-card h4{margin:0 0 0.5rem 0}
-    .settings-card{border:1px solid #ddd;border-radius:6px;padding:1rem;max-width:420px}
-    .breed-preview{display:none;max-width:160px;max-height:110px;object-fit:cover;border-radius:6px;margin:0.25rem 0 0.75rem}
-    @media (max-width:560px){body{margin:1rem auto}.tab-nav{overflow-x:auto}.tab-btn{white-space:nowrap;padding:0.5rem 0.75rem}}
+    *{box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;max-width:1180px;margin:1.5rem auto;padding:0 1rem;color:#111;line-height:1.5;background:#fff}a{color:#111}h1{font-size:1.8rem;margin:.2rem 0}h2{font-size:1.25rem;margin:0 0 .8rem}h3{font-size:1rem;margin:.2rem 0 .4rem;overflow-wrap:anywhere}.hidden{display:none!important}.topbar,.section-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}.nav{font-size:.9rem;margin-bottom:1rem}.language-row{display:flex;gap:.75rem;align-items:end;flex-wrap:wrap}.field{margin-bottom:.8rem}label{display:block;margin-bottom:.25rem;font-size:.86rem;font-weight:700}input,select,textarea{width:100%;padding:.6rem;border:1px solid #cfcfcf;border-radius:6px;font-size:1rem;background:#fff}textarea{min-height:74px;resize:vertical}.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.8rem}.btn,.btn-primary,.btn-secondary,.btn-danger,.btn-warn,.photo-label{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:.58rem .85rem;border:0;border-radius:6px;cursor:pointer;font-size:.9rem;text-decoration:none;line-height:1.2;text-align:center;white-space:normal;overflow-wrap:anywhere}.btn-primary{background:#111;color:#fff}.btn-secondary{background:#eee;color:#111}.btn-danger{background:#b91c1c;color:#fff}.btn-warn{background:#c46a00;color:#fff}.btn:disabled,.btn-primary:disabled,.btn-secondary:disabled,.btn-danger:disabled,.btn-warn:disabled{opacity:.62;cursor:not-allowed}.error{color:#b91c1c;font-size:.9rem;margin:.5rem 0}.success{color:#166534;font-size:.9rem;margin:.5rem 0}.tab-nav{display:flex;gap:.4rem;flex-wrap:wrap;border-bottom:1px solid #ddd;margin:1rem 0}.tab-btn,.tab-link{background:#fff;color:#444;border:1px solid #ddd;border-bottom:0;border-radius:6px 6px 0 0;padding:.6rem .85rem;margin:0;cursor:pointer;text-decoration:none;min-height:42px}.tab-btn.active{background:#111;color:#fff;border-color:#111}.tab-panel{display:none}.tab-panel.active{display:block}.panel,.settings-card,.contact-card{border:1px solid #ddd;border-radius:8px;padding:1rem;background:#fff}.cat-board{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:1rem;align-items:stretch}.cat-card{border:1px solid #ddd;border-radius:8px;padding:1rem;display:flex;flex-direction:column;min-width:0;background:#fff}.cat-photo,.cat-photo-placeholder{width:100%;aspect-ratio:4/3;border-radius:7px;object-fit:cover;background:#eee;margin-bottom:.75rem;display:flex;align-items:center;justify-content:center;color:#666;text-align:center;padding:.5rem}.cat-meta{font-size:.9rem;color:#555;margin:.15rem 0}.country-badge,.mode-badge{display:inline-flex;align-items:center;gap:.25rem;background:#f2f2f2;border-radius:999px;padding:.15rem .55rem;font-size:.82rem;color:#333}.cat-actions,.mode-actions{display:flex;gap:.45rem;flex-wrap:wrap;margin-top:.65rem}.cat-actions>*{flex:1 1 112px}.mode-fields{display:grid;grid-template-columns:1fr;gap:.55rem;margin-top:.65rem}.photo-file-input{display:none}.photo-label{background:#eee;color:#111;font-weight:700}.selector-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.55rem;align-items:center;margin:.4rem 0}.selector-summary{font-size:.88rem;color:#555;min-height:1.3rem}.breed-card-grid,.swatch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(126px,1fr));gap:.55rem;margin:.5rem 0 .75rem;max-height:430px;overflow:auto;padding:.1rem}.choice-card{border:1px solid #ddd;border-radius:8px;background:#fff;padding:.45rem;text-align:left;cursor:pointer;min-height:106px;display:flex;flex-direction:column;gap:.35rem}.choice-card.active{border-color:#111;box-shadow:0 0 0 2px #111}.breed-card img,.breed-fallback{width:100%;height:72px;object-fit:cover;border-radius:6px;background:#eee;align-items:center;justify-content:center;color:#555;font-size:.78rem;text-align:center;padding:.25rem}.breed-card img.failed{display:none}.breed-card img.failed+.breed-fallback{display:flex}.breed-fallback{display:flex}.breed-card img+.breed-fallback{display:none}.choice-card span{font-size:.83rem;line-height:1.2;overflow-wrap:anywhere}.swatch{height:42px;border-radius:6px;border:1px solid #ddd}.swatch.black{background:#111}.swatch.white{background:#fff}.swatch.gray{background:#9ca3af}.swatch.orange{background:#f97316}.swatch.cream{background:#f5deb3}.swatch.brown{background:#8b5e3c}.swatch.calico{background:linear-gradient(135deg,#fff 0 32%,#111 32% 58%,#f97316 58%)}.swatch.tortoiseshell{background:linear-gradient(135deg,#111,#8b5e3c 45%,#f97316)}.swatch.tabby{background:repeating-linear-gradient(90deg,#9ca3af 0 8px,#555 8px 12px)}.swatch.tuxedo{background:linear-gradient(90deg,#111 0 35%,#fff 35% 65%,#111 65%)}.swatch.pointed{background:radial-gradient(circle at 50% 50%,#f5deb3 0 45%,#6b4f3a 46%)}.swatch.mixed{background:linear-gradient(135deg,#111,#fff,#f97316,#9ca3af)}.other-field{margin:.4rem 0 .8rem}.muted{color:#666;font-size:.9rem}details summary{cursor:pointer;font-size:1.05rem;font-weight:800;margin:1rem 0}.dashboard-shell{display:grid;gap:1rem}@media(max-width:430px){body{margin:.75rem auto}.cat-board{grid-template-columns:1fr}.cat-actions>*{flex:1 1 100%}.selector-tools{grid-template-columns:1fr}.tab-nav{overflow-x:auto;flex-wrap:nowrap}.tab-btn,.tab-link{white-space:normal;min-width:max-content}.breed-card-grid,.swatch-grid{grid-template-columns:repeat(auto-fit,minmax(112px,1fr));max-height:360px}}
   </style>
 </head>
 <body>
-  <h1>MishiPass</h1>
-  <div class="nav"><a href="/">&larr; Home</a></div>
+  <div class="topbar">
+    <div><h1>MishiPass</h1><div class="nav"><a href="/" data-i18n="home">Home</a></div></div>
+    <div class="language-row"><div><label for="guest-language-select" data-i18n="language">Language</label><select id="guest-language-select"><option value="en">English</option><option value="es">Español</option><option value="kk-KZ">Қазақша</option></select></div></div>
+  </div>
 
-  <div id="auth-section">
-    <div id="login-section">
-      <h2>Login</h2>
-      <div id="login-error" class="error hidden"></div>
-      <form id="login-form">
-        <label for="login-email">Email</label>
-        <input type="email" id="login-email" name="email" required />
-        <label for="login-password">Password</label>
-        <input type="password" id="login-password" name="password" required />
-        <button type="submit" class="btn-primary">Login</button>
-      </form>
-    </div>
-    <hr />
-    <div id="register-section">
-      <h2>Register</h2>
-      <div id="register-error" class="error hidden"></div>
-      <div id="register-success" class="success hidden"></div>
-      <form id="register-form">
-        <label for="register-email">Email</label>
-        <input type="email" id="register-email" name="email" required />
-        <label for="register-password">Password (min 8 characters)</label>
-        <input type="password" id="register-password" name="password" minlength="8" required />
-        <button type="submit" class="btn-primary">Register</button>
-      </form>
-    </div>
+  <div id="auth-section" class="dashboard-shell">
+    <section class="panel" id="login-section"><h2 data-i18n="login">Login</h2><div id="login-error" class="error hidden"></div><form id="login-form"><div class="field"><label for="login-email">Email</label><input type="email" id="login-email" required /></div><div class="field"><label for="login-password">Password</label><input type="password" id="login-password" required /></div><button type="submit" class="btn-primary" data-i18n="login">Login</button></form></section>
+    <section class="panel" id="register-section"><h2 data-i18n="register">Register</h2><div id="register-error" class="error hidden"></div><div id="register-success" class="success hidden"></div><form id="register-form"><div class="field"><label for="register-email">Email</label><input type="email" id="register-email" required /></div><div class="field"><label for="register-password">Password</label><input type="password" id="register-password" minlength="8" required /></div><button type="submit" class="btn-primary" data-i18n="register">Register</button></form></section>
   </div>
 
   <div id="dashboard-section" class="hidden">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h2>Dashboard</h2>
-      <button id="logout-btn" class="btn-secondary">Logout</button>
-    </div>
-
+    <div class="section-head"><h2 data-i18n="dashboard">Owner Dashboard</h2><button id="logout-btn" class="btn-secondary">Logout</button></div>
     <div class="tab-nav">
-      <button class="tab-btn active" data-tab="cats-tab">Your Cats</button>
-      <button class="tab-btn" data-tab="contact-tab">Contact &amp; Privacy</button>
-      <button class="tab-btn" data-tab="settings-tab">Settings</button>
+      <button class="tab-btn active" data-tab="cats-tab" data-i18n="registerCat">Register a Cat</button>
+      <button class="tab-btn" data-tab="contact-tab" data-i18n="contactPrivacy">Contact &amp; Privacy</button>
+      <button class="tab-btn" data-tab="settings-tab" data-i18n="settings">Settings</button>
+      <a class="tab-link" id="board-link" href="/recovery-board" data-i18n="missingCatBoard">Missing Cat Board</a>
     </div>
 
     <div id="cats-tab" class="tab-panel active">
       <div id="cat-list"></div>
-      <hr />
-      <details>
-        <summary>Register a Cat</summary>
+      <details open>
+        <summary data-i18n="registerCat">Register a Cat</summary>
         <div id="create-error" class="error hidden"></div>
-        <form id="create-cat-form">
-          <label for="cat-name">Name</label>
-          <input type="text" id="cat-name" name="name" required />
-          <label for="cat-country">Country</label>
-          <select id="cat-country" name="countryCode" required>
-            <option value="">Select country...</option>
-            ${countryOptions}
-          </select>
-          <label for="cat-sex">Sex</label>
-          <select id="cat-sex" name="sex" style="width:100%;padding:0.5rem;border:1px solid #ccc;border-radius:4px;margin-bottom:0.75rem">
-            <option value="">Unknown</option>
-            <option value="female">Female</option>
-            <option value="male">Male</option>
-          </select>
-          <label for="cat-color">Color / Markings</label>
-          <select id="cat-color-select">
-            <option value="">Select color / markings...</option>
-            ${colorOptions}
-          </select>
-          <input type="text" id="cat-color" name="colorMarkings" maxlength="200" placeholder="Optional markings notes" />
-          <label for="cat-breed">Breed / Mix</label>
-          <select id="cat-breed-select">
-            <option value="">Loading breed options...</option>
-          </select>
-          <img id="breed-preview" class="breed-preview" alt="Breed sample" />
-          <input type="text" id="cat-breed" name="breedMix" maxlength="100" />
-          <button type="submit" class="btn-primary">Register Cat</button>
+        <form id="create-cat-form" class="panel">
+          <div class="form-grid">
+            <div class="field"><label for="cat-name" data-i18n="name">Name</label><input type="text" id="cat-name" required /></div>
+            <div class="field"><label for="cat-country" data-i18n="country">Country</label><select id="cat-country" required><option value="" data-i18n="selectCountry">Select country</option>${countryOptions}</select></div>
+            <div class="field"><label for="cat-sex" data-i18n="sex">Sex</label><select id="cat-sex"><option value="" data-i18n="unknown">Unknown</option><option value="female">Female</option><option value="male">Male</option></select></div>
+          </div>
+
+          <label data-i18n="colorMarkings">Color / Markings</label>
+          <div id="color-swatch-grid" class="swatch-grid"></div>
+          <input type="hidden" id="cat-color" />
+          <div id="color-summary" class="selector-summary"></div>
+          <div id="color-other-wrap" class="other-field hidden"><input type="text" id="cat-color-other" maxlength="80" placeholder="Mixed / Other" /></div>
+          <div class="field"><label for="cat-markings-note" data-i18n="optionalMarkingsNotes">Optional markings notes</label><textarea id="cat-markings-note" maxlength="200"></textarea></div>
+
+          <label data-i18n="breedMix">Breed / Mix</label>
+          <div class="selector-tools"><input type="search" id="breed-search" data-i18n-placeholder="searchBreed" placeholder="Search breeds" /><button type="button" id="show-more-breeds" class="btn-secondary" data-i18n="showMoreBreeds">Show more breeds</button></div>
+          <div id="breed-card-grid" class="breed-card-grid"></div>
+          <input type="hidden" id="cat-breed" />
+          <div id="breed-summary" class="selector-summary"></div>
+          <div id="breed-other-wrap" class="other-field hidden"><input type="text" id="cat-breed-other" maxlength="100" placeholder="Mixed / Unknown / Other" /></div>
+
+          <button type="submit" class="btn-primary" data-i18n="registerCat">Register a Cat</button>
         </form>
       </details>
     </div>
 
-    <div id="contact-tab" class="tab-panel">
-      <div id="contact-list"><p>Loading contact settings...</p></div>
-    </div>
-
-    <div id="settings-tab" class="tab-panel">
-      <div class="settings-card">
-        <label for="language-select">Language</label>
-        <select id="language-select">
-          <option value="en">English</option>
-          <option value="es">Español</option>
-          <option value="kk-KZ">Қазақша</option>
-        </select>
-        <button id="language-save-btn" class="btn-primary">Save</button>
-        <span id="language-status" style="font-size:0.85rem"></span>
-      </div>
-    </div>
+    <div id="contact-tab" class="tab-panel"><div id="contact-list"><p>Loading...</p></div></div>
+    <div id="settings-tab" class="tab-panel"><div class="settings-card"><label for="language-select" data-i18n="language">Language</label><select id="language-select"><option value="en">English</option><option value="es">Español</option><option value="kk-KZ">Қазақша</option></select><button id="language-save-btn" class="btn-primary" data-i18n="save">Save</button><span id="language-status" class="muted"></span></div></div>
   </div>
 
   <script>
-    (function() {
-      var authSection = document.getElementById("auth-section");
-      var dashSection = document.getElementById("dashboard-section");
-      var loginForm = document.getElementById("login-form");
-      var registerForm = document.getElementById("register-form");
-      var createCatForm = document.getElementById("create-cat-form");
-      var logoutBtn = document.getElementById("logout-btn");
-      var catList = document.getElementById("cat-list");
-      var contactList = document.getElementById("contact-list");
-      var loginError = document.getElementById("login-error");
-      var registerError = document.getElementById("register-error");
-      var registerSuccess = document.getElementById("register-success");
-      var createError = document.getElementById("create-error");
-      var languageSelect = document.getElementById("language-select");
-      var languageSaveBtn = document.getElementById("language-save-btn");
-      var languageStatus = document.getElementById("language-status");
-      var breedSelect = document.getElementById("cat-breed-select");
-      var breedInput = document.getElementById("cat-breed");
-      var breedPreview = document.getElementById("breed-preview");
-      var colorSelect = document.getElementById("cat-color-select");
-      var colorInput = document.getElementById("cat-color");
-      var breedImages = {};
-
-      var currentLanguage = "en";
-      var labels = {
-        en: { dashboard: "Dashboard", cats: "Your Cats", contact: "Contact & Privacy", settings: "Settings", register: "Register a Cat", details: "Details", qr: "QR Card", sightings: "Sightings", upload: "Upload Photo", remove: "Remove", languageSaved: "Saved" },
-        es: { dashboard: "Panel", cats: "Tus gatos", contact: "Contacto y privacidad", settings: "Configuración", register: "Registrar un gato", details: "Detalles", qr: "Tarjeta QR", sightings: "Avistamientos", upload: "Subir foto", remove: "Eliminar", languageSaved: "Guardado" },
-        "kk-KZ": { dashboard: "Басқару", cats: "Мысықтар", contact: "Байланыс және құпиялылық", settings: "Баптаулар", register: "Мысықты тіркеу", details: "Мәліметтер", qr: "QR картасы", sightings: "Көрулер", upload: "Фото жүктеу", remove: "Жою", languageSaved: "Сақталды" }
-      };
-      function tr(key) { return (labels[currentLanguage] && labels[currentLanguage][key]) || labels.en[key] || key; }
-
-      var tabBtns = document.querySelectorAll(".tab-btn");
-      for (var t = 0; t < tabBtns.length; t++) {
-        tabBtns[t].addEventListener("click", function() {
-          var target = this.getAttribute("data-tab");
-          var allBtns = document.querySelectorAll(".tab-btn");
-          var allPanels = document.querySelectorAll(".tab-panel");
-          for (var j = 0; j < allBtns.length; j++) allBtns[j].classList.remove("active");
-          for (var j = 0; j < allPanels.length; j++) allPanels[j].classList.remove("active");
-          this.classList.add("active");
-          var panel = document.getElementById(target);
-          if (panel) panel.classList.add("active");
-          if (target === "contact-tab") loadContactSettings();
-          if (target === "settings-tab") loadSettings();
-        });
-      }
-
-      function showAuth() { authSection.classList.remove("hidden"); dashSection.classList.add("hidden"); }
-      function showDash() { authSection.classList.add("hidden"); dashSection.classList.remove("hidden"); loadSettings(); loadBreeds(); loadCats(); }
-      function hideMsg(el) { el.classList.add("hidden"); el.textContent = ""; }
-      function showMsg(el, msg) { el.textContent = msg; el.classList.remove("hidden"); }
-      function escHtml(s) { var d = document.createElement("div"); d.appendChild(document.createTextNode(s)); return d.innerHTML; }
-
-      function loadCats() {
-        fetch("/api/cats", { credentials: "same-origin" }).then(function(r) {
-          if (r.status === 401) { showAuth(); return null; }
-          return r.json();
-        }).then(function(cats) {
-          if (!cats) return;
-          if (cats.length === 0) { catList.innerHTML = "<p>No cats registered yet.</p>"; return; }
-          var html = '<div class="cat-board">';
-          for (var i = 0; i < cats.length; i++) {
-            var c = cats[i];
-            html += '<div class="cat-card">';
-            if (c.photoUrl) html += '<img class="cat-photo" src="' + escHtml(c.photoUrl) + '" alt="' + escHtml(c.name) + '" loading="lazy" />';
-            else html += '<div class="cat-photo-placeholder" aria-label="No photo available">No photo</div>';
-            html += '<h3><a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '">' + escHtml(c.name) + '</a></h3>';
-            html += '<p class="cat-meta">Mode: ' + escHtml(c.currentMode) + '</p>';
-            html += '<div class="cat-actions">';
-            html += '<a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '" class="btn-secondary" style="text-decoration:none;display:inline-block;padding:0.4rem 0.8rem">' + tr("details") + '</a> ';
-            html += '<a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '/qr" class="btn-secondary" style="text-decoration:none;display:inline-block;padding:0.4rem 0.8rem">' + tr("qr") + '</a> ';
-            html += '<a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '/cartilla" class="btn-secondary" style="text-decoration:none;display:inline-block;padding:0.4rem 0.8rem">Cartilla</a> ';
-            if (c.currentMode === "missing") {
-              html += '<a href="/dashboard/cats/' + encodeURIComponent(c.publicId) + '/sightings" class="btn-secondary" style="text-decoration:none;display:inline-block;padding:0.4rem 0.8rem">' + tr("sightings") + '</a>';
-            }
-            html += '</div>';
-            html += '<div class="cat-actions" data-photo-id="' + escHtml(c.publicId) + '" style="margin-top:0.5rem">';
-            html += '<input type="file" accept="image/jpeg,image/png,image/webp" class="photo-file-input" id="photo-input-' + escHtml(c.publicId) + '" />';
-            html += '<label for="photo-input-' + escHtml(c.publicId) + '" class="photo-label">' + tr("upload") + '</label>';
-            html += '</div>';
-            html += '<div class="cat-actions">';
-            if (c.currentMode === "missing") {
-              html += '<button class="btn-primary switch-active-btn" data-id="' + escHtml(c.publicId) + '">Switch to Active</button>';
-            } else if (c.currentMode === "vet") {
-              html += '<span style="background:#e0f0ff;color:#036;padding:4px 8px;border-radius:4px;font-size:0.8rem;font-weight:bold">&#x1F9BA; Vet Visit Active</span> ';
-              html += '<button class="btn-primary cancel-vet-btn" data-id="' + escHtml(c.publicId) + '">End Vet Visit</button>';
-            } else {
-              html += '<button class="btn-warn switch-missing-btn" data-id="' + escHtml(c.publicId) + '">Switch to Missing</button> ';
-              html += '<button class="btn-primary start-vet-btn" data-id="' + escHtml(c.publicId) + '">Start Vet Visit</button>';
-              html += '<div class="mode-fields hidden" id="missing-fields-' + escHtml(c.publicId) + '">';
-              html += '<input type="text" placeholder="City" class="missing-city" />';
-              html += '<input type="text" placeholder="Area / neighborhood" class="missing-area" />';
-              html += '<input type="text" placeholder="Reward (optional)" class="missing-reward" />';
-              html += '<button class="btn-danger confirm-missing-btn" data-id="' + escHtml(c.publicId) + '">Confirm Missing</button>';
-              html += '</div>';
-            }
-            html += '</div>';
-            html += '<div class="cat-actions" style="margin-top:0.75rem"><button class="btn-danger remove-cat-btn" data-id="' + escHtml(c.publicId) + '">' + tr("remove") + '</button></div>';
-            html += '</div>';
-          }
-          html += '</div>';
-          catList.innerHTML = html;
-          attachCatActions();
-        }).catch(function() { showMsg(createError, "Network error. Try again."); });
-      }
-
-      function loadSettings() {
-        fetch("/api/settings", { credentials: "same-origin" }).then(function(r) {
-          if (r.status === 401) return null;
-          return r.json();
-        }).then(function(d) {
-          if (!d) return;
-          currentLanguage = d.language_code || "en";
-          languageSelect.value = currentLanguage;
-          applyLanguage();
-        }).catch(function() {});
-      }
-
-      function applyLanguage() {
-        document.querySelector('[data-tab="cats-tab"]').textContent = tr("cats");
-        document.querySelector('[data-tab="contact-tab"]').textContent = tr("contact");
-        document.querySelector('[data-tab="settings-tab"]').textContent = tr("settings");
-        var h2 = document.querySelector("#dashboard-section h2");
-        if (h2) h2.textContent = tr("dashboard");
-        var summary = document.querySelector("#cats-tab details summary");
-        if (summary) summary.textContent = tr("register");
-      }
-
-      function loadBreeds() {
-        if (!breedSelect || breedSelect.getAttribute("data-loaded")) return;
-        function setFallback() {
-          var fallback = ["Mixed / Unknown","Domestic Shorthair","Domestic Longhair","Siamese","Persian","Maine Coon","Bengal","Abyssinian"];
-          breedSelect.innerHTML = '<option value="">Select breed / mix...</option>';
-          for (var i=0;i<fallback.length;i++) breedSelect.innerHTML += '<option value="' + escHtml(fallback[i]) + '">' + escHtml(fallback[i]) + '</option>';
-          breedSelect.setAttribute("data-loaded","1");
-        }
-        fetch("/api/cat-reference/breeds", { credentials: "same-origin" }).then(function(r) { return r.json(); }).then(function(d) {
-          if (!d || !d.breeds || !d.breeds.length) { setFallback(); return; }
-          breedSelect.innerHTML = '<option value="">Select breed / mix...</option>';
-          for (var i=0;i<d.breeds.length;i++) {
-            var b=d.breeds[i]; breedImages[b.name] = b.referenceImageUrl || "";
-            breedSelect.innerHTML += '<option value="' + escHtml(b.name) + '">' + escHtml(b.name) + '</option>';
-          }
-          breedSelect.setAttribute("data-loaded","1");
-        }).catch(setFallback);
-      }
-
-      function attachCatActions() {
-        var missingBtns = document.querySelectorAll(".switch-missing-btn");
-        for (var i = 0; i < missingBtns.length; i++) missingBtns[i].addEventListener("click", function() { var id = this.getAttribute("data-id"); var f = document.getElementById("missing-fields-" + id); if (f) f.classList.toggle("hidden"); });
-        var confirmBtns = document.querySelectorAll(".confirm-missing-btn");
-        for (var i = 0; i < confirmBtns.length; i++) confirmBtns[i].addEventListener("click", function() { var btn = this; var id = btn.getAttribute("data-id"); var f = document.getElementById("missing-fields-" + id); var city = f.querySelector(".missing-city").value; var area = f.querySelector(".missing-area").value; var reward = f.querySelector(".missing-reward").value; btn.disabled = true; btn.textContent = "Working..."; fetch("/api/cats/" + encodeURIComponent(id) + "/missing", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ city: city || null, area: area || null, rewardAmount: reward || null, rewardVisible: reward ? 1 : 0 }) }).then(function(r) { if (r.ok) loadCats(); btn.disabled = false; btn.textContent = "Confirm Missing"; }).catch(function() { btn.disabled = false; btn.textContent = "Confirm Missing"; }); });
-        var activeBtns = document.querySelectorAll(".switch-active-btn");
-        for (var i = 0; i < activeBtns.length; i++) activeBtns[i].addEventListener("click", function() { var btn = this; var id = btn.getAttribute("data-id"); btn.disabled = true; btn.textContent = "Working..."; fetch("/api/cats/" + encodeURIComponent(id) + "/active", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) }).then(function(r) { if (r.ok) loadCats(); btn.disabled = false; btn.textContent = "Switch to Active"; }).catch(function() { btn.disabled = false; btn.textContent = "Switch to Active"; }); });
-        var startVetBtns = document.querySelectorAll(".start-vet-btn");
-        for (var i = 0; i < startVetBtns.length; i++) startVetBtns[i].addEventListener("click", function() { var btn = this; var id = btn.getAttribute("data-id"); if (!confirm("Start Vet Visit? While active, anyone scanning this QR can submit a vet visit record. Save & Finish returns the QR to Active Profile.")) return; btn.disabled = true; btn.textContent = "Starting..."; fetch("/api/cats/" + encodeURIComponent(id) + "/vet-visit/start", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) }).then(function(r) { if (r.ok) loadCats(); else { r.text().then(function(t) { alert(t || "Could not start vet visit"); }); } btn.disabled = false; btn.textContent = "Start Vet Visit"; }).catch(function() { btn.disabled = false; btn.textContent = "Start Vet Visit"; }); });
-        var cancelVetBtns = document.querySelectorAll(".cancel-vet-btn");
-        for (var i = 0; i < cancelVetBtns.length; i++) cancelVetBtns[i].addEventListener("click", function() { var btn = this; var id = btn.getAttribute("data-id"); btn.disabled = true; btn.textContent = "Working..."; fetch("/api/cats/" + encodeURIComponent(id) + "/vet-visit/cancel", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) }).then(function(r) { if (r.ok) loadCats(); btn.disabled = false; btn.textContent = "End Vet Visit"; }).catch(function() { btn.disabled = false; btn.textContent = "End Vet Visit"; }); });
-        var photoInputs = document.querySelectorAll(".photo-file-input");
-        for (var i = 0; i < photoInputs.length; i++) photoInputs[i].addEventListener("change", function() { var input = this; var container = input.closest("[data-photo-id]"); var id = container.getAttribute("data-photo-id"); if (!input.files || !input.files[0]) return; var fd = new FormData(); fd.append("photo", input.files[0]); var label = container.querySelector(".photo-label"); var orig = label.textContent; label.textContent = "Uploading..."; fetch("/api/cats/" + encodeURIComponent(id) + "/photo", { method: "POST", credentials: "same-origin", body: fd }).then(function(r) { label.textContent = orig; if (r.ok) loadCats(); else r.text().then(function(t) { alert(t || "Upload failed"); }); }).catch(function() { label.textContent = orig; }); });
-        var removeBtns = document.querySelectorAll(".remove-cat-btn");
-        for (var i = 0; i < removeBtns.length; i++) removeBtns[i].addEventListener("click", function() { var btn = this; var id = btn.getAttribute("data-id"); if (!confirm("Remove this cat from MishiPass? This will hide the public profile and dashboard entry.")) return; btn.disabled = true; btn.textContent = "Removing..."; fetch("/api/cats/" + encodeURIComponent(id) + "/remove", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) }).then(function(r) { if (r.ok) loadCats(); else { r.text().then(function(t) { alert(t || "Could not remove cat"); }); btn.disabled = false; btn.textContent = "Remove"; } }).catch(function() { btn.disabled = false; btn.textContent = "Remove"; }); });
-      }
-
-      languageSaveBtn.addEventListener("click", function() {
-        languageSaveBtn.disabled = true;
-        fetch("/api/settings", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ language_code: languageSelect.value }) }).then(function(r) {
-          languageSaveBtn.disabled = false;
-          if (r.ok) { currentLanguage = languageSelect.value; applyLanguage(); loadCats(); languageStatus.textContent = tr("languageSaved"); }
-          else languageStatus.textContent = "Error";
-        }).catch(function() { languageSaveBtn.disabled = false; languageStatus.textContent = "Network error"; });
-      });
-
-      breedSelect.addEventListener("change", function() {
-        breedInput.value = breedSelect.value;
-        var imageUrl = breedImages[breedSelect.value];
-        if (imageUrl) { breedPreview.src = imageUrl; breedPreview.style.display = "block"; }
-        else { breedPreview.removeAttribute("src"); breedPreview.style.display = "none"; }
-      });
-      colorSelect.addEventListener("change", function() {
-        if (!colorSelect.value) return;
-        colorInput.value = colorInput.value ? colorSelect.value + " - " + colorInput.value : colorSelect.value;
-      });
-
-      function loadContactSettings() {
-        contactList.innerHTML = "<p>Loading...</p>";
-        fetch("/api/cats", { credentials: "same-origin" }).then(function(r) { if (r.status === 401) { showAuth(); return null; } return r.json(); }).then(function(cats) {
-          if (!cats) return;
-          if (cats.length === 0) { contactList.innerHTML = "<p>No cats registered.</p>"; return; }
-          var promises = [];
-          for (var i = 0; i < cats.length; i++) (function(cat) { promises.push(fetch("/api/cats/" + encodeURIComponent(cat.publicId) + "/contact", { credentials: "same-origin" }).then(function(r) { return r.json(); }).then(function(d) { return { cat: cat, contact: d }; }).catch(function() { return { cat: cat, contact: { contact_mode: "none", public_phone: "" } }; })); })(cats[i]);
-          Promise.all(promises).then(function(results) {
-            var out = "";
-            for (var k = 0; k < results.length; k++) { var r = results[k]; var d = r.contact;
-              out += '<div class="contact-card" data-contact-id="' + escHtml(r.cat.publicId) + '">';
-              out += '<h4>' + escHtml(r.cat.name) + '</h4>';
-              out += '<select class="contact-mode-select" style="width:100%;padding:0.4rem;margin-bottom:0.5rem;border:1px solid #ccc;border-radius:4px"><option value="none"' + (d.contact_mode === "none" ? " selected" : "") + '>Hidden</option><option value="relay"' + (d.contact_mode === "relay" ? " selected" : "") + '>Relay</option><option value="phone"' + (d.contact_mode === "phone" ? " selected" : "") + '>Public phone</option></select>';
-              out += '<input type="text" class="contact-phone" placeholder="Phone" maxlength="30" value="' + escHtml(d.public_phone || "") + '" />';
-              out += '<button class="btn-primary contact-save-btn" data-id="' + escHtml(r.cat.publicId) + '">Save</button>';
-              out += '<span class="contact-status" style="font-size:0.8rem;margin-left:0.5rem"></span></div>';
-            }
-            contactList.innerHTML = out;
-            var saveBtns = document.querySelectorAll("#contact-list .contact-save-btn");
-            for (var i = 0; i < saveBtns.length; i++) saveBtns[i].addEventListener("click", function() { var btn = this; var id = btn.getAttribute("data-id"); var card = btn.closest(".contact-card"); var mode = card.querySelector(".contact-mode-select").value; var phone = card.querySelector(".contact-phone").value; var status = card.querySelector(".contact-status"); btn.disabled = true; btn.textContent = "Saving..."; fetch("/api/cats/" + encodeURIComponent(id) + "/contact", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contact_mode: mode, public_phone: phone || null }) }).then(function(r) { btn.disabled = false; btn.textContent = "Save"; if (r.ok) { status.textContent = "Saved"; status.style.color = "#060"; } else { status.textContent = "Error"; status.style.color = "#c00"; } }).catch(function() { btn.disabled = false; btn.textContent = "Save"; status.textContent = "Network error"; status.style.color = "#c00"; }); });
-          });
-        }).catch(function() { contactList.innerHTML = "<p>Error loading.</p>"; });
-      }
-
-      loginForm.addEventListener("submit", function(e) { e.preventDefault(); hideMsg(loginError); var email = document.getElementById("login-email").value; var password = document.getElementById("login-password").value; var btn = loginForm.querySelector("button[type=submit]"); btn.disabled = true; btn.textContent = "Working..."; fetch("/api/auth/login", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: email, password: password }) }).then(function(r) { btn.disabled = false; btn.textContent = "Login"; if (r.ok) showDash(); else r.text().then(function(t) { try { var d = JSON.parse(t); showMsg(loginError, d.error || "Login failed"); } catch(e) { showMsg(loginError, t || "Login failed"); } }); }).catch(function() { btn.disabled = false; btn.textContent = "Login"; showMsg(loginError, "Network error."); }); });
-      registerForm.addEventListener("submit", function(e) { e.preventDefault(); hideMsg(registerError); hideMsg(registerSuccess); var email = document.getElementById("register-email").value; var password = document.getElementById("register-password").value; var btn = registerForm.querySelector("button[type=submit]"); btn.disabled = true; btn.textContent = "Working..."; fetch("/api/auth/register", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: email, password: password }) }).then(function(r) { btn.disabled = false; btn.textContent = "Register"; if (r.ok) showMsg(registerSuccess, "Registered. You can now log in."); else r.text().then(function(t) { try { var d = JSON.parse(t); showMsg(registerError, d.error || "Registration failed"); } catch(e) { showMsg(registerError, t || "Registration failed"); } }); }).catch(function() { btn.disabled = false; btn.textContent = "Register"; showMsg(registerError, "Network error."); }); });
-      createCatForm.addEventListener("submit", function(e) { e.preventDefault(); hideMsg(createError); var name = document.getElementById("cat-name").value; var countryCode = document.getElementById("cat-country").value; var sex = document.getElementById("cat-sex").value; var colorMarkings = document.getElementById("cat-color").value; var breedMix = document.getElementById("cat-breed").value; var btn = createCatForm.querySelector("button[type=submit]"); btn.disabled = true; btn.textContent = "Working..."; var payload = { name: name, countryCode: countryCode }; if (sex) payload.sex = sex; if (colorMarkings) payload.colorMarkings = colorMarkings; if (breedMix) payload.breedMix = breedMix; fetch("/api/cats", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }).then(function(r) { btn.disabled = false; btn.textContent = "Register Cat"; if (r.ok) { createCatForm.reset(); loadCats(); } else r.text().then(function(t) { showMsg(createError, t || "Could not register cat"); }); }).catch(function() { btn.disabled = false; btn.textContent = "Register Cat"; showMsg(createError, "Network error."); }); });
-      logoutBtn.addEventListener("click", function() { fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" }).then(function() { showAuth(); }).catch(function() { showAuth(); }); });
-      fetch("/api/cats", { credentials: "same-origin" }).then(function(r) { if (r.status === 401) showAuth(); else r.json().then(function() { showDash(); }); }).catch(function() { showAuth(); });
-    })();
+  (function(){
+    var authSection=document.getElementById("auth-section"),dashSection=document.getElementById("dashboard-section"),catList=document.getElementById("cat-list"),contactList=document.getElementById("contact-list");
+    var loginForm=document.getElementById("login-form"),registerForm=document.getElementById("register-form"),createCatForm=document.getElementById("create-cat-form"),logoutBtn=document.getElementById("logout-btn");
+    var loginError=document.getElementById("login-error"),registerError=document.getElementById("register-error"),registerSuccess=document.getElementById("register-success"),createError=document.getElementById("create-error");
+    var languageSelect=document.getElementById("language-select"),languageSaveBtn=document.getElementById("language-save-btn"),languageStatus=document.getElementById("language-status"),guestLanguageSelect=document.getElementById("guest-language-select");
+    var breedGrid=document.getElementById("breed-card-grid"),breedInput=document.getElementById("cat-breed"),breedSearch=document.getElementById("breed-search"),breedSummary=document.getElementById("breed-summary"),breedOtherWrap=document.getElementById("breed-other-wrap"),breedOther=document.getElementById("cat-breed-other"),showMoreBreeds=document.getElementById("show-more-breeds");
+    var colorGrid=document.getElementById("color-swatch-grid"),colorInput=document.getElementById("cat-color"),colorSummary=document.getElementById("color-summary"),colorOtherWrap=document.getElementById("color-other-wrap"),colorOther=document.getElementById("cat-color-other");
+    var currentLanguage="en",allBreeds=[],visibleBreedCount=18;
+    var labels={
+      en:{home:"Home",language:"Language",login:"Login",register:"Register",dashboard:"Owner Dashboard",registerCat:"Register a Cat",contactPrivacy:"Contact & Privacy",settings:"Settings",missingCatBoard:"Missing Cat Board",name:"Name",country:"Country",selectCountry:"Select country",sex:"Sex",unknown:"Unknown",colorMarkings:"Color / Markings",optionalMarkingsNotes:"Optional markings notes",breedMix:"Breed / Mix",searchBreed:"Search breeds",showMoreBreeds:"Show more breeds",save:"Save",details:"Details",qrCard:"QR Card",cartilla:"Digital Cartilla",reports:"Reports",photoUpload:"Photo upload",delete:"Delete",mode:"Mode",noPhoto:"No photo",noCats:"No cats registered yet.",viewPublicProfile:"View Public Profile",viewBoard:"View Board",openPublicAlert:"Open public alert",whatsappCard:"WhatsApp Card",switchToMissing:"Switch to Missing",startVetVisit:"Start Vet Visit",switchToActive:"Switch to Active",endVetVisit:"End Vet Visit",vetVisitActive:"Vet Visit Active",confirmMissing:"Confirm Missing",city:"City",area:"Area / neighborhood",reward:"Reward",working:"Working...",uploading:"Uploading...",saved:"Saved",error:"Error",networkError:"Network error.",removeConfirm:"Remove this cat from MishiPass?",startVetConfirm:"Start Vet Visit? While active, anyone scanning this QR can submit a vet visit record. Save & Finish returns the QR to Active Profile.",hidden:"Hidden",relay:"Relay",publicPhone:"Public phone",phone:"Phone"},
+      es:{home:"Inicio",language:"Idioma",login:"Iniciar sesión",register:"Registrar",dashboard:"Panel del dueño",registerCat:"Registrar un gato",contactPrivacy:"Contacto y privacidad",settings:"Configuración",missingCatBoard:"Tablero de gatos perdidos",name:"Nombre",country:"País",selectCountry:"Seleccionar país",sex:"Sexo",unknown:"Desconocido",colorMarkings:"Color / marcas",optionalMarkingsNotes:"Notas opcionales de marcas",breedMix:"Raza / mezcla",searchBreed:"Buscar razas",showMoreBreeds:"Mostrar más razas",save:"Guardar",details:"Detalles",qrCard:"Tarjeta QR",cartilla:"Cartilla digital",reports:"Reportes",photoUpload:"Subir foto",delete:"Eliminar",mode:"Modo",noPhoto:"Sin foto",noCats:"Aún no hay gatos registrados.",viewPublicProfile:"Ver perfil público",viewBoard:"Ver tablero",openPublicAlert:"Abrir alerta pública",whatsappCard:"Tarjeta WhatsApp",switchToMissing:"Cambiar a perdido",startVetVisit:"Iniciar visita veterinaria",switchToActive:"Cambiar a activo",endVetVisit:"Finalizar visita veterinaria",vetVisitActive:"Visita veterinaria activa",confirmMissing:"Confirmar perdido",city:"Ciudad",area:"Zona / vecindario",reward:"Recompensa",working:"Trabajando...",uploading:"Subiendo...",saved:"Guardado",error:"Error",networkError:"Error de red.",removeConfirm:"¿Eliminar este gato de MishiPass?",startVetConfirm:"¿Iniciar visita veterinaria? Mientras esté activa, cualquiera que escanee este QR puede enviar un registro veterinario. Guardar y finalizar devuelve el QR al Perfil activo.",hidden:"Oculto",relay:"Relay",publicPhone:"Teléfono público",phone:"Teléfono"},
+      "kk-KZ":{home:"Басты бет",language:"Тіл",login:"Кіру",register:"Тіркелу",dashboard:"Ие панелі",registerCat:"Мысықты тіркеу",contactPrivacy:"Байланыс және құпиялылық",settings:"Баптаулар",missingCatBoard:"Жоғалған мысықтар тақтасы",name:"Аты",country:"Ел",selectCountry:"Ел таңдаңыз",sex:"Жынысы",unknown:"Белгісіз",colorMarkings:"Түсі / белгілері",optionalMarkingsNotes:"Белгілер туралы қосымша ескертпе",breedMix:"Тұқым / аралас",searchBreed:"Тұқымдарды іздеу",showMoreBreeds:"Көбірек тұқым көрсету",save:"Сақтау",details:"Мәліметтер",qrCard:"QR картасы",cartilla:"Цифрлық картилья",reports:"Хабарламалар",photoUpload:"Фото жүктеу",delete:"Жою",mode:"Режим",noPhoto:"Фото жоқ",noCats:"Әлі мысық тіркелмеген.",viewPublicProfile:"Қоғамдық профильді көру",viewBoard:"Тақтаны көру",openPublicAlert:"Қоғамдық ескертуді ашу",whatsappCard:"WhatsApp картасы",switchToMissing:"Жоғалғанға ауыстыру",startVetVisit:"Вет сапарын бастау",switchToActive:"Белсендіге ауыстыру",endVetVisit:"Вет сапарын аяқтау",vetVisitActive:"Вет сапары белсенді",confirmMissing:"Жоғалғанын растау",city:"Қала",area:"Аудан / маңай",reward:"Сыйақы",working:"Орындалуда...",uploading:"Жүктелуде...",saved:"Сақталды",error:"Қате",networkError:"Желі қатесі.",removeConfirm:"Бұл мысықты MishiPass ішінен жою керек пе?",startVetConfirm:"Вет сапарын бастау керек пе? Белсенді кезде осы QR-ды сканерлеген кез келген адам вет жазбасын жібере алады. Сақтау және аяқтау QR-ды Белсенді профильге қайтарады.",hidden:"Жасырын",relay:"Relay",publicPhone:"Қоғамдық телефон",phone:"Телефон"}
+    };
+    function tr(k){return(labels[currentLanguage]&&labels[currentLanguage][k])||labels.en[k]||k}
+    function esc(s){var d=document.createElement("div");d.appendChild(document.createTextNode(String(s||"")));return d.innerHTML}
+    function langParam(){return "?lang="+encodeURIComponent(currentLanguage)}
+    function withLang(path){return path+(path.indexOf("?")===-1?"?":"&")+"lang="+encodeURIComponent(currentLanguage)}
+    function setCookieLang(){document.cookie="mp_lang="+encodeURIComponent(currentLanguage)+"; Path=/; Max-Age=31536000; SameSite=Lax"}
+    function setLang(value){currentLanguage=value||"en";document.documentElement.lang=currentLanguage;try{localStorage.setItem("mp_lang",currentLanguage)}catch(e){}setCookieLang();languageSelect.value=currentLanguage;guestLanguageSelect.value=currentLanguage;applyLanguage()}
+    function applyLanguage(){document.querySelectorAll("[data-i18n]").forEach(function(el){el.textContent=tr(el.getAttribute("data-i18n"))});document.querySelectorAll("[data-i18n-placeholder]").forEach(function(el){el.setAttribute("placeholder",tr(el.getAttribute("data-i18n-placeholder")))});document.querySelector("#cat-country option[value='']").textContent=tr("selectCountry");document.querySelector("#cat-sex option[value='']").textContent=tr("unknown");document.getElementById("board-link").href=withLang("/recovery-board");renderColorSwatches();renderBreedCards();if(!dashSection.classList.contains("hidden"))loadCats()}
+    function flag(code){var m={MX:"🇲🇽",KZ:"🇰🇿",US:"🇺🇸",CA:"🇨🇦",ES:"🇪🇸",DE:"🇩🇪",FR:"🇫🇷",GB:"🇬🇧",JP:"🇯🇵",BR:"🇧🇷",AR:"🇦🇷",CO:"🇨🇴",CL:"🇨🇱",PE:"🇵🇪",IT:"🇮🇹",PT:"🇵🇹",AU:"🇦🇺",NZ:"🇳🇿",IN:"🇮🇳",CN:"🇨🇳",KR:"🇰🇷",RU:"🇷🇺",SE:"🇸🇪",NO:"🇳🇴",NL:"🇳🇱",BE:"🇧🇪",CH:"🇨🇭",AT:"🇦🇹",PL:"🇵🇱",CZ:"🇨🇿"};return(m[code]||code)}
+    function showAuth(){authSection.classList.remove("hidden");dashSection.classList.add("hidden")}function showDash(){authSection.classList.add("hidden");dashSection.classList.remove("hidden");loadSettings();loadBreeds();loadCats()}function hideMsg(el){el.classList.add("hidden");el.textContent=""}function showMsg(el,msg){el.textContent=msg;el.classList.remove("hidden")}
+    document.querySelectorAll(".tab-btn").forEach(function(btn){btn.addEventListener("click",function(){document.querySelectorAll(".tab-btn").forEach(function(b){b.classList.remove("active")});document.querySelectorAll(".tab-panel").forEach(function(p){p.classList.remove("active")});btn.classList.add("active");document.getElementById(btn.getAttribute("data-tab")).classList.add("active");if(btn.getAttribute("data-tab")==="contact-tab")loadContactSettings();if(btn.getAttribute("data-tab")==="settings-tab")loadSettings()})});
+    function loadCats(){fetch("/api/cats",{credentials:"same-origin"}).then(function(r){if(r.status===401){showAuth();return null}return r.json()}).then(function(cats){if(!cats)return;if(!cats.length){catList.innerHTML="<p>"+tr("noCats")+"</p>";return}var html='<div class="cat-board">';cats.forEach(function(c){var id=encodeURIComponent(c.publicId);html+='<article class="cat-card">';html+=c.photoUrl?'<img class="cat-photo" src="'+esc(c.photoUrl)+'" alt="'+esc(c.name)+'" loading="lazy" />':'<div class="cat-photo-placeholder" aria-label="'+tr("noPhoto")+'">'+tr("noPhoto")+'</div>';html+='<h3><a href="'+withLang("/dashboard/cats/"+id)+'">'+esc(c.name)+'</a></h3>';html+='<p class="cat-meta"><span class="country-badge">'+esc(flag(c.countryCode))+" "+esc(c.countryCode)+'</span> <span class="mode-badge">'+tr("mode")+": "+esc(c.currentMode)+'</span></p>';html+='<div class="cat-actions"><a class="btn-secondary" href="'+withLang("/dashboard/cats/"+id)+'">'+tr("details")+'</a><a class="btn-secondary" href="'+withLang("/c/"+id)+'">'+tr("viewPublicProfile")+'</a><a class="btn-secondary" href="'+withLang("/dashboard/cats/"+id+"/qr")+'">'+tr("qrCard")+'</a><a class="btn-secondary" href="'+withLang("/dashboard/cats/"+id+"/cartilla")+'">'+tr("cartilla")+'</a>';if(c.currentMode==="missing"){html+='<a class="btn-secondary" href="'+withLang("/recovery-board")+'">'+tr("viewBoard")+'</a><a class="btn-secondary" href="'+withLang("/c/"+id)+'">'+tr("openPublicAlert")+'</a><a class="btn-secondary" href="'+withLang("/dashboard/cats/"+id+"/missing-card")+'">'+tr("whatsappCard")+'</a><a class="btn-secondary" href="'+withLang("/dashboard/cats/"+id+"/sightings")+'">'+tr("reports")+'</a>'}html+='</div>';html+='<div class="cat-actions" data-photo-id="'+esc(c.publicId)+'"><input type="file" accept="image/jpeg,image/png,image/webp" class="photo-file-input" id="photo-input-'+esc(c.publicId)+'" /><label for="photo-input-'+esc(c.publicId)+'" class="photo-label">'+tr("photoUpload")+'</label></div>';html+='<div class="mode-actions">';if(c.currentMode==="missing"){html+='<button class="btn-primary switch-active-btn" data-id="'+esc(c.publicId)+'">'+tr("switchToActive")+'</button>'}else if(c.currentMode==="vet"){html+='<span class="mode-badge">'+tr("vetVisitActive")+'</span><button class="btn-primary cancel-vet-btn" data-id="'+esc(c.publicId)+'">'+tr("endVetVisit")+'</button>'}else{html+='<button class="btn-warn switch-missing-btn" data-id="'+esc(c.publicId)+'">'+tr("switchToMissing")+'</button><button class="btn-primary start-vet-btn" data-id="'+esc(c.publicId)+'">'+tr("startVetVisit")+'</button><div class="mode-fields hidden" id="missing-fields-'+esc(c.publicId)+'"><input type="text" placeholder="'+tr("city")+'" class="missing-city" /><input type="text" placeholder="'+tr("area")+'" class="missing-area" /><input type="text" placeholder="'+tr("reward")+'" class="missing-reward" /><button class="btn-danger confirm-missing-btn" data-id="'+esc(c.publicId)+'">'+tr("confirmMissing")+'</button></div>'}html+='</div><div class="cat-actions"><button class="btn-danger remove-cat-btn" data-id="'+esc(c.publicId)+'">'+tr("delete")+'</button></div></article>'});catList.innerHTML=html+"</div>";attachCatActions()}).catch(function(){showMsg(createError,tr("networkError"))})}
+    function attachCatActions(){document.querySelectorAll(".switch-missing-btn").forEach(function(b){b.addEventListener("click",function(){document.getElementById("missing-fields-"+b.getAttribute("data-id")).classList.toggle("hidden")})});document.querySelectorAll(".confirm-missing-btn").forEach(function(b){b.addEventListener("click",function(){var id=b.getAttribute("data-id"),f=document.getElementById("missing-fields-"+id);b.disabled=true;b.textContent=tr("working");fetch("/api/cats/"+encodeURIComponent(id)+"/missing",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({city:f.querySelector(".missing-city").value||null,area:f.querySelector(".missing-area").value||null,rewardAmount:f.querySelector(".missing-reward").value||null,rewardVisible:f.querySelector(".missing-reward").value?1:0})}).then(function(r){if(r.ok)loadCats();b.disabled=false;b.textContent=tr("confirmMissing")}).catch(function(){b.disabled=false;b.textContent=tr("confirmMissing")})})});document.querySelectorAll(".switch-active-btn").forEach(function(b){b.addEventListener("click",function(){var id=b.getAttribute("data-id");b.disabled=true;b.textContent=tr("working");fetch("/api/cats/"+encodeURIComponent(id)+"/active",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:"{}"}).then(function(r){if(r.ok)loadCats();b.disabled=false;b.textContent=tr("switchToActive")}).catch(function(){b.disabled=false;b.textContent=tr("switchToActive")})})});document.querySelectorAll(".start-vet-btn").forEach(function(b){b.addEventListener("click",function(){var id=b.getAttribute("data-id");if(!confirm(tr("startVetConfirm")))return;b.disabled=true;b.textContent=tr("working");fetch("/api/cats/"+encodeURIComponent(id)+"/vet-visit/start",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:"{}"}).then(function(r){if(r.ok)loadCats();else r.text().then(alert);b.disabled=false;b.textContent=tr("startVetVisit")}).catch(function(){b.disabled=false;b.textContent=tr("startVetVisit")})})});document.querySelectorAll(".cancel-vet-btn").forEach(function(b){b.addEventListener("click",function(){var id=b.getAttribute("data-id");b.disabled=true;b.textContent=tr("working");fetch("/api/cats/"+encodeURIComponent(id)+"/vet-visit/cancel",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:"{}"}).then(function(r){if(r.ok)loadCats();b.disabled=false;b.textContent=tr("endVetVisit")}).catch(function(){b.disabled=false;b.textContent=tr("endVetVisit")})})});document.querySelectorAll(".photo-file-input").forEach(function(input){input.addEventListener("change",function(){var container=input.closest("[data-photo-id]"),id=container.getAttribute("data-photo-id"),label=container.querySelector(".photo-label");if(!input.files||!input.files[0])return;var fd=new FormData();fd.append("photo",input.files[0]);label.textContent=tr("uploading");fetch("/api/cats/"+encodeURIComponent(id)+"/photo",{method:"POST",credentials:"same-origin",body:fd}).then(function(r){if(r.ok)loadCats();else r.text().then(alert);label.textContent=tr("photoUpload")}).catch(function(){label.textContent=tr("photoUpload")})})});document.querySelectorAll(".remove-cat-btn").forEach(function(b){b.addEventListener("click",function(){var id=b.getAttribute("data-id");if(!confirm(tr("removeConfirm")))return;b.disabled=true;b.textContent=tr("working");fetch("/api/cats/"+encodeURIComponent(id)+"/remove",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:"{}"}).then(function(r){if(r.ok)loadCats();else r.text().then(alert);b.disabled=false;b.textContent=tr("delete")}).catch(function(){b.disabled=false;b.textContent=tr("delete")})})})}
+    function loadSettings(){fetch("/api/settings",{credentials:"same-origin"}).then(function(r){return r.status===401?null:r.json()}).then(function(d){if(d&&d.language_code)setLang(d.language_code)}).catch(function(){})}
+    function loadBreeds(){if(allBreeds.length)return;function fallback(){allBreeds=["Mixed / Unknown / Other","Domestic Shorthair","Domestic Longhair","Siamese","Persian","Maine Coon","Bengal","Abyssinian","Russian Blue","Ragdoll","Sphynx","British Shorthair"].map(function(n){return{name:n,referenceImageUrl:""}});renderBreedCards()}fetch("/api/cat-reference/breeds",{credentials:"same-origin"}).then(function(r){return r.json()}).then(function(d){if(!d||!d.breeds||!d.breeds.length){fallback();return}allBreeds=d.breeds.slice();if(!allBreeds.some(function(b){return b.name==="Mixed / Unknown / Other"}))allBreeds.unshift({name:"Mixed / Unknown / Other",referenceImageUrl:""});renderBreedCards()}).catch(fallback)}
+    function renderBreedCards(){if(!breedGrid||!allBreeds.length)return;var q=(breedSearch.value||"").toLowerCase();var list=allBreeds.filter(function(b){return !q||b.name.toLowerCase().indexOf(q)!==-1});var shown=list.slice(0,visibleBreedCount);breedGrid.innerHTML=shown.map(function(b){var img=b.referenceImageUrl?'<img src="'+esc(b.referenceImageUrl)+'" alt="'+esc(b.name)+'" loading="lazy" onerror="this.classList.add(\\'failed\\')" /><div class="breed-fallback">'+esc(b.name)+'</div>':'<div class="breed-fallback">'+esc(b.name)+'</div>';return'<button type="button" class="choice-card breed-card'+(breedInput.value===b.name?' active':'')+'" data-breed="'+esc(b.name)+'">'+img+'<span>'+esc(b.name)+'</span></button>'}).join("");showMoreBreeds.classList.toggle("hidden",list.length<=visibleBreedCount);breedGrid.querySelectorAll(".breed-card").forEach(function(card){card.addEventListener("click",function(){breedInput.value=card.getAttribute("data-breed");breedSummary.textContent=breedInput.value;breedOtherWrap.classList.toggle("hidden",breedInput.value.indexOf("Other")===-1&&breedInput.value.indexOf("Unknown")===-1);renderBreedCards()})})}
+    function renderColorSwatches(){if(!colorGrid)return;var names={en:["Black","White","Gray","Orange","Cream","Brown","Calico","Tortoiseshell","Tabby","Tuxedo","Pointed / Siamese-style","Mixed / Other"],es:["Negro","Blanco","Gris","Naranja","Crema","Marrón","Calicó","Carey","Atigrado","Tuxedo","Pointed / estilo siamés","Mixto / otro"],"kk-KZ":["Қара","Ақ","Сұр","Қызғылт","Крем","Қоңыр","Калико","Тасбақа түсті","Жолақты","Тукседо","Сиам стиліндегі","Аралас / басқа"]};var keys=["black","white","gray","orange","cream","brown","calico","tortoiseshell","tabby","tuxedo","pointed","mixed"];colorGrid.innerHTML=keys.map(function(k,i){var label=names[currentLanguage][i];return'<button type="button" class="choice-card swatch-card'+(colorInput.value===label?' active':'')+'" data-color="'+esc(label)+'"><div class="swatch '+k+'"></div><span>'+esc(label)+'</span></button>'}).join("");colorGrid.querySelectorAll(".swatch-card").forEach(function(card){card.addEventListener("click",function(){colorInput.value=card.getAttribute("data-color");colorSummary.textContent=colorInput.value;colorOtherWrap.classList.toggle("hidden",card.getAttribute("data-color").toLowerCase().indexOf("other")===-1&&card.getAttribute("data-color").indexOf("басқа")===-1);renderColorSwatches()})})}
+    breedSearch.addEventListener("input",function(){visibleBreedCount=18;renderBreedCards()});showMoreBreeds.addEventListener("click",function(){visibleBreedCount+=24;renderBreedCards()});guestLanguageSelect.addEventListener("change",function(){setLang(guestLanguageSelect.value)});languageSaveBtn.addEventListener("click",function(){languageSaveBtn.disabled=true;fetch("/api/settings",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({language_code:languageSelect.value})}).then(function(r){languageSaveBtn.disabled=false;if(r.ok){setLang(languageSelect.value);languageStatus.textContent=tr("saved")}else languageStatus.textContent=tr("error")}).catch(function(){languageSaveBtn.disabled=false;languageStatus.textContent=tr("networkError")})});
+    function loadContactSettings(){contactList.innerHTML="<p>Loading...</p>";fetch("/api/cats",{credentials:"same-origin"}).then(function(r){if(r.status===401){showAuth();return null}return r.json()}).then(function(cats){if(!cats)return;if(!cats.length){contactList.innerHTML="<p>"+tr("noCats")+"</p>";return}Promise.all(cats.map(function(cat){return fetch("/api/cats/"+encodeURIComponent(cat.publicId)+"/contact",{credentials:"same-origin"}).then(function(r){return r.json()}).then(function(d){return{cat:cat,contact:d}})})).then(function(results){contactList.innerHTML=results.map(function(r){var d=r.contact;return'<div class="contact-card" data-contact-id="'+esc(r.cat.publicId)+'"><h3>'+esc(r.cat.name)+'</h3><select class="contact-mode-select"><option value="none"'+(d.contact_mode==="none"?" selected":"")+'>'+tr("hidden")+'</option><option value="relay"'+(d.contact_mode==="relay"?" selected":"")+'>'+tr("relay")+'</option><option value="phone"'+(d.contact_mode==="phone"?" selected":"")+'>'+tr("publicPhone")+'</option></select><input type="text" class="contact-phone" placeholder="'+tr("phone")+'" maxlength="30" value="'+esc(d.public_phone||"")+'" /><button class="btn-primary contact-save-btn" data-id="'+esc(r.cat.publicId)+'">'+tr("save")+'</button><span class="contact-status muted"></span></div>'}).join("");document.querySelectorAll(".contact-save-btn").forEach(function(btn){btn.addEventListener("click",function(){var id=btn.getAttribute("data-id"),card=btn.closest(".contact-card"),status=card.querySelector(".contact-status");btn.disabled=true;btn.textContent=tr("working");fetch("/api/cats/"+encodeURIComponent(id)+"/contact",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({contact_mode:card.querySelector(".contact-mode-select").value,public_phone:card.querySelector(".contact-phone").value||null})}).then(function(r){btn.disabled=false;btn.textContent=tr("save");status.textContent=r.ok?tr("saved"):tr("error")}).catch(function(){btn.disabled=false;btn.textContent=tr("save");status.textContent=tr("networkError")})})})})})}
+    loginForm.addEventListener("submit",function(e){e.preventDefault();hideMsg(loginError);var btn=loginForm.querySelector("button");btn.disabled=true;btn.textContent=tr("working");fetch("/api/auth/login",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:document.getElementById("login-email").value,password:document.getElementById("login-password").value})}).then(function(r){btn.disabled=false;btn.textContent=tr("login");if(r.ok)showDash();else r.text().then(function(t){showMsg(loginError,t||"Login failed")})}).catch(function(){btn.disabled=false;btn.textContent=tr("login");showMsg(loginError,tr("networkError"))})});
+    registerForm.addEventListener("submit",function(e){e.preventDefault();hideMsg(registerError);hideMsg(registerSuccess);var btn=registerForm.querySelector("button");btn.disabled=true;btn.textContent=tr("working");fetch("/api/auth/register",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:document.getElementById("register-email").value,password:document.getElementById("register-password").value})}).then(function(r){btn.disabled=false;btn.textContent=tr("register");if(r.ok)showMsg(registerSuccess,tr("saved"));else r.text().then(function(t){showMsg(registerError,t||"Registration failed")})}).catch(function(){btn.disabled=false;btn.textContent=tr("register");showMsg(registerError,tr("networkError"))})});
+    createCatForm.addEventListener("submit",function(e){e.preventDefault();hideMsg(createError);var color=colorInput.value,breed=breedInput.value,notes=document.getElementById("cat-markings-note").value.trim();if(colorOther.value.trim())color=colorOther.value.trim();if(breedOther.value.trim())breed=breedOther.value.trim();var colorMarkings=color+(notes?(color?" - ":"")+notes:"");var payload={name:document.getElementById("cat-name").value,countryCode:document.getElementById("cat-country").value};var sex=document.getElementById("cat-sex").value;if(sex)payload.sex=sex;if(colorMarkings)payload.colorMarkings=colorMarkings;if(breed)payload.breedMix=breed;var btn=createCatForm.querySelector("button[type=submit]");btn.disabled=true;btn.textContent=tr("working");fetch("/api/cats",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}).then(function(r){btn.disabled=false;btn.textContent=tr("registerCat");if(r.ok){createCatForm.reset();colorInput.value="";breedInput.value="";colorSummary.textContent="";breedSummary.textContent="";renderColorSwatches();renderBreedCards();loadCats()}else r.text().then(function(t){showMsg(createError,t||tr("error"))})}).catch(function(){btn.disabled=false;btn.textContent=tr("registerCat");showMsg(createError,tr("networkError"))})});
+    logoutBtn.addEventListener("click",function(){fetch("/api/auth/logout",{method:"POST",credentials:"same-origin"}).then(showAuth).catch(showAuth)});
+    try{var u=new URL(location.href),q=u.searchParams.get("lang"),saved=localStorage.getItem("mp_lang");setLang(q||saved||"en")}catch(e){setLang("en")}renderColorSwatches();fetch("/api/cats",{credentials:"same-origin"}).then(function(r){if(r.status===401)showAuth();else showDash()}).catch(showAuth);
+  })();
   </script>
 </body>
 </html>`;

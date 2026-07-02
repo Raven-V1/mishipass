@@ -73,6 +73,7 @@ export {
   getMissingAlertForOwner,
   getMissingAlertPublic,
   listRecoveryBoardAlerts,
+  updateRecoveryBoardOptIn,
   upsertMissingAlert,
 } from "./repositories/missingAlerts.js";
 

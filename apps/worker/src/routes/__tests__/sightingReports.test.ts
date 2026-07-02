@@ -107,14 +107,17 @@ describe("handleSightingForm", () => {
     expect(html).toContain("<form");
     expect(html).toContain('name="city"');
     expect(html).toContain(`/c/${TEST_CAT_ID}/sighting`);
+    expect(html).toContain('name="photoCapture"');
+    expect(html).toContain('capture="environment"');
+    expect(html).toContain('name="photoUpload"');
     expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
   });
 
   it("returns 404 for invalid ID format", async () => {
-    mockValidateId.mockReturnValue(false);
+    mockGetCatPublicProfile.mockResolvedValue(null);
     const res = await handleSightingForm("bad-id", fakeDb);
     expect(res.status).toBe(404);
-    expect(mockGetCatPublicProfile).not.toHaveBeenCalled();
+    expect(mockGetCatPublicProfile).toHaveBeenCalledWith(fakeDb, "bad-id");
   });
 
   it("HTML-escapes cat name in the form (XSS prevention)", async () => {

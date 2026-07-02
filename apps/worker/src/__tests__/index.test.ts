@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 import worker, { type Env } from "../index.js";
 
 const fakeEnv: Env = {
-  DB: {} as D1Database,
+  DB: {
+    prepare: () => ({
+      bind: () => ({
+        first: async () => null,
+      }),
+    }),
+  } as unknown as D1Database,
   PUBLIC_BASE_URL: "https://mishipass.example.com",
   PHOTOS: {} as R2Bucket,
 };
@@ -94,7 +100,8 @@ describe("worker fetch routes", () => {
   it("GET / contains link to /dashboard", async () => {
     const res = await worker.fetch(new Request("https://example.com/"), fakeEnv);
     const body = await res.text();
-    expect(body).toContain('href="/dashboard"');
+    expect(body).toContain('href="/dashboard?lang=en"');
+    expect(body).toContain("MishiPass Beta 1.5");
   });
 });
 
@@ -139,7 +146,7 @@ describe("GET /dashboard", () => {
     const res = await worker.fetch(new Request("https://example.com/dashboard"), fakeEnv);
     const body = await res.text();
     expect(body).toContain('<select id="cat-country"');
-    expect(body).toContain("Select country...");
+    expect(body).toContain("Select country");
     expect(body).toContain('value="MX"');
     expect(body).toContain("Mexico (MX)");
   });
@@ -160,8 +167,12 @@ describe("GET /dashboard", () => {
     expect(body).toContain('id="language-select"');
     expect(body).toContain("Español");
     expect(body).toContain("Қазақша");
-    expect(body).toContain('id="cat-breed-select"');
-    expect(body).toContain('id="cat-color-select"');
+    expect(body).toContain('id="breed-card-grid"');
+    expect(body).toContain('id="breed-search"');
+    expect(body).toContain('id="cat-breed"');
+    expect(body).toContain('id="color-swatch-grid"');
+    expect(body).toContain('id="cat-color"');
+    expect(body).toContain("onerror=");
     expect(body).toContain("/api/cat-reference/breeds");
     expect(body).not.toContain("THE_CAT_API_KEY");
     expect(body).not.toContain("x-api-key");
@@ -309,10 +320,28 @@ describe("settings and reference route wiring", () => {
   });
 });
 
+describe("Recovery Board route wiring", () => {
+  it("GET /recovery-board routes to the implemented public board", async () => {
+    const env = {
+      ...fakeEnv,
+      DB: {
+        prepare: () => ({
+          bind: () => ({
+            all: async () => ({ results: [] }),
+          }),
+        }),
+      } as unknown as D1Database,
+    };
+    const res = await worker.fetch(new Request("https://example.com/recovery-board"), env);
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain("Recovery Board");
+  });
+});
+
 describe("scope guard route wiring", () => {
   it.each([
     "/whatsapp",
-    "/recovery-board",
     "/travel",
     "/adoption",
     "/memorial",

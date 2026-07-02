@@ -11,12 +11,15 @@ import { handleStartVetVisit, handleCancelVetVisit, handleVetVisitFinish } from 
 import { handleCartillaSummaryJson, handleCreateMedication, handleCreateVaccine, handleVaccineStickerServe, handleVaccineStickerUpload } from "./routes/cartilla.js";
 import { handleGetOwnerSettings, handleUpsertOwnerSettings } from "./routes/ownerSettings.js";
 import { handleCatReferenceBreeds } from "./routes/catReference.js";
-import { handleRoot } from "./pages/root.js";
+import { handleMissingCardPage } from "./routes/missingCard.js";
+import { handleRecoveryBoardOptIn, handleRecoveryBoardPage } from "./routes/recoveryBoard.js";
+import { handleHistory, handleRoot } from "./pages/root.js";
 import { handleDashboard } from "./pages/dashboard.js";
 import { handleCatDetail } from "./pages/catDetail.js";
 import { handleCartillaPage, handleVetVisitDetailPage } from "./pages/cartilla.js";
 import { handleQrPage } from "./pages/qrPage.js";
 import { handleSightingInbox } from "./pages/sightingInbox.js";
+import { getLanguageFromRequest } from "./utils/i18n.js";
 
 export interface Env {
   DB: D1Database;
@@ -43,6 +46,7 @@ const SIGHTING_PHOTO_SERVE = /^\/api\/cats\/([^/]+)\/sightings\/([^/]+)\/photo$/
 const DASHBOARD_CAT_DETAIL = /^\/dashboard\/cats\/([^/]+)$/;
 const DASHBOARD_CAT_CARTILLA = /^\/dashboard\/cats\/([^/]+)\/cartilla$/;
 const DASHBOARD_CAT_VET_VISIT_DETAIL = /^\/dashboard\/cats\/([^/]+)\/cartilla\/vet-visits\/([^/]+)$/;
+const DASHBOARD_CAT_MISSING_CARD = /^\/dashboard\/cats\/([^/]+)\/missing-card$/;
 const DASHBOARD_CAT_QR = /^\/dashboard\/cats\/([^/]+)\/qr$/;
 const DASHBOARD_CAT_SIGHTINGS = /^\/dashboard\/cats\/([^/]+)\/sightings$/;
 const VET_VISIT_START = /^\/api\/cats\/([^/]+)\/vet-visit\/start$/;
@@ -54,6 +58,7 @@ const MEDICATIONS_API = /^\/api\/cats\/([^/]+)\/medications$/;
 const CARTILLA_API = /^\/api\/cats\/([^/]+)\/cartilla$/;
 const VACCINE_STICKER_UPLOAD = /^\/api\/cats\/([^/]+)\/vaccines\/([^/]+)\/sticker-photo$/;
 const VACCINE_STICKER_SERVE = /^\/media\/cats\/([^/]+)\/vaccines\/([^/]+)\/sticker-photo$/;
+const RECOVERY_BOARD_OPT_IN = /^\/api\/cats\/([^/]+)\/recovery-board$/;
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -63,11 +68,19 @@ export default {
     // -- Static pages --
 
     if ((method === "GET" || method === "HEAD") && pathname === "/") {
-      return handleRoot(method);
+      return handleRoot(request);
+    }
+
+    if ((method === "GET" || method === "HEAD") && pathname === "/history") {
+      return handleHistory(request);
     }
 
     if (method === "GET" && pathname === "/dashboard") {
       return handleDashboard();
+    }
+
+    if (method === "GET" && pathname === "/recovery-board") {
+      return handleRecoveryBoardPage(request, env.DB);
     }
 
     // -- Dashboard sub-routes (auth-required HTML pages) --
@@ -75,31 +88,31 @@ export default {
     const detailMatch = DASHBOARD_CAT_DETAIL.exec(pathname);
     if (method === "GET" && detailMatch) {
       const ctx = await resolveSession(request, env.DB);
-      return handleCatDetail(detailMatch[1]!, env.DB, ctx, env.PUBLIC_BASE_URL);
+      return handleCatDetail(detailMatch[1]!, env.DB, ctx, env.PUBLIC_BASE_URL, getLanguageFromRequest(request));
     }
 
     const cartillaPageMatch = DASHBOARD_CAT_CARTILLA.exec(pathname);
     if (method === "GET" && cartillaPageMatch) {
       const ctx = await resolveSession(request, env.DB);
-      return handleCartillaPage(cartillaPageMatch[1]!, env.DB, ctx);
+      return handleCartillaPage(cartillaPageMatch[1]!, env.DB, ctx, getLanguageFromRequest(request));
     }
 
     const vetVisitDetailMatch = DASHBOARD_CAT_VET_VISIT_DETAIL.exec(pathname);
     if (method === "GET" && vetVisitDetailMatch) {
       const ctx = await resolveSession(request, env.DB);
-      return handleVetVisitDetailPage(vetVisitDetailMatch[1]!, vetVisitDetailMatch[2]!, env.DB, ctx);
+      return handleVetVisitDetailPage(vetVisitDetailMatch[1]!, vetVisitDetailMatch[2]!, env.DB, ctx, getLanguageFromRequest(request));
     }
 
     const qrMatch = DASHBOARD_CAT_QR.exec(pathname);
     if (method === "GET" && qrMatch) {
       const ctx = await resolveSession(request, env.DB);
-      return handleQrPage(qrMatch[1]!, env.DB, ctx, env.PUBLIC_BASE_URL);
+      return handleQrPage(qrMatch[1]!, env.DB, ctx, env.PUBLIC_BASE_URL, getLanguageFromRequest(request));
     }
 
     const sightingsPageMatch = DASHBOARD_CAT_SIGHTINGS.exec(pathname);
     if (method === "GET" && sightingsPageMatch) {
       const ctx = await resolveSession(request, env.DB);
-      return handleSightingInbox(sightingsPageMatch[1]!, env.DB, ctx);
+      return handleSightingInbox(sightingsPageMatch[1]!, env.DB, ctx, getLanguageFromRequest(request));
     }
 
     // -- Auth API --
@@ -183,7 +196,13 @@ export default {
 
     const vetFinishMatch = VET_VISIT_FINISH.exec(pathname);
     if (method === "POST" && vetFinishMatch) {
-      return handleVetVisitFinish(vetFinishMatch[1]!, request, env.DB);
+      return handleVetVisitFinish(vetFinishMatch[1]!, request, env.DB, env.PHOTOS);
+    }
+
+    const missingCardMatch = DASHBOARD_CAT_MISSING_CARD.exec(pathname);
+    if (method === "GET" && missingCardMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleMissingCardPage(missingCardMatch[1]!, env.DB, ctx, env.PUBLIC_BASE_URL, getLanguageFromRequest(request));
     }
 
     // -- Digital Cartilla API --
@@ -251,7 +270,7 @@ export default {
     if (sightingMatch) {
       const id = sightingMatch[1]!;
       if (method === "GET") {
-        return handleSightingForm(id, env.DB);
+        return handleSightingForm(id, env.DB, getLanguageFromRequest(request));
       }
       if (method === "POST") {
         return handleSightingSubmit(id, request, env.DB, env.PHOTOS, env.SIGHTING_IP_HMAC_SECRET);
@@ -280,7 +299,13 @@ export default {
           return new Response("Too many requests. Try again later.", { status: 429 });
         }
       }
-      return handlePublicProfile(profileMatch[1]!, env.DB);
+      return handlePublicProfile(profileMatch[1]!, env.DB, getLanguageFromRequest(request));
+    }
+
+    const recoveryOptInMatch = RECOVERY_BOARD_OPT_IN.exec(pathname);
+    if (method === "POST" && recoveryOptInMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleRecoveryBoardOptIn(recoveryOptInMatch[1]!, request, env.DB, ctx);
     }
 
     return new Response("Not Found", { status: 404 });
