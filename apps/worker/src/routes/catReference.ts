@@ -48,7 +48,18 @@ function mapBreed(item: Record<string, unknown>) {
   const image = typeof item.image === "object" && item.image !== null ? item.image as Record<string, unknown> : null;
   const directImageUrl = safeTheCatApiImageUrl(image?.url);
   if (!id || !name) return null;
-  const referenceImageUrl = directImageUrl || (referenceImageId ? KNOWN_REFERENCE_IMAGE_URLS[referenceImageId] || null : null);
+
+  // Priority: 1) inline image.url, 2) known reference URL, 3) try common CDN patterns
+  let referenceImageUrl = directImageUrl || (referenceImageId ? KNOWN_REFERENCE_IMAGE_URLS[referenceImageId] || null : null);
+
+  // If still null but we have a reference_image_id, try constructing CDN URL
+  // TheCatAPI CDN uses /images/{id}.{ext} — most are .jpg but some are .png or .gif
+  // We return the .jpg variant and rely on the CDN's content-type negotiation
+  // The dashboard renderer has an onerror fallback for broken images
+  if (!referenceImageUrl && referenceImageId && /^[A-Za-z0-9_-]+$/.test(referenceImageId)) {
+    referenceImageUrl = `https://cdn2.thecatapi.com/images/${referenceImageId}.jpg`;
+  }
+
   return {
     id,
     name,
