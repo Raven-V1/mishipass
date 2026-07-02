@@ -525,6 +525,50 @@ Decided by: Carlos
 
 ---
 
+## [2026-07-02] — Enable Google and Apple login via Logto OIDC
+
+Decision: Implement Google and Apple social login using Logto as the OIDC
+provider, with server-side Authorization Code + PKCE flow.  Existing
+email/password auth is preserved.  The six required Worker secrets
+(`LOGTO_ENDPOINT`, `LOGTO_APP_ID`, `LOGTO_CLIENT_SECRET`, `LOGTO_REDIRECT_URI`,
+`LOGTO_GOOGLE_CONNECTOR_TARGET`, `LOGTO_APPLE_CONNECTOR_TARGET`) are absent from
+the current production deployment; code path is present and tested but providers
+are not yet active.
+
+Executor: Claude Code
+Branch: `auth/logto-google-apple`
+
+Summary:
+- Added `owner_identities` table migration (`0006_owner_identities.sql`).
+- Added `apps/worker/src/utils/pkce.ts` — PKCE code_verifier, code_challenge,
+  and random param generation using Web Crypto API.
+- Added `apps/worker/src/routes/logto.ts` — three route handlers:
+  `handleLogtoGoogle`, `handleLogtoApple`, `handleLogtoCallback`.
+- Added `verifyLogtoIdToken` helper with injectable JWKS fetcher so it can be
+  unit-tested without live Logto calls.
+- Added `apps/worker/src/db/repositories/ownerIdentities.ts` — find, insert,
+  update, and OIDC-owner-create functions.
+- Updated `Env` interface in `index.ts` with six optional Logto secrets.
+- Updated `handleDashboard()` to accept `LogtoEnv` and render real anchor links
+  when providers are configured, or disabled buttons with honest copy when not.
+- 24 new tests in `routes/__tests__/logto.test.ts`; total: 286 (243 worker + 43 shared).
+- Committed design mockups `assets/mockups/missing_alert.jpeg` and
+  `assets/mockups/vet_portal.jpeg` (Zhanerke design assets, untracked since PR #67).
+- `apps/worker/src/utils/brandAssets.ts` remains untracked; it belongs to the
+  `visual/pass1-brand-shell` stash (Codex design scope).
+
+Reason: Carlos explicitly requested real Google and Apple login routes to replace
+the aria-disabled placeholder buttons present since Day 1.
+
+Alternatives considered:
+- Frontend SDK (e.g. Logto React SDK): rejected because it would place tokens
+  in localStorage, violating the constitution's server-only security requirement.
+- Mock/stub OAuth: rejected; task required real OIDC, not faked auth.
+
+Decided by: Project Owner
+
+---
+
 ## Open items (not yet decided)
 
 Tracked in Constitution Section 23; each will be logged here when resolved:

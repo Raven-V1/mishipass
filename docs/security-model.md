@@ -293,8 +293,46 @@ messages, and any future form input) is treated as **untrusted data**:
 
 ---
 
+## 10. OIDC / Logto authentication (Google and Apple login)
+
+Added in the Logto auth branch (2026-07-02). Applies when `LOGTO_ENDPOINT`,
+`LOGTO_APP_ID`, `LOGTO_CLIENT_SECRET`, and `LOGTO_REDIRECT_URI` are configured
+as Worker secrets.
+
+**Flow:** Authorization Code + PKCE (S256), server-side only.
+
+- PKCE `code_verifier`, OIDC `state`, and `nonce` are generated per-request and
+  stored in short-lived (`Max-Age=600`) `HttpOnly; Secure; SameSite=Lax` cookies
+  scoped to the callback path only.
+- No OAuth token (access token, refresh token) is stored in D1 or sent to the client.
+- The `id_token` is validated server-side: issuer, audience, exp, iat, nonce, and
+  RS256 signature verified against Logto's JWKS endpoint.
+- `email_verified: false` tokens are rejected before any account lookup.
+- Providers are linked through the `owner_identities` table
+  `(provider='logto', provider_sub=<Logto sub claim>)`.
+- An OIDC-created `owners` row uses the sentinel `password_hash = '!'`, which
+  `verifyPassword()` safely rejects (not a `$pbkdf2-sha256$` format string).
+  Logto users cannot log in via the email/password form.
+- If the OIDC user's email matches an existing email/password owner,
+  the identity is linked to that owner only when `email_verified = true`.
+- Logto secrets (`LOGTO_CLIENT_SECRET`, Google/Apple credential) are never
+  committed; they are Worker secrets or `.dev.vars` entries.
+- Routes return 503 (not 500) with a structured JSON error when provider env
+  vars are absent, so the error is safe to display.
+- OIDC cookies are cleared (Max-Age=0) on both success and failure paths.
+
+**Production status as of this branch:** code path present and tested;
+provider credentials are not yet set in the production Worker deployment.
+Google and Apple login will become active once the Logto tenant is created,
+Google/Apple connectors are configured in Logto, and the six Worker secrets
+are set via `wrangler secret put`.
+
+**Aikido security scan:** scheduled, not yet run on this branch.
+
+---
+
 > Sections 1–5 contain locked properties derived from Constitution v1.0 and are
-> final. Sections 6–8 reflect implementation state as of Beta 1.5 and will be
+> final. Sections 6–10 reflect implementation state as of Beta 1.5 and will be
 > reviewed at the Day-13 security pass per Constitution Section 19.
 > Items marked "Scheduled" are not claimed as active controls until
 > confirmed against the actual codebase or repository configuration.

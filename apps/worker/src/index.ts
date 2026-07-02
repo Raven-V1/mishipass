@@ -2,6 +2,7 @@ import { resolveSession } from "./middleware/session.js";
 import { checkDurableRateLimit } from "./middleware/durableRateLimit.js";
 import { hmacSha256Hex } from "./utils/crypto.js";
 import { handleLogin, handleLogout, handleRegister } from "./routes/auth.js";
+import { handleLogtoApple, handleLogtoCallback, handleLogtoGoogle } from "./routes/logto.js";
 import { handleCreateCat, handleListCats, handlePublicProfile, handleRemoveCat } from "./routes/cats.js";
 import { handleGetContactSettings, handleUpsertContactSettings } from "./routes/contactSettings.js";
 import { handleSwitchToActive, handleSwitchToMissing } from "./routes/missingAlerts.js";
@@ -31,6 +32,20 @@ export interface Env {
   PHOTOS: R2Bucket;
   /** Optional TheCatAPI key for reference-data assist. */
   THE_CAT_API_KEY?: string;
+
+  // ── Logto OIDC secrets (all optional — features disabled when absent) ──────
+  /** Logto tenant URL, e.g. https://your-tenant.logto.app  */
+  LOGTO_ENDPOINT?: string;
+  /** Logto application client ID */
+  LOGTO_APP_ID?: string;
+  /** Logto application client secret. Never commit; set via `wrangler secret put`. */
+  LOGTO_CLIENT_SECRET?: string;
+  /** Absolute redirect URI registered in Logto, e.g. https://…/api/auth/logto/callback */
+  LOGTO_REDIRECT_URI?: string;
+  /** Logto connector target for Google (default: "google") */
+  LOGTO_GOOGLE_CONNECTOR_TARGET?: string;
+  /** Logto connector target for Apple (default: "apple") */
+  LOGTO_APPLE_CONNECTOR_TARGET?: string;
 }
 
 // Route patterns
@@ -76,7 +91,7 @@ export default {
     }
 
     if (method === "GET" && pathname === "/dashboard") {
-      return handleDashboard();
+      return handleDashboard(env);
     }
 
     if (method === "GET" && pathname === "/recovery-board") {
@@ -125,6 +140,18 @@ export default {
     }
     if (method === "POST" && pathname === "/api/auth/logout") {
       return handleLogout(request, env.DB);
+    }
+
+    // -- Logto OIDC (Google / Apple) --
+
+    if (method === "GET" && pathname === "/api/auth/logto/google") {
+      return handleLogtoGoogle(env);
+    }
+    if (method === "GET" && pathname === "/api/auth/logto/apple") {
+      return handleLogtoApple(env);
+    }
+    if (method === "GET" && pathname === "/api/auth/logto/callback") {
+      return handleLogtoCallback(request, env.DB, env);
     }
 
     // -- Owner settings API --
