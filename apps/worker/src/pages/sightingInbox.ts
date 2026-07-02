@@ -1,4 +1,3 @@
-import { validateId } from "@mishipass/shared-validation";
 import { getCatForOwner, listSightingReportsForOwner } from "../db/index.js";
 import { escapeHtml, htmlResponse } from "../utils/html.js";
 import type { RequestContext } from "../middleware/session.js";
@@ -12,10 +11,6 @@ export async function handleSightingInbox(
 ): Promise<Response> {
   if (ctx.ownerId === null) {
     return new Response(null, { status: 302, headers: { Location: "/dashboard" } });
-  }
-
-  if (!validateId(publicId)) {
-    return new Response("Not Found", { status: 404 });
   }
 
   const cat = await getCatForOwner(db, publicId, ctx.ownerId);

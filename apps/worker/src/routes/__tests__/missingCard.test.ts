@@ -32,7 +32,7 @@ describe("WhatsApp missing card", () => {
     const res = await handleMissingCardPage(ID, fakeDb, ctx, "https://mishipass.example.com");
     expect(res.status).toBe(200);
     const html = await res.text();
-    expect(html).toContain("WhatsApp-ready Missing Card");
+    expect(html).toContain("WhatsApp Card");
     expect(html).toContain("Almaty");
     expect(html).toContain("100");
     expect(html).toContain(`https://mishipass.example.com/c/${ID}`);

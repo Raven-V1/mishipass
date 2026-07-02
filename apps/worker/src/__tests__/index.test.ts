@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 import worker, { type Env } from "../index.js";
 
 const fakeEnv: Env = {
-  DB: {} as D1Database,
+  DB: {
+    prepare: () => ({
+      bind: () => ({
+        first: async () => null,
+      }),
+    }),
+  } as unknown as D1Database,
   PUBLIC_BASE_URL: "https://mishipass.example.com",
   PHOTOS: {} as R2Bucket,
 };

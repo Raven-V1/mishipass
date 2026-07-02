@@ -1,4 +1,3 @@
-import { validateId } from "@mishipass/shared-validation";
 import {
   getCatForOwner,
   getVetVisitForOwner,
@@ -26,7 +25,6 @@ export async function handleCartillaPage(
   lang: LanguageCode = "en",
 ): Promise<Response> {
   if (ctx.ownerId === null) return redirectDashboard();
-  if (!validateId(publicId)) return new Response("Not Found", { status: 404 });
   const cat = await getCatForOwner(db, publicId, ctx.ownerId);
   if (!cat) return new Response("Not Found", { status: 404 });
 
@@ -89,7 +87,6 @@ export async function handleVetVisitDetailPage(
   lang: LanguageCode = "en",
 ): Promise<Response> {
   if (ctx.ownerId === null) return redirectDashboard();
-  if (!validateId(publicId)) return new Response("Not Found", { status: 404 });
   const visitId = Number.parseInt(visitIdRaw, 10);
   if (!Number.isSafeInteger(visitId) || visitId <= 0) return new Response("Not Found", { status: 404 });
   const cat = await getCatForOwner(db, publicId, ctx.ownerId);

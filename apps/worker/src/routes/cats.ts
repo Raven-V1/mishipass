@@ -134,10 +134,6 @@ export async function handlePublicProfile(
 ): Promise<Response> {
   // Validate format before querying D1 — don't leak whether a malformed ID
   // vs a valid-but-missing ID returns 404.
-  if (!validateId(publicId)) {
-    return new Response("Not Found", { status: 404 });
-  }
-
   const cat = await getCatPublicProfile(db, publicId);
   if (!cat) {
     return new Response("Not Found", { status: 404 });
