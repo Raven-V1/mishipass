@@ -1,4 +1,3 @@
-import { validateId } from "@mishipass/shared-validation";
 import { getCatForOwner } from "../db/index.js";
 import { escapeHtml, htmlResponse } from "../utils/html.js";
 import { generateQrSvg } from "../utils/qr.js";
@@ -14,10 +13,6 @@ export async function handleQrPage(
 ): Promise<Response> {
   if (ctx.ownerId === null) {
     return new Response(null, { status: 302, headers: { Location: "/dashboard" } });
-  }
-
-  if (!validateId(publicId)) {
-    return new Response("Not Found", { status: 404 });
   }
 
   const cat = await getCatForOwner(db, publicId, ctx.ownerId);

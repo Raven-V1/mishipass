@@ -15,12 +15,6 @@ vi.mock("../../db/index.js", () => ({
   getCatForOwner: (...args: unknown[]) => mockGetCatForOwner(...args),
 }));
 
-const mockValidateId = vi.fn();
-
-vi.mock("@mishipass/shared-validation", () => ({
-  validateId: (...args: unknown[]) => mockValidateId(...args),
-}));
-
 const fakeDb = {} as D1Database;
 const TEST_CAT_ID = "MP-MX-7X3B-9K21";
 const PUBLIC_BASE_URL = "https://mishipass.example.com";
@@ -29,8 +23,6 @@ const unauthed: RequestContext = { ownerId: null };
 
 beforeEach(() => {
   mockGetCatForOwner.mockReset();
-  mockValidateId.mockReset();
-  mockValidateId.mockReturnValue(true);
 });
 
 describe("handleQrPage", () => {
@@ -41,11 +33,11 @@ describe("handleQrPage", () => {
     expect(mockGetCatForOwner).not.toHaveBeenCalled();
   });
 
-  it("returns 404 for invalid public IDs", async () => {
-    mockValidateId.mockReturnValue(false);
+  it("returns 404 for invalid public IDs after the owner lookup misses", async () => {
+    mockGetCatForOwner.mockResolvedValue(null);
     const res = await handleQrPage("bad-id", fakeDb, authed, PUBLIC_BASE_URL);
     expect(res.status).toBe(404);
-    expect(mockGetCatForOwner).not.toHaveBeenCalled();
+    expect(mockGetCatForOwner).toHaveBeenCalledWith(fakeDb, "bad-id", 1);
   });
 
   it("returns 404 when the cat is not owned by the current owner", async () => {

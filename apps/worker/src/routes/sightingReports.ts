@@ -29,10 +29,6 @@ export async function handleSightingForm(
   db: D1Database,
   lang: LanguageCode = "en",
 ): Promise<Response> {
-  if (!validateId(publicId)) {
-    return new Response("Not Found", { status: 404 });
-  }
-
   const cat = await getCatPublicProfile(db, publicId);
   if (!cat) {
     return new Response("Not Found", { status: 404 });

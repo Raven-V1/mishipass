@@ -1,4 +1,3 @@
-import { validateId } from "@mishipass/shared-validation";
 import { getCatForOwner, getContactSettingsForOwner, getMissingAlertForOwner } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
 import { escapeHtml, htmlResponse } from "../utils/html.js";
@@ -12,8 +11,6 @@ export async function handleMissingCardPage(
   lang: LanguageCode = "en",
 ): Promise<Response> {
   if (ctx.ownerId === null) return new Response(null, { status: 302, headers: { Location: "/dashboard" } });
-  if (!validateId(publicId)) return new Response("Not Found", { status: 404 });
-
   const cat = await getCatForOwner(db, publicId, ctx.ownerId);
   if (!cat) return new Response("Not Found", { status: 404 });
   if (cat.current_mode !== "missing") {
