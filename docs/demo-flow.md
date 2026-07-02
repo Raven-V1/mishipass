@@ -37,7 +37,13 @@ interface.
 
 ## Recording notes (for Day 14)
 
-- Keep the video under 5 minutes (submission requirement).
+- Target 5–10 minutes per office-hours recommendation. Internal goal: under 5 minutes if possible.
+- First 30–45 seconds: introduce the project and the problem it solves.
+- Show only key features; cut dead space and loading.
+- Record at minimum 720p resolution.
+- Narrate in English; the URL-scan moments (steps 3, 6, 16) are the core of the demo — show the same URL producing different pages.
+- State clearly and explicitly on camera that the QR/URL is static and only the mode changes behind it.
+- End with a brief summary of what was demonstrated.
 - Narrate in English; the URL-scan moments (steps 3, 6) are the core of the
   demo — show the same URL producing different pages.
 - State explicitly on camera that the QR/URL is static and only the mode changes.
