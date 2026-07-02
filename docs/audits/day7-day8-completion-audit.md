@@ -77,14 +77,14 @@ Branch: `fix/day7-day8-audit-cartilla-settings`
 - [x] Confirm public QR pages do not expose cartilla or medication data.
 - [x] Update docs only where behavior changes.
 - [x] Run typecheck and tests.
-- [ ] Apply migrations, deploy, and smoke production.
+- [x] Apply migrations, deploy, and smoke production.
 
 ## Implementation Results
 
 - Dashboard cards now use a wrapping board/grid and render uploaded cat photos through `/media/cats/:publicId/photo`, with a placeholder when no photo exists.
 - `/api/cats` returns `hasPhoto` and `photoUrl`; it still does not expose `photo_r2_key`, internal IDs, or owner IDs.
 - Owner settings now support language codes `en`, `es`, and `kk-KZ`, rendered as English, Español, and Қазақша in the dashboard selector.
-- Dashboard key labels translate with English fallback; user-entered medical/cartilla content is not translated.
+- Dashboard, guest selector, and key public pages use centralized language support with English fallback; user-entered medical/cartilla content is not translated.
 - Breed assist uses `GET /api/cat-reference/breeds`, an optional server-side TheCatAPI proxy. The dashboard never exposes `THE_CAT_API_KEY`, and registration works with local fallback options if TheCatAPI is unavailable.
 - Color/markings now provide common local options plus optional free-text notes.
 - Digital Cartilla owner UI exists at `/dashboard/cats/:publicId/cartilla`.
@@ -94,7 +94,7 @@ Branch: `fix/day7-day8-audit-cartilla-settings`
 
 ## Intentionally Deferred
 
-- WhatsApp card generator remains deferred.
-- Recovery Board work remains deferred except for preserving existing behavior.
+- WhatsApp card generator was completed in the Beta 1.5 Day 9/10 correction branch.
+- Recovery Board work was completed in the Beta 1.5 Day 9/10 correction branch.
 - Optional modes remain unbuilt.
 - OCR, reminders, medication advice, drug interaction checks, refill tracking, treatment plans, nearby alerts, and full vet accounts remain out of scope.

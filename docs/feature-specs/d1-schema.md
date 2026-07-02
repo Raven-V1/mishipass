@@ -15,7 +15,7 @@
 3. **Cartilla data is private.** `vet_visits`, `vaccines`, `medications` are reachable only through an authenticated owner session and are never joined into a public mode response.
 4. **Medication entries are documentation only** (locked §4) — records, never advice/dosage/reminder/interaction, never on any public surface.
 5. **Mode lives on the cat.** `cats.current_mode` is the single source of truth the Worker reads on a scan. The QR is static; the response varies by this column.
-6. **Owner-controlled visibility.** Contact visibility, reward visibility, and Recovery Board publishing are explicit opt-in columns defaulting to private.
+6. **Owner-controlled visibility.** Contact visibility and reward visibility are explicit opt-in controls. Recovery Board listing follows Missing Alert mode and only uses public-safe fields; the historical `recovery_board_opt_in` column may remain for compatibility but does not gate publication.
 
 > **Auth-crypto note (corrected):** PBKDF2-SHA256 via Web Crypto is natively supported with no documented API iteration cap. The iteration count will be selected by benchmarking on the deployment tier and recorded in the security model. If the chosen count is lower than the project target, a server-side pepper stored as a Worker secret may be added as defense-in-depth.
 

@@ -1,4 +1,4 @@
-# MishiPass
+# MishiPass Beta 1.5
 
 MishiPass is a privacy-first dynamic QR passport and recovery system for cats.
 
@@ -10,14 +10,19 @@ physical tag behaves differently depending on what the cat needs.
 - Owner registration, login, logout (PBKDF2-SHA256, HttpOnly session cookies)
 - Owner dashboard (Worker-rendered HTML, same-origin)
 - Cat registration with country selection
+- Visual breed/color registration assist with TheCatAPI fallback
 - Expanded cat profile fields (breed, color, weight, chip number, notes)
 - Public cat ID generation (Crockford Base32, ~40 bits entropy)
 - Real QR SVG/image generation
 - Printable QR card
 - Active Profile public page
 - Missing Alert mode with mode switching
+- WhatsApp-ready missing card with public alert link
+- Recovery Board with city and alert-age filters
 - Vet Visit mode with temporary 24-hour session
-- Save & Finish Visit auto-return to Active Profile
+- Save & Finish Visit can record vet visit, vaccines, vaccine sticker photo, and Medication Record before auto-return to Active Profile
+- Owner-only Digital Cartilla for vet visits, vaccines, Medication Record, and sticker photos
+- Guest and owner language support for English, Spanish, and Kazakh
 - Public sighting report form with text and optional photo
 - Owner sighting report inbox
 - Owner-only sighting photo viewing
@@ -31,11 +36,8 @@ physical tag behaves differently depending on what the cat needs.
 - No raw IP storage
 - No raw R2 key exposure
 
-## Planned (not yet built)
+## Deferred Version 1 optional items
 
-- Digital cartilla (vet visits, vaccines, medications as documentation only)
-- Community Recovery Board with city filters
-- WhatsApp-ready missing card and shareable image
 - Optional modes (Travel, Adoption, Memorial, Celebration, Public Preview)
 
 ## Privacy
@@ -43,7 +45,10 @@ physical tag behaves differently depending on what the cat needs.
 - Public pages use MishiPass public IDs, not internal database IDs.
 - Owner contact visibility is owner-controlled; default is relay mode.
 - Medical and cartilla records are private, owner-dashboard only.
-- Medication entries are documentation-only records.
+- Medication Record entries are documentation-only records. MishiPass does not
+  provide dosage recommendations, interaction checks, reminders, refill tracking,
+  treatment plans, or medical advice.
+- Recovery Board is visible for cats in Missing Alert mode and only shows public-safe fields.
 - No owner full name, email, or exact address is shown publicly.
 - Reporter IP addresses are hashed with HMAC-SHA256 using a dedicated secret
   before storage. No raw IP is ever persisted.
