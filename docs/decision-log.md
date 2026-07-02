@@ -447,6 +447,28 @@ Decided by: Project Owner
 
 ---
 
+## [2026-07-02T21:25:11.7275449-06:00] — fix: complete Beta 1.5 UI/i18n/media/board acceptance corrections
+
+Decision: Close the Beta 1.5 acceptance correction pass by normalizing visible language output, fixing responsive dashboard and selector layout, restoring camera-friendly photo inputs, and changing Recovery Board behavior so Missing alerts appear by default with public-safe fields only.
+
+Executor: Codex
+Branch: `fix/beta15-day10-v1-completion`
+Commit: `4c61f95`
+
+Summary:
+- Completed language preservation across dashboard, public, owner, Cartilla, Vet Visit, WhatsApp-card, and Recovery Board surfaces.
+- Removed duplicated visible breed/color inputs in favor of one final submitted value for each field.
+- Added camera/gallery capture actions for sighting photos and vaccine sticker uploads.
+- Added country badges and visual fallback handling for breed cards.
+- Changed Recovery Board to follow Missing Alert mode by default.
+- Added homepage and history-page content to reflect the Beta 1.5 product state.
+
+Reason: Carlos requested a correction pass because the previous Beta 1.5 completion still showed mixed-language UI, overlapping controls, broken media affordances, and stale Recovery Board wording in manual screenshots.
+
+Decided by: Project Owner
+
+---
+
 ## Open items (not yet decided)
 
 Tracked in Constitution Section 23; each will be logged here when resolved:
