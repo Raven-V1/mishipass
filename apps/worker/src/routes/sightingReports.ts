@@ -10,6 +10,7 @@ import { checkDurableRateLimit } from "../middleware/durableRateLimit.js";
 import { hmacSha256Hex } from "../utils/crypto.js";
 import { checkMagicBytes } from "./photos.js";
 import { type LanguageCode, getLanguageFromRequest, t } from "../utils/i18n.js";
+import { MISHIPASS_DESIGN_CSS } from "../utils/html.js";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -294,10 +295,10 @@ function renderNotAcceptingPage(lang: LanguageCode): string {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${t(lang, "reportSighting")} — MishiPass</title>
-  <style>body{font-family:sans-serif;max-width:480px;margin:2rem auto;padding:0 1rem}</style>
+  <style>${MISHIPASS_DESIGN_CSS}body{padding:var(--space-3)}.message-card{max-width:560px;margin:var(--space-6) auto;padding:var(--space-4)}@media(max-width:430px){body{padding:var(--space-2)}.message-card{padding:var(--space-3)}}</style>
 </head>
 <body>
-  <p>${t(lang, "sightingClosed")}</p>
+  <main class="mp-card message-card"><p>${t(lang, "sightingClosed")}</p></main>
 </body>
 </html>`;
 }
@@ -312,17 +313,17 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${t(lang, "reportSighting")} — ${safeName} — MishiPass</title>
   <style>
-    *{box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;max-width:520px;margin:1.5rem auto;padding:0 1rem;line-height:1.5;color:#111}
-    h1{font-size:1.5rem;margin-bottom:1rem}
-    label{display:block;margin-bottom:0.25rem;font-size:0.875rem;font-weight:500}
-    input,textarea{width:100%;padding:0.65rem;border:1px solid #ccc;border-radius:6px;margin-bottom:0.75rem;font-size:1rem;min-height:44px}
-    textarea{resize:vertical;min-height:80px}
-    button{min-height:44px;padding:0.75rem 1.5rem;background:#111;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:1rem}
-    .photo-picker{margin:.35rem 0 .85rem}.photo-picker-actions{display:flex;gap:.55rem;flex-wrap:wrap}.photo-action{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:.62rem .85rem;background:#eee;border-radius:6px;cursor:pointer;font-weight:700;text-align:center;line-height:1.2;flex:1 1 155px}.photo-input-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}.photo-status{font-size:.85rem;color:#666;margin-top:.4rem;overflow-wrap:anywhere}
-    @media(max-width:430px){body{margin:1rem auto;padding:0 .85rem}.photo-action,button{width:100%;flex-basis:100%}h1{font-size:1.35rem}}
+    ${MISHIPASS_DESIGN_CSS}
+    body{padding:var(--space-3)}
+    .form-shell{max-width:608px;margin:var(--space-4) auto;padding:var(--space-4)}
+    h1{font-size:clamp(2rem,6vw,3rem);line-height:1.08;margin:0 0 var(--space-3);color:var(--teal)}
+    input,textarea{margin-bottom:var(--space-2)}
+    .photo-picker{margin:var(--space-1) 0 var(--space-3)}.photo-picker-actions{display:flex;gap:var(--space-1);flex-wrap:wrap}.photo-action{flex:1 1 160px}.photo-input-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}.photo-status{margin-top:var(--space-1);overflow-wrap:anywhere}
+    @media(max-width:430px){body{padding:var(--space-2)}.form-shell{padding:var(--space-3)}.photo-action,button{width:100%;flex-basis:100%}}
   </style>
 </head>
 <body>
+  <main class="mp-card form-shell">
   <h1>${t(lang, "reportSightingOf")} ${safeName}</h1>
   <form method="POST" action="/c/${safeId}/sighting?lang=${lang}" enctype="multipart/form-data">
     <label for="city">${t(lang, "city")} (required)</label>
@@ -347,8 +348,9 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
       <input class="photo-input-visually-hidden" type="file" id="photo-upload" name="photoUpload" accept="image/*" data-photo-status="sighting-photo-status" />
       <div id="sighting-photo-status" class="photo-status">${t(lang, "noPhotoSelected")}</div>
     </div>
-    <button type="submit">${t(lang, "submitSighting")}</button>
+    <button class="mp-btn mp-btn-primary" type="submit">${t(lang, "submitSighting")}</button>
   </form>
+  </main>
 </body>
 </html>`;
 }
@@ -361,11 +363,13 @@ function renderSuccessPage(publicId: string, lang: LanguageCode): string {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${t(lang, "sightingSubmitted")} — MishiPass</title>
-  <style>body{font-family:sans-serif;max-width:480px;margin:2rem auto;padding:0 1rem}</style>
+  <style>${MISHIPASS_DESIGN_CSS}body{padding:var(--space-3)}.message-card{max-width:560px;margin:var(--space-6) auto;padding:var(--space-4)}@media(max-width:430px){body{padding:var(--space-2)}.message-card{padding:var(--space-3)}}</style>
 </head>
 <body>
-  <p>${t(lang, "sightingSubmitted")}</p>
-  <p><a href="/c/${safeId}?lang=${lang}">${t(lang, "backToProfile")}</a></p>
+  <main class="mp-card message-card">
+    <p>${t(lang, "sightingSubmitted")}</p>
+    <p><a class="mp-btn mp-btn-primary" href="/c/${safeId}?lang=${lang}">${t(lang, "backToProfile")}</a></p>
+  </main>
 </body>
 </html>`;
 }

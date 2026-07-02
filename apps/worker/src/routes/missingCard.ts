@@ -1,6 +1,6 @@
 import { getCatForOwner, getContactSettingsForOwner, getMissingAlertForOwner } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
-import { escapeHtml, htmlResponse } from "../utils/html.js";
+import { MISHIPASS_DESIGN_CSS, escapeHtml, htmlResponse } from "../utils/html.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
 
 export async function handleMissingCardPage(
@@ -45,22 +45,24 @@ export async function handleMissingCardPage(
   const html = `<!DOCTYPE html>
 <html lang="${lang}"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>${t(lang, "whatsappCard")} — ${safeName}</title>
-<style>*{box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;max-width:660px;margin:2rem auto;padding:0 1rem;color:#111;line-height:1.5}.back{display:inline-flex;margin-bottom:.75rem}.card{border:1px solid #ddd;border-radius:8px;padding:1rem;display:grid;gap:.55rem}.photo{width:min(100%,220px);aspect-ratio:4/3;object-fit:cover;border-radius:7px;background:#eee;display:flex;align-items:center;justify-content:center;text-align:center;padding:.5rem}.share{display:inline-flex;align-items:center;justify-content:center;min-height:44px;margin-top:1rem;background:#111;color:#fff;text-decoration:none;border-radius:6px;padding:.7rem 1rem;text-align:center;line-height:1.2}.muted{color:#666;font-size:.875rem;white-space:pre-wrap;overflow-wrap:anywhere}h1,h2,p{overflow-wrap:anywhere}@media(max-width:430px){body{margin:1rem auto}.share{width:100%}}</style></head>
+<style>${MISHIPASS_DESIGN_CSS}body{padding:var(--space-3)}.missing-card-shell{max-width:704px;margin:var(--space-4) auto}.back{margin-bottom:var(--space-2)}h1{color:var(--teal);font-size:clamp(2rem,6vw,3rem);line-height:1.08}.card{padding:var(--space-3);display:grid;gap:var(--space-2)}.photo{width:min(100%,320px);aspect-ratio:4/3;object-fit:cover;border-radius:16px;background:#fff7f0;display:flex;align-items:center;justify-content:center;text-align:center;padding:var(--space-2)}.share{margin-top:var(--space-3)}.muted{font-size:.875rem;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:var(--space-2)}h1,h2,p{overflow-wrap:anywhere}@media(max-width:430px){body{padding:var(--space-2)}.share{width:100%}}</style></head>
 <body>
-  <a class="back" href="/dashboard/cats/${escapeHtml(publicId)}?lang=${lang}">&larr; ${t(lang, "backToDashboard")}</a>
-  <h1>${t(lang, "whatsappCard")}</h1>
-  <div class="card">
-    ${photo}
-    <h2>${safeName} ${t(lang, "missing")}</h2>
-    ${alert.city ? `<p><strong>${t(lang, "city")}:</strong> ${escapeHtml(alert.city)}</p>` : ""}
-    ${alert.area ? `<p><strong>${t(lang, "area")}:</strong> ${escapeHtml(alert.area)}</p>` : ""}
-    ${alert.last_seen_at ? `<p><strong>${t(lang, "missingSince")}:</strong> ${escapeHtml(alert.last_seen_at)}</p>` : ""}
-    ${reward}
-    ${contactHtml}
-    <p><strong>${t(lang, "openPublicAlert")}:</strong> <a href="/c/${escapeHtml(publicId)}?lang=${lang}">${escapeHtml(publicAlertUrl)}</a></p>
-  </div>
-  <a class="share" href="https://wa.me/?text=${encodeURIComponent(shareLines)}" rel="noopener">${t(lang, "shareOnWhatsapp")}</a>
-  <p class="muted">${escapeHtml(shareLines)}</p>
+  <main class="missing-card-shell">
+    <a class="mp-back back" href="/dashboard/cats/${escapeHtml(publicId)}?lang=${lang}">&larr; ${t(lang, "backToDashboard")}</a>
+    <h1>${t(lang, "whatsappCard")}</h1>
+    <div class="mp-card card">
+      ${photo}
+      <h2>${safeName} ${t(lang, "missing")}</h2>
+      ${alert.city ? `<p><strong>${t(lang, "city")}:</strong> ${escapeHtml(alert.city)}</p>` : ""}
+      ${alert.area ? `<p><strong>${t(lang, "area")}:</strong> ${escapeHtml(alert.area)}</p>` : ""}
+      ${alert.last_seen_at ? `<p><strong>${t(lang, "missingSince")}:</strong> ${escapeHtml(alert.last_seen_at)}</p>` : ""}
+      ${reward}
+      ${contactHtml}
+      <p><strong>${t(lang, "openPublicAlert")}:</strong> <a href="/c/${escapeHtml(publicId)}?lang=${lang}">${escapeHtml(publicAlertUrl)}</a></p>
+    </div>
+    <a class="share" href="https://wa.me/?text=${encodeURIComponent(shareLines)}" rel="noopener">${t(lang, "shareOnWhatsapp")}</a>
+    <p class="muted">${escapeHtml(shareLines)}</p>
+  </main>
 </body></html>`;
   return htmlResponse(html);
 }
