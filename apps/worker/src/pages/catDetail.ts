@@ -4,6 +4,42 @@ import { escapeHtml, htmlResponse } from "../utils/html.js";
 import type { RequestContext } from "../middleware/session.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
 
+type VetVisitSummary = {
+  displayDate: string;
+  heading: string;
+  clinicOrVet: string | null;
+  reason: string | null;
+  weight: string | null;
+  notes: string | null;
+};
+
+function summarizeVetVisit(visit: { visit_date: string | null; vet_or_clinic_name: string | null; notes: string | null }): VetVisitSummary {
+  const displayDate = visit.visit_date?.trim() || "Date not recorded";
+  const clinicOrVet = visit.vet_or_clinic_name?.trim() || null;
+  let reason: string | null = null;
+  let weight: string | null = null;
+  const noteLines: string[] = [];
+  for (const rawLine of (visit.notes || "").split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line) continue;
+    if (line.toLowerCase().startsWith("reason:")) {
+      reason = line.slice("reason:".length).trim() || null;
+    } else if (line.toLowerCase().startsWith("weight:")) {
+      weight = line.slice("weight:".length).trim() || null;
+    } else {
+      noteLines.push(line);
+    }
+  }
+  return {
+    displayDate,
+    heading: clinicOrVet || "Vet visit record",
+    clinicOrVet,
+    reason,
+    weight,
+    notes: noteLines.length > 0 ? noteLines.join("\n") : null,
+  };
+}
+
 export async function handleCatDetail(
   publicId: string,
   db: D1Database,
@@ -43,14 +79,19 @@ export async function handleCatDetail(
   const vetVisits = await listVetVisits(db, publicId, ctx.ownerId);
   let vetHtml = `<h2>${t(lang, "vetVisit")} Records</h2>`;
   if (vetVisits.length === 0) {
-    vetHtml += `<p class="empty">${t(lang, "noMatches")}</p>`;
+    vetHtml += `<p class="empty">No vet visits recorded yet.</p>`;
   } else {
     vetHtml += `<div class="vet-list">`;
     for (const v of vetVisits) {
+      const summary = summarizeVetVisit(v);
       vetHtml += `<div class="vet-entry">`;
-      if (v.visit_date) vetHtml += `<p class="vet-date">${escapeHtml(v.visit_date)}</p>`;
-      if (v.vet_or_clinic_name) vetHtml += `<p class="vet-clinic">${escapeHtml(v.vet_or_clinic_name)}</p>`;
-      if (v.notes) vetHtml += `<p class="vet-notes">${escapeHtml(v.notes)}</p>`;
+      vetHtml += `<p class="vet-date">${escapeHtml(summary.displayDate)}</p>`;
+      vetHtml += `<p class="vet-title">${escapeHtml(summary.heading)}</p>`;
+      if (summary.clinicOrVet) vetHtml += `<p class="vet-field"><strong>Vet or clinic:</strong> ${escapeHtml(summary.clinicOrVet)}</p>`;
+      if (summary.reason) vetHtml += `<p class="vet-field"><strong>${t(lang, "reason")}:</strong> ${escapeHtml(summary.reason)}</p>`;
+      if (summary.weight) vetHtml += `<p class="vet-field"><strong>${t(lang, "weight")}:</strong> ${escapeHtml(summary.weight)}</p>`;
+      if (summary.notes) vetHtml += `<p class="vet-notes">${escapeHtml(summary.notes)}</p>`;
+      vetHtml += `<a class="secondary detail-link" href="/dashboard/cats/${safeId}/cartilla/vet-visits/${v.id}?lang=${lang}">${t(lang, "details")}</a>`;
       vetHtml += `</div>`;
     }
     vetHtml += `</div>`;
@@ -88,10 +129,12 @@ export async function handleCatDetail(
     .id-line{font-size:0.8rem;color:#777;margin:0.25rem 0;font-family:monospace}
     .empty{font-size:0.875rem;color:#888}
     .vet-list{margin-top:0.5rem}
-    .vet-entry{border:1px solid #eee;border-radius:4px;padding:0.75rem;margin-bottom:0.5rem}
+    .vet-entry{border:1px solid #ddd;border-radius:6px;padding:0.85rem;margin-bottom:0.65rem;background:#fff}
     .vet-date{font-weight:600;margin:0 0 0.25rem 0;font-size:0.9rem}
-    .vet-clinic{margin:0 0 0.25rem 0;font-size:0.875rem;color:#333}
-    .vet-notes{margin:0;font-size:0.8rem;color:#555;white-space:pre-wrap}
+    .vet-title{margin:0 0 0.35rem 0;font-size:0.95rem;color:#111;font-weight:700}
+    .vet-field{margin:0.2rem 0;font-size:0.875rem;color:#333}
+    .vet-notes{margin:0.35rem 0 0;font-size:0.85rem;color:#555;white-space:pre-wrap}
+    .detail-link{margin-top:0.65rem}
   </style>
 </head>
 <body>

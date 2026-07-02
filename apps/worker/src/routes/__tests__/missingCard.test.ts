@@ -35,7 +35,7 @@ describe("WhatsApp missing card", () => {
     expect(html).toContain("WhatsApp Card");
     expect(html).toContain("Almaty");
     expect(html).toContain("100");
-    expect(html).toContain(`https://mishipass.example.com/c/${ID}`);
+    expect(html).toContain(`https://mishipass.example.com/c/${ID}?lang=en`);
     expect(html).not.toContain("private-key");
     expect(html).not.toContain("owner_id");
     expect(html).not.toContain("Medication Record");
@@ -54,5 +54,35 @@ describe("WhatsApp missing card", () => {
     const html = await (await handleMissingCardPage(ID, fakeDb, ctx, "https://mishipass.example.com")).text();
     expect(html).toContain("+77000000000");
     expect(html).not.toContain("Reward:</strong> 100");
+  });
+
+  it("renders Spanish labels and preserves language in back and share links", async () => {
+    mockGetCatForOwner.mockResolvedValue({ public_id: ID, name: "Mishi", current_mode: "missing", photo_r2_key: null });
+    mockGetMissingAlertForOwner.mockResolvedValue({ city: "Almaty", area: "Bostandyk", last_seen_at: "2026-07-01", reward_visible: 1, reward_amount: "100", recovery_board_opt_in: 0, activated_at: null });
+    mockGetContactSettingsForOwner.mockResolvedValue({ contact_mode: "relay", public_phone: null });
+    const html = await (await handleMissingCardPage(ID, fakeDb, ctx, "https://mishipass.example.com", "es")).text();
+    expect(html).toContain("Tarjeta WhatsApp");
+    expect(html).toContain("Volver al panel");
+    expect(html).toContain(`href="/dashboard/cats/${ID}?lang=es"`);
+    expect(html).toContain("Perdido desde");
+    expect(html).toContain("Compartir en WhatsApp");
+    expect(html).toContain(encodeURIComponent(`https://mishipass.example.com/c/${ID}?lang=es`));
+    expect(html).not.toContain("Missing since:");
+    expect(html).not.toContain("Share on WhatsApp");
+  });
+
+  it("renders Kazakh labels and preserves language in back and share links", async () => {
+    mockGetCatForOwner.mockResolvedValue({ public_id: ID, name: "Mishi", current_mode: "missing", photo_r2_key: null });
+    mockGetMissingAlertForOwner.mockResolvedValue({ city: "Almaty", area: null, last_seen_at: "2026-07-01", reward_visible: 0, reward_amount: null, recovery_board_opt_in: 0, activated_at: null });
+    mockGetContactSettingsForOwner.mockResolvedValue({ contact_mode: "relay", public_phone: null });
+    const html = await (await handleMissingCardPage(ID, fakeDb, ctx, "https://mishipass.example.com", "kk-KZ")).text();
+    expect(html).toContain("WhatsApp картасы");
+    expect(html).toContain("Ие панеліне оралу");
+    expect(html).toContain(`href="/dashboard/cats/${ID}?lang=kk-KZ"`);
+    expect(html).toContain("Жоғалған күні");
+    expect(html).toContain("WhatsApp-та бөлісу");
+    expect(html).toContain(encodeURIComponent(`https://mishipass.example.com/c/${ID}?lang=kk-KZ`));
+    expect(html).not.toContain("Missing since:");
+    expect(html).not.toContain("Share on WhatsApp");
   });
 });

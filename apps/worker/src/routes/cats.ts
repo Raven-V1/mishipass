@@ -12,6 +12,7 @@ import type { RequestContext } from "../middleware/session.js";
 import { renderVetVisitPage } from "./vetVisit.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
 import { getCountryBadgeLabel } from "../data/countries.js";
+import { MISHIPASS_DESIGN_CSS } from "../utils/html.js";
 
 // ── GET /api/cats ───────────────────────────────────────────────────────────
 
@@ -223,7 +224,7 @@ function renderMissingProfile(
   }
 
   const sightingLink = publicId
-    ? `<p><a href="/c/${escapeHtml(publicId)}/sighting?lang=${lang}">${t(lang, "reportSighting")}</a></p>`
+    ? `<p class="sighting-link"><a class="mp-btn mp-btn-primary" href="/c/${escapeHtml(publicId)}/sighting?lang=${lang}">${t(lang, "reportSighting")}</a></p>`
     : "";
 
   return `<!DOCTYPE html>
