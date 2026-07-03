@@ -1,5 +1,5 @@
 import { validateId } from "@mishipass/shared-validation";
-import { getCatForOwner, getCatPublicProfile, listSightingReportsForOwner, updateCatPhoto } from "../db/index.js";
+import { getCatForOwner, getCatPublicProfile, listSightingReportsForOwner, updateCatPhoto, insertCatPhoto, listCatPhotos, setCatProfilePhoto, deleteCatPhoto, getCatPhotoR2Key } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
 
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -163,6 +163,176 @@ export async function handleSightingPhotoServe(
     return new Response("Not Found", { status: 404 });
   }
 
+  return new Response(object.body, {
+    headers: {
+      "Content-Type": object.httpMetadata?.contentType || "application/octet-stream",
+      "Cache-Control": "private, max-age=3600",
+      "X-Content-Type-Options": "nosniff",
+    },
+  });
+}
+
+/**
+ * GET /api/cats/:publicId/photos
+ * Owner-only gallery listing. Returns photo metadata without R2 keys.
+ */
+export async function handleListCatPhotos(
+  publicId: string,
+  db: D1Database,
+  ctx: RequestContext,
+): Promise<Response> {
+  if (ctx.ownerId === null) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+  if (!validateId(publicId)) {
+    return new Response("Not Found", { status: 404 });
+  }
+  const cat = await getCatForOwner(db, publicId, ctx.ownerId);
+  if (!cat) {
+    return new Response("Not Found", { status: 404 });
+  }
+  const photos = await listCatPhotos(db, publicId, ctx.ownerId);
+  const result = photos.map(p => ({
+    id: p.id,
+    isProfile: p.is_profile === 1,
+    createdAt: p.created_at,
+  }));
+  return Response.json({ photos: result }, { status: 200 });
+}
+
+/**
+ * POST /api/cats/:publicId/photos
+ * Owner-only gallery photo upload. Uses the same validation as the profile photo upload.
+ */
+export async function handleGalleryPhotoUpload(
+  publicId: string,
+  request: Request,
+  db: D1Database,
+  photos: R2Bucket,
+  ctx: RequestContext,
+): Promise<Response> {
+  if (ctx.ownerId === null) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+  if (!validateId(publicId)) {
+    return new Response("Not Found", { status: 404 });
+  }
+  const cat = await getCatForOwner(db, publicId, ctx.ownerId);
+  if (!cat) {
+    return new Response("Not Found", { status: 404 });
+  }
+
+  let formData: FormData;
+  try {
+    formData = await request.formData();
+  } catch {
+    return Response.json({ error: "Invalid form data" }, { status: 400 });
+  }
+
+  const file = formData.get("photo") as unknown;
+  if (!file || typeof file === "string") {
+    return Response.json({ error: "No photo file provided" }, { status: 400 });
+  }
+
+  const photoFile = file as File;
+  if (!ALLOWED_TYPES.has(photoFile.type)) {
+    return Response.json({ error: "Invalid file type. Allowed: JPEG, PNG, WebP" }, { status: 400 });
+  }
+  if (photoFile.size > MAX_CAT_PHOTO_SIZE) {
+    return Response.json({ error: "File too large. Maximum 2 MB" }, { status: 400 });
+  }
+
+  const fileBuffer = await photoFile.arrayBuffer();
+  const headerView = new Uint8Array(fileBuffer, 0, Math.min(12, fileBuffer.byteLength));
+  if (!checkMagicBytes(headerView, photoFile.type)) {
+    return Response.json({ error: "File content does not match declared type" }, { status: 400 });
+  }
+
+  const ext = photoFile.type === "image/jpeg" ? "jpg" : photoFile.type === "image/png" ? "png" : "webp";
+  const randomBytes = crypto.getRandomValues(new Uint8Array(16));
+  const hex = Array.from(randomBytes).map(b => b.toString(16).padStart(2, "0")).join("");
+  const objectKey = `cats/${publicId}/gallery/${hex}.${ext}`;
+
+  await photos.put(objectKey, fileBuffer, { httpMetadata: { contentType: photoFile.type } });
+  const photoId = await insertCatPhoto(db, publicId, ctx.ownerId, objectKey);
+
+  return Response.json({ success: true, photoId }, { status: 201 });
+}
+
+/**
+ * POST /api/cats/:publicId/photos/:photoId/profile
+ * Set a gallery photo as the profile photo.
+ */
+export async function handleSetProfilePhoto(
+  publicId: string,
+  photoId: number,
+  db: D1Database,
+  ctx: RequestContext,
+): Promise<Response> {
+  if (ctx.ownerId === null) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+  if (!validateId(publicId)) {
+    return new Response("Not Found", { status: 404 });
+  }
+  const success = await setCatProfilePhoto(db, publicId, ctx.ownerId, photoId);
+  if (!success) {
+    return new Response("Not Found", { status: 404 });
+  }
+  return Response.json({ success: true }, { status: 200 });
+}
+
+/**
+ * POST /api/cats/:publicId/photos/:photoId/delete
+ * Delete a gallery photo.
+ */
+export async function handleDeleteGalleryPhoto(
+  publicId: string,
+  photoId: number,
+  db: D1Database,
+  photos: R2Bucket,
+  ctx: RequestContext,
+): Promise<Response> {
+  if (ctx.ownerId === null) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+  if (!validateId(publicId)) {
+    return new Response("Not Found", { status: 404 });
+  }
+  const r2Key = await deleteCatPhoto(db, publicId, ctx.ownerId, photoId);
+  if (!r2Key) {
+    return new Response("Not Found", { status: 404 });
+  }
+  // Clean up R2 storage
+  await photos.delete(r2Key);
+  return Response.json({ success: true }, { status: 200 });
+}
+
+/**
+ * GET /media/cats/:publicId/photos/:photoId
+ * Owner-only gallery photo serving.
+ */
+export async function handleGalleryPhotoServe(
+  publicId: string,
+  photoId: number,
+  db: D1Database,
+  photoBucket: R2Bucket,
+  ctx: RequestContext,
+): Promise<Response> {
+  if (ctx.ownerId === null) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+  if (!validateId(publicId)) {
+    return new Response("Not Found", { status: 404 });
+  }
+  const r2Key = await getCatPhotoR2Key(db, publicId, ctx.ownerId, photoId);
+  if (!r2Key) {
+    return new Response("Not Found", { status: 404 });
+  }
+  const object = await photoBucket.get(r2Key);
+  if (!object) {
+    return new Response("Not Found", { status: 404 });
+  }
   return new Response(object.body, {
     headers: {
       "Content-Type": object.httpMetadata?.contentType || "application/octet-stream",

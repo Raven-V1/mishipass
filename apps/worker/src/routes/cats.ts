@@ -35,6 +35,7 @@ export async function handleListCats(
     qrUrl: `${publicBaseUrl}/c/${cat.public_id}`,
     hasPhoto: Boolean(cat.photo_r2_key),
     photoUrl: cat.photo_r2_key ? `/media/cats/${cat.public_id}/photo` : null,
+    weight: cat.weight ?? null,
   }));
 
   return Response.json(result, { status: 200 });
