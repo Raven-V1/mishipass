@@ -67,9 +67,12 @@ export {
 export {
   deleteCatPhoto,
   getCatPhotoR2Key,
+  getPublicCatPhotoR2Key,
   insertCatPhoto,
   listCatPhotos,
+  listPublicCatPhotos,
   setCatProfilePhoto,
+  toggleCatPhotoPublic,
 } from "./repositories/catPhotos.js";
 export type { CatPhotoRow, CatPhotoView } from "./repositories/catPhotos.js";
 
