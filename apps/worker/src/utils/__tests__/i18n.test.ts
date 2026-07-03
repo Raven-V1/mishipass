@@ -7,9 +7,9 @@ describe("i18n fallback behavior", () => {
   });
 
   it("returns Spanish translation for known key", () => {
-    expect(t("es", "dashboard")).toBe("Panel del dueno" === "x" ? "x" : t("es", "dashboard"));
-    expect(t("es", "dashboard")).toBeTruthy();
-    expect(t("es", "dashboard")).not.toBe("Owner Dashboard");
+    const result = t("es", "dashboard");
+    expect(result).toBeTruthy();
+    expect(result).not.toBe("Owner Dashboard");
   });
 
   it("returns Kazakh translation for known key", () => {
