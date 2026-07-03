@@ -280,6 +280,14 @@ export async function handleVetVisitFinish(
     .bind(publicId)
     .run();
 
+  // Propagate weight to cat profile if recorded
+  if (weight) {
+    await db
+      .prepare(`UPDATE cats SET weight = ? WHERE public_id = ?`)
+      .bind(weight, publicId)
+      .run();
+  }
+
   // Return cat to active mode
   await db
     .prepare(`UPDATE cats SET current_mode = 'active' WHERE public_id = ?`)
@@ -341,6 +349,7 @@ function renderVetForm(
     .cancel-btn{flex:1 1 180px}
     .note{font-size:0.875rem;color:var(--muted);margin:0;padding:var(--space-2);background:#fff7f0;border-radius:8px}
     .photo-picker{margin:var(--space-1) 0 var(--space-3)}.photo-picker-actions{display:flex;gap:var(--space-1);flex-wrap:wrap}.photo-action{flex:1 1 160px}.photo-input-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}.photo-status{margin-top:var(--space-1);overflow-wrap:anywhere}
+    .section-toggle{display:flex;align-items:center;gap:var(--space-1);cursor:pointer;margin:0}.section-toggle input{width:20px;min-height:20px;accent-color:var(--teal)}
     @media(max-width:860px){.vet-layout{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}}
     @media(max-width:430px){body{padding:var(--space-2)}.vet-shell{padding:var(--space-2) 0 var(--space-4)}.vet-card{padding:var(--space-3)}.photo-action{flex-basis:100%}.submit-row>*{flex-basis:100%}}
   </style>
@@ -376,8 +385,8 @@ function renderVetForm(
       </section>
 
       <section class="form-section">
-        <h2 class="section-title">Vaccines</h2>
-        <div class="form-grid">
+        <label class="section-toggle"><input type="checkbox" id="toggle-vaccines" onchange="document.getElementById('vaccine-fields').style.display=this.checked?'grid':'none'" /> <h2 class="section-title" style="display:inline">Vaccines</h2></label>
+        <div class="form-grid toggle-section" id="vaccine-fields" style="display:none">
           <div class="field"><label for="vaccine_name">Vaccine name (optional)</label><input type="text" id="vaccine_name" name="vaccine_name" maxlength="100" /></div>
           <div class="field"><label for="vaccine_date">Date given (optional)</label><input type="date" id="vaccine_date" name="vaccine_date" /></div>
           <div class="field field-wide"><label>Upload documents</label>
@@ -395,9 +404,9 @@ function renderVetForm(
       </section>
 
       <section class="form-section">
-        <h2 class="section-title">${t(lang, "medicationRecord")}</h2>
+        <label class="section-toggle"><input type="checkbox" id="toggle-medications" onchange="document.getElementById('medication-fields').style.display=this.checked?'grid':'none'" /> <h2 class="section-title" style="display:inline">${t(lang, "medicationRecord")}</h2></label>
         <p class="section-note">Documentation only. Do not use this section for treatment advice.</p>
-        <div class="form-grid">
+        <div class="form-grid toggle-section" id="medication-fields" style="display:none">
           <div class="field"><label for="medication_name">Medication name (optional)</label><input type="text" id="medication_name" name="medication_name" maxlength="100" /></div>
           <div class="field"><label for="medication_dose">Dose as recorded (optional)</label><input type="text" id="medication_dose" name="medication_dose" maxlength="100" /></div>
           <div class="field"><label for="medication_duration">Duration (optional)</label><input type="text" id="medication_duration" name="medication_duration" maxlength="100" /></div>
