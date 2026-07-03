@@ -216,8 +216,8 @@ upgrades are deferred with decision-log entries and tracked in
 or critical findings once committed.
 
 **Goal 5 — Vulnerability disclosure policy:** MishiPass does not publish a
-formal VDP for MishiPass Beta 1.5. Known Beta limitations are disclosed in Section 5, and
-the Aikido scan report is scheduled for submission but has not yet been completed.
+formal VDP for MishiPass Beta 1.5. Known Beta limitations are disclosed in Section 5.
+A full manual security audit was completed 2026-07-02; see `docs/security-audit/2026-07-02/`.
 
 **Goal 6 — CVE accuracy:** MishiPass tracks third-party advisories via
 `npm audit`, GitHub Advisory references, and decision-log entries. MishiPass
@@ -225,7 +225,7 @@ does not issue its own CVEs for MishiPass Beta 1.5.
 
 **Goal 7 — Evidence of intrusions:** Not claimed for MishiPass Beta 1.5. Current evidence
 is limited to development and audit artifacts: CI logs, dependency-audit
-output, decision-log entries, and the scheduled Aikido report.
+output, decision-log entries, and the 2026-07-02 manual security audit.
 
 ### IBM Redbook-informed practices
 
@@ -268,7 +268,8 @@ Recovery Board and WhatsApp-ready Missing Card closure.
 | WhatsApp-ready Missing Card | Owner-only generated share link, public fields only | Active |
 | Recovery Board | Missing-mode only, city/age filters, public-safe fields only | Active |
 | Owner auth backend | PBKDF2-SHA256, opaque session token, HttpOnly cookie | Active |
-| Aikido security scan | — | Scheduled, not yet completed |
+| Aikido security scan | — | Not in Beta 1.5 scope; replaced by manual audit 2026-07-02 |
+| Manual security audit | `docs/security-audit/2026-07-02/` | Completed 2026-07-02 |
 
 ---
 
@@ -327,12 +328,32 @@ Google and Apple login will become active once the Logto tenant is created,
 Google/Apple connectors are configured in Logto, and the six Worker secrets
 are set via `wrangler secret put`.
 
-**Aikido security scan:** scheduled, not yet run on this branch.
+**Aikido security scan:** not in scope for Beta 1.5; manual audit completed 2026-07-02.
 
 ---
 
 > Sections 1–5 contain locked properties derived from Constitution v1.0 and are
-> final. Sections 6–10 reflect implementation state as of Beta 1.5 and will be
-> reviewed at the Day-13 security pass per Constitution Section 19.
-> Items marked "Scheduled" are not claimed as active controls until
-> confirmed against the actual codebase or repository configuration.
+> final. Sections 6–10 reflect implementation state as of Beta 1.5 and were
+> reviewed in the 2026-07-02 manual security audit (`docs/security-audit/2026-07-02/`).
+> Items formerly marked "Scheduled" have been resolved: see Section 8 control table.
+
+---
+
+## 11. References and Attribution
+
+The following sources guided the security strategy, threat modeling, control
+selection, and framework mapping in this document. Listed for attribution and
+guidance credit only. No source text is reproduced. Full details in
+`docs/security-audit/2026-07-02/references.md`.
+
+- Cloudflare — "What is web application security?" (learning center)
+- OWASP Top 10 — Web Application Security Risks
+- Cloudflare Resource Hub — Solution and Product Guides; Whitepapers
+- Cloudflare Developer Documentation (Workers, D1, R2, Durable Objects)
+- IBM Documentation, WAS 9.0.5 — "Securing applications and their environment"
+- IBM Documentation, WAS 9.0.5 — "Authenticating users"
+- IBM Redbook SG24-8100 — Using the IBM Security Framework and IBM Security Blueprint
+- NIST Cybersecurity Framework 2.0 (NIST CSWP 29, February 2024)
+- CISA Secure by Design Pledge (May 2024)
+- NIST SP 800-218 — Secure Software Development Framework (SSDF)
+- OWASP Application Security Verification Standard (ASVS)
