@@ -19,7 +19,7 @@ import { handleDashboard } from "./pages/dashboard.js";
 import { handleCatDetail } from "./pages/catDetail.js";
 import { handleCartillaPage, handleVetVisitDetailPage } from "./pages/cartilla.js";
 import { handleQrPage } from "./pages/qrPage.js";
-import { handleSightingInbox } from "./pages/sightingInbox.js";
+import { handleSightingInbox, handleSightingDetail } from "./pages/sightingInbox.js";
 import { getLanguageFromRequest } from "./utils/i18n.js";
 import { handleBrandAsset } from "./utils/brandAssets.js";
 
@@ -65,6 +65,7 @@ const DASHBOARD_CAT_VET_VISIT_DETAIL = /^\/dashboard\/cats\/([^/]+)\/cartilla\/v
 const DASHBOARD_CAT_MISSING_CARD = /^\/dashboard\/cats\/([^/]+)\/missing-card$/;
 const DASHBOARD_CAT_QR = /^\/dashboard\/cats\/([^/]+)\/qr$/;
 const DASHBOARD_CAT_SIGHTINGS = /^\/dashboard\/cats\/([^/]+)\/sightings$/;
+const DASHBOARD_CAT_SIGHTING_DETAIL = /^\/dashboard\/cats\/([^/]+)\/sightings\/([^/]+)$/;
 const VET_VISIT_START = /^\/api\/cats\/([^/]+)\/vet-visit\/start$/;
 const VET_VISIT_CANCEL = /^\/api\/cats\/([^/]+)\/vet-visit\/cancel$/;
 const VET_VISIT_FINISH = /^\/api\/cats\/([^/]+)\/vet-visit\/finish$/;
@@ -132,6 +133,12 @@ export default {
     if (method === "GET" && sightingsPageMatch) {
       const ctx = await resolveSession(request, env.DB);
       return handleSightingInbox(sightingsPageMatch[1]!, env.DB, ctx, getLanguageFromRequest(request));
+    }
+
+    const sightingDetailMatch = DASHBOARD_CAT_SIGHTING_DETAIL.exec(pathname);
+    if (method === "GET" && sightingDetailMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleSightingDetail(sightingDetailMatch[1]!, sightingDetailMatch[2]!, env.DB, env.PHOTOS, ctx, getLanguageFromRequest(request));
     }
 
     // -- Auth API --

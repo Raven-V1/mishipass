@@ -88,6 +88,7 @@ export {
 
 // Sighting reports
 export {
+  getSightingReportForOwner,
   insertSightingReport,
   listSightingReportsForOwner,
 } from "./repositories/sightingReports.js";
