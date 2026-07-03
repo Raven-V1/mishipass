@@ -14,6 +14,7 @@ const STRINGS: Record<LanguageCode, Record<string, string>> = {
     alertAgeDays: "Alert age days",
     backToProfile: "Back to profile",
     backToDashboard: "Back to Dashboard",
+    birthDate: "Birth date",
     breedMix: "Breed / Mix",
     callOwner: "Call owner",
     cartilla: "Digital Cartilla",
@@ -53,6 +54,7 @@ const STRINGS: Record<LanguageCode, Record<string, string>> = {
     mode: "Mode",
     name: "Name",
     noCats: "No cats registered yet.",
+    notes: "Notes",
     missing: "Missing",
     missingSince: "Missing since",
     noMatches: "No missing alerts match these filters.",
@@ -124,6 +126,7 @@ const STRINGS: Record<LanguageCode, Record<string, string>> = {
     alertAgeDays: "Días de alerta",
     backToProfile: "Volver al perfil",
     backToDashboard: "Volver al panel",
+    birthDate: "Fecha de nacimiento",
     breedMix: "Raza / mezcla",
     callOwner: "Llamar al dueño",
     cartilla: "Cartilla digital",
@@ -162,7 +165,8 @@ const STRINGS: Record<LanguageCode, Record<string, string>> = {
     missingCatBoard: "Tablero de gatos perdidos",
     mode: "Modo",
     name: "Nombre",
-    noCats: "Aún no hay gatos registrados.",
+    noCats: "Aun no hay gatos registrados.",
+    notes: "Notas",
     missing: "Perdido",
     missingSince: "Perdido desde",
     noMatches: "No hay alertas de pérdida con esos filtros.",
@@ -234,6 +238,7 @@ const STRINGS: Record<LanguageCode, Record<string, string>> = {
     alertAgeDays: "Ескерту күндері",
     backToProfile: "Профильге оралу",
     backToDashboard: "Ие панеліне оралу",
+    birthDate: "Туған куні",
     breedMix: "Тұқым / аралас",
     callOwner: "Иесіне қоңырау шалу",
     cartilla: "Цифрлық картилья",
@@ -273,6 +278,7 @@ const STRINGS: Record<LanguageCode, Record<string, string>> = {
     mode: "Режим",
     name: "Аты",
     noCats: "Әлі мысық тіркелмеген.",
+    notes: "Ескертпелер",
     missing: "Жоғалған",
     missingSince: "Жоғалған күні",
     noMatches: "Бұл сүзгілерге сай жоғалу ескертулері жоқ.",
@@ -354,6 +360,23 @@ export function getLanguageFromRequest(request: Request): LanguageCode {
   const cookie = request.headers.get("Cookie") || "";
   const match = /(?:^|;\s*)mp_lang=([^;]+)/.exec(cookie);
   if (match) return normalizeLanguage(decodeURIComponent(match[1]!));
+  return "en";
+}
+
+/**
+ * Resolve language for an authenticated owner from their stored preference.
+ * Falls back to en if no preference is set. Authenticated pages must use this
+ * instead of getLanguageFromRequest to ensure the stored preference wins.
+ */
+export async function resolveOwnerLang(
+  db: D1Database,
+  ownerId: number,
+): Promise<LanguageCode> {
+  const row = await db
+    .prepare(`SELECT language_code FROM owner_settings WHERE owner_id = ?`)
+    .bind(ownerId)
+    .first<{ language_code: string }>();
+  if (row && isLanguageCode(row.language_code)) return row.language_code;
   return "en";
 }
 

@@ -68,8 +68,8 @@ export async function handleCatDetail(
   if (cat.color_markings) infoHtml += `<p class="info">${t(lang, "colorMarkings")}: ${escapeHtml(cat.color_markings)}</p>`;
   if (cat.breed_mix) infoHtml += `<p class="info">${t(lang, "breedMix")}: ${escapeHtml(cat.breed_mix)}</p>`;
   if (cat.weight) infoHtml += `<p class="info">${t(lang, "weight")}: ${escapeHtml(cat.weight)}</p>`;
-  if (cat.birth_date) infoHtml += `<p class="info">Birth date: ${escapeHtml(cat.birth_date)}</p>`;
-  if (cat.notes) infoHtml += `<p class="info">Notes: ${escapeHtml(cat.notes)}</p>`;
+  if (cat.birth_date) infoHtml += `<p class="info">${t(lang, "birthDate")}: ${escapeHtml(cat.birth_date)}</p>`;
+  if (cat.notes) infoHtml += `<p class="info">${t(lang, "notes")}: ${escapeHtml(cat.notes)}</p>`;
 
   // Photo
   const photoHtml = cat.photo_r2_key
