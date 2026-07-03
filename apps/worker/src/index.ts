@@ -7,7 +7,7 @@ import { handleCreateCat, handleListCats, handlePublicProfile, handleRemoveCat }
 import { handleGetContactSettings, handleUpsertContactSettings } from "./routes/contactSettings.js";
 import { handleSwitchToActive, handleSwitchToMissing } from "./routes/missingAlerts.js";
 import { handleSightingForm, handleSightingSubmit, handleListSightingsForOwner } from "./routes/sightingReports.js";
-import { handleCatPhotoUpload, handleCatPhotoServe, handleSightingPhotoServe } from "./routes/photos.js";
+import { handleCatPhotoUpload, handleCatPhotoServe, handleSightingPhotoServe, handleListCatPhotos, handleGalleryPhotoUpload, handleSetProfilePhoto, handleDeleteGalleryPhoto, handleGalleryPhotoServe } from "./routes/photos.js";
 import { handleStartVetVisit, handleCancelVetVisit, handleVetVisitFinish } from "./routes/vetVisit.js";
 import { handleCartillaSummaryJson, handleCreateMedication, handleCreateVaccine, handleVaccineStickerServe, handleVaccineStickerUpload } from "./routes/cartilla.js";
 import { handleGetOwnerSettings, handleUpsertOwnerSettings } from "./routes/ownerSettings.js";
@@ -19,7 +19,7 @@ import { handleDashboard } from "./pages/dashboard.js";
 import { handleCatDetail } from "./pages/catDetail.js";
 import { handleCartillaPage, handleVetVisitDetailPage } from "./pages/cartilla.js";
 import { handleQrPage } from "./pages/qrPage.js";
-import { handleSightingInbox } from "./pages/sightingInbox.js";
+import { handleSightingInbox, handleSightingDetail } from "./pages/sightingInbox.js";
 import { getLanguageFromRequest } from "./utils/i18n.js";
 import { handleBrandAsset } from "./utils/brandAssets.js";
 
@@ -65,6 +65,7 @@ const DASHBOARD_CAT_VET_VISIT_DETAIL = /^\/dashboard\/cats\/([^/]+)\/cartilla\/v
 const DASHBOARD_CAT_MISSING_CARD = /^\/dashboard\/cats\/([^/]+)\/missing-card$/;
 const DASHBOARD_CAT_QR = /^\/dashboard\/cats\/([^/]+)\/qr$/;
 const DASHBOARD_CAT_SIGHTINGS = /^\/dashboard\/cats\/([^/]+)\/sightings$/;
+const DASHBOARD_CAT_SIGHTING_DETAIL = /^\/dashboard\/cats\/([^/]+)\/sightings\/([^/]+)$/;
 const VET_VISIT_START = /^\/api\/cats\/([^/]+)\/vet-visit\/start$/;
 const VET_VISIT_CANCEL = /^\/api\/cats\/([^/]+)\/vet-visit\/cancel$/;
 const VET_VISIT_FINISH = /^\/api\/cats\/([^/]+)\/vet-visit\/finish$/;
@@ -75,6 +76,10 @@ const CARTILLA_API = /^\/api\/cats\/([^/]+)\/cartilla$/;
 const VACCINE_STICKER_UPLOAD = /^\/api\/cats\/([^/]+)\/vaccines\/([^/]+)\/sticker-photo$/;
 const VACCINE_STICKER_SERVE = /^\/media\/cats\/([^/]+)\/vaccines\/([^/]+)\/sticker-photo$/;
 const RECOVERY_BOARD_OPT_IN = /^\/api\/cats\/([^/]+)\/recovery-board$/;
+const CAT_PHOTOS_LIST = /^\/api\/cats\/([^/]+)\/photos$/;
+const CAT_PHOTO_PROFILE = /^\/api\/cats\/([^/]+)\/photos\/(\d+)\/profile$/;
+const CAT_PHOTO_DELETE = /^\/api\/cats\/([^/]+)\/photos\/(\d+)\/delete$/;
+const CAT_GALLERY_SERVE = /^\/media\/cats\/([^/]+)\/photos\/(\d+)$/;
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -132,6 +137,12 @@ export default {
     if (method === "GET" && sightingsPageMatch) {
       const ctx = await resolveSession(request, env.DB);
       return handleSightingInbox(sightingsPageMatch[1]!, env.DB, ctx, getLanguageFromRequest(request));
+    }
+
+    const sightingDetailMatch = DASHBOARD_CAT_SIGHTING_DETAIL.exec(pathname);
+    if (method === "GET" && sightingDetailMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleSightingDetail(sightingDetailMatch[1]!, sightingDetailMatch[2]!, env.DB, env.PHOTOS, ctx, getLanguageFromRequest(request));
     }
 
     // -- Auth API --
@@ -337,6 +348,33 @@ export default {
     if (method === "POST" && recoveryOptInMatch) {
       const ctx = await resolveSession(request, env.DB);
       return handleRecoveryBoardOptIn(recoveryOptInMatch[1]!, request, env.DB, ctx);
+    }
+
+    // -- Photo gallery API --
+
+    const photosListMatch = CAT_PHOTOS_LIST.exec(pathname);
+    if (photosListMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      if (method === "GET") return handleListCatPhotos(photosListMatch[1]!, env.DB, ctx);
+      if (method === "POST") return handleGalleryPhotoUpload(photosListMatch[1]!, request, env.DB, env.PHOTOS, ctx);
+    }
+
+    const photoProfileMatch = CAT_PHOTO_PROFILE.exec(pathname);
+    if (method === "POST" && photoProfileMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleSetProfilePhoto(photoProfileMatch[1]!, parseInt(photoProfileMatch[2]!, 10), env.DB, ctx);
+    }
+
+    const photoDeleteMatch = CAT_PHOTO_DELETE.exec(pathname);
+    if (method === "POST" && photoDeleteMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleDeleteGalleryPhoto(photoDeleteMatch[1]!, parseInt(photoDeleteMatch[2]!, 10), env.DB, env.PHOTOS, ctx);
+    }
+
+    const galleryServeMatch = CAT_GALLERY_SERVE.exec(pathname);
+    if (method === "GET" && galleryServeMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleGalleryPhotoServe(galleryServeMatch[1]!, parseInt(galleryServeMatch[2]!, 10), env.DB, env.PHOTOS, ctx);
     }
 
     return new Response("Not Found", { status: 404 });

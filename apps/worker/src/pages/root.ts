@@ -104,8 +104,8 @@ function buildRootHtml(request: Request, env: LogtoEnv = {}): string {
       body{overflow-x:hidden}
       .home-header,.desktop-home,.lower-sections,.desktop-footer{display:none}
       .mobile-auth{display:block;min-height:100vh;padding:var(--space-2);background:transparent}
-      .phone-shell{position:relative;min-height:calc(100vh - 32px);max-width:390px;margin:0 auto;padding:var(--space-6) var(--space-4) var(--space-4);border:4px solid #3b3b3b;border-radius:48px;background:linear-gradient(180deg,#fff,#fffdf9);box-shadow:0 8px 32px rgba(0,0,0,.08);overflow:hidden}
-      .phone-shell:before{content:"";position:absolute;top:0;left:50%;width:176px;height:40px;transform:translateX(-50%);border:4px solid #3b3b3b;border-top:0;border-radius:0 0 32px 32px;background:#f7f7f4}
+      .phone-shell{position:relative;min-height:calc(100vh - 32px);max-width:390px;margin:0 auto;padding:var(--space-6) var(--space-4) var(--space-4);border:0;border-radius:0;background:transparent;box-shadow:none;overflow:hidden}
+      .phone-shell:before{display:none}
       .mobile-cat{display:flex;justify-content:center;margin:var(--space-5) auto var(--space-3)}
       .mobile-cat .brand-logo-large{width:192px}
       .welcome-to{display:block;text-align:center;font-size:2rem;line-height:1.1;font-weight:900;letter-spacing:.16em;color:var(--teal);margin:0 0 var(--space-1)}
@@ -169,11 +169,12 @@ function buildRootHtml(request: Request, env: LogtoEnv = {}): string {
               <h2>Welcome back to <span class="brand-inline">Mishi<span>Pass</span></span></h2>
               <p>Sign in to continue managing your cat's passport</p>
             </div>
-            <form class="login-form" action="/dashboard" method="GET">
-              <div class="form-row"><label for="home-email">Email</label><input id="home-email" type="email" autocomplete="email" placeholder="Enter your email" /></div>
-              <div class="form-row"><label for="home-password">Password</label><input id="home-password" type="password" autocomplete="current-password" placeholder="Enter your password" /></div>
+            <form class="login-form" id="home-login-form">
+              <div class="form-row"><label for="home-email">Email</label><input id="home-email" type="email" autocomplete="email" placeholder="Enter your email" required /></div>
+              <div class="form-row"><label for="home-password">Password</label><input id="home-password" type="password" autocomplete="current-password" placeholder="Enter your password" required /></div>
               <div class="form-meta"><label class="check-label"><input type="checkbox" /> Remember me</label><a href="/dashboard?lang=${lang}">Forgot password?</a></div>
               <button class="mp-btn" type="submit">Log In</button>
+              <p id="home-login-error" class="home-error" style="display:none;color:#991b1b;font-size:.875rem;margin:var(--space-1) 0 0"></p>
             </form>
             <aside class="social-panel">
               <div class="divider">OR</div>
@@ -214,6 +215,25 @@ function buildRootHtml(request: Request, env: LogtoEnv = {}): string {
     <footer class="site-footer desktop-footer">&copy; 2026 Belvenar Analytics | All Rights Reserved</footer>
   </div>
   ${LANGUAGE_SCRIPT}
+  <script>
+  (function(){
+    var f=document.getElementById("home-login-form");
+    if(!f)return;
+    f.addEventListener("submit",function(e){
+      e.preventDefault();
+      var err=document.getElementById("home-login-error");
+      var btn=f.querySelector("button[type=submit]");
+      var email=document.getElementById("home-email").value;
+      var pw=document.getElementById("home-password").value;
+      err.style.display="none";btn.disabled=true;btn.textContent="Working...";
+      fetch("/api/auth/login",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email,password:pw})}).then(function(r){
+        btn.disabled=false;btn.textContent="Log In";
+        if(r.ok){window.location.href="/dashboard";}
+        else{r.text().then(function(t){err.textContent=t||"Login failed";err.style.display="block"});}
+      }).catch(function(){btn.disabled=false;btn.textContent="Log In";err.textContent="Network error";err.style.display="block";});
+    });
+  })();
+  </script>
 </body>
 </html>`;
 }

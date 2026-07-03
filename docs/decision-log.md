@@ -574,3 +574,64 @@ Decided by: Project Owner
 Tracked in Constitution Section 23; each will be logged here when resolved:
 
 _(All items from the initial list are now resolved — see entries above and in Constitution Section 22.)_
+
+---
+
+## [2026-07-03] — One-time authorization for Kiro autonomous Git operations
+
+Decision: Grant Kiro one-time authorization for autonomous Git operations
+including branch creation, commits, pushes, pull requests, and merges to main
+for the Beta 1.5 gap closure and UI corrections task set.
+
+Reason: The task set requires coordinated multi-phase implementation across
+UI, schema, routes, tests, and documentation. Autonomous Git operations allow
+Kiro to complete the full cycle (branch, PR, merge, cleanup) without blocking
+on manual Git steps for each commit. This is a time-bounded deviation from
+Section 8 Git ownership rules.
+
+Alternatives considered: Manual Git operations per commit (rejected — blocks
+progress during a time-sensitive task set). Unlimited autonomous access
+(rejected — scope must be bounded to this task set).
+
+Deviation: From Constitution Section 8 Git ownership. Scoped to this task set
+only; expires at task completion.
+
+Decided by: Carlos
+
+---
+
+## [2026-07-03] — Photo gallery with selectable profile picture added to Beta 1.5
+
+Decision: Add a cat photo gallery feature to Beta 1.5 scope. Owners can upload
+multiple photos per cat, view gallery, delete photos, and select which photo
+is the profile picture. Gallery photos are owner-only; only the selected
+profile photo is public.
+
+Reason: Direct owner decision. Single-photo limitation was a known Beta
+simplification; multiple photos improve the product for the hackathon demo.
+
+Alternatives considered: Keeping single photo only (rejected by owner
+decision). Full social-media-style gallery with likes/comments (rejected —
+out of scope, risks framing MishiPass as a social network).
+
+Decided by: Carlos
+
+---
+
+## [2026-07-03] — Dependabot PR 78 closed, major upgrades remain deferred
+
+Decision: Close Dependabot PR #78 (vitest 2.1.9 to 3.2.6) without merging.
+Major-version dependency upgrades remain deferred to the controlled
+compatibility pass per existing decision-log entries.
+
+Reason: Major-version upgrade of vitest (2.x to 3.x) requires breaking
+changes incompatible with current @cloudflare/vitest-pool-workers integration.
+The package is dev-only with no production surface. Risk of breaking the
+entire test suite outweighs the benefit.
+
+Alternatives considered: Merging the upgrade (rejected — breaks test tooling
+and would require simultaneous upgrade of vitest-pool-workers and wrangler).
+Pinning to a specific 3.x patch (rejected — vitest-pool-workers constraint
+requires 2.x).
+
+Decided by: Carlos
