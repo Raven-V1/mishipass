@@ -317,83 +317,102 @@ function renderVetForm(
   <style>
     ${MISHIPASS_DESIGN_CSS}
     body{padding:var(--space-3)}
-    .vet-shell{max-width:704px;margin:var(--space-4) auto}
+    .vet-shell{max-width:1040px;margin:0 auto;padding:var(--space-3) 0 var(--space-6)}
     .vet-card{padding:var(--space-4);margin-top:var(--space-3)}
-    h1{display:flex;align-items:center;gap:var(--space-1);font-size:clamp(2rem,6vw,3rem);line-height:1.08;margin:0 0 var(--space-1);color:var(--teal)}
+    .vet-head{display:grid;gap:var(--space-1);margin-bottom:var(--space-3)}
+    h1{display:flex;align-items:center;gap:var(--space-1);font-size:clamp(2rem,6vw,3rem);line-height:1.08;margin:0;color:var(--teal)}
+    .vet-subtitle{margin:0;color:var(--muted);font-weight:700}
+    .vet-layout{display:grid;grid-template-columns:minmax(240px,304px) minmax(0,1fr);gap:var(--space-4);align-items:start}
     .vet-badge{background:#e9f5ef;color:var(--teal);margin:var(--space-2) 0}
-    .photo img{width:144px;height:144px;border-radius:8px;object-fit:cover;margin:var(--space-3) 0}
-    .status-panel{padding:var(--space-2);border:1px solid var(--line);border-radius:8px;background:#fff7f0;margin:var(--space-2) 0 var(--space-3)}
+    .profile-column{display:grid;gap:var(--space-2)}
+    .photo img,.photo-placeholder{width:100%;aspect-ratio:4/3;border-radius:8px;object-fit:cover;background:#fff7f0}
+    .photo-placeholder{display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--muted);border:1px dashed #d8c8bd}
+    .status-panel{padding:var(--space-3);border:1px solid var(--line);border-radius:8px;background:#fff7f0;margin:0}
     .expiry{font-size:0.875rem;color:var(--muted);margin:0}
-    label{margin-top:var(--space-2)}
-    .submit-btn{width:100%;margin-top:var(--space-3)}
-    .note{font-size:0.875rem;color:var(--muted);margin-top:var(--space-3);padding:var(--space-2);background:#fff7f0;border-radius:8px}
+    .visit-form{display:grid;gap:var(--space-3)}
+    .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2) var(--space-3)}
+    .field{display:grid;gap:var(--space-1)}
+    .field-wide{grid-column:1/-1}
+    .section-title{font-size:1.25rem;line-height:1.2;color:var(--teal);margin:0}
+    .section-note{margin:0;color:var(--muted);font-size:.875rem}
+    .form-section{display:grid;gap:var(--space-2)}
+    .submit-row{display:flex;gap:var(--space-2);flex-wrap:wrap}
+    .submit-btn{flex:1 1 220px;margin-top:0;background:var(--green);border-color:var(--green)}
+    .cancel-btn{flex:1 1 180px}
+    .note{font-size:0.875rem;color:var(--muted);margin:0;padding:var(--space-2);background:#fff7f0;border-radius:8px}
     .photo-picker{margin:var(--space-1) 0 var(--space-3)}.photo-picker-actions{display:flex;gap:var(--space-1);flex-wrap:wrap}.photo-action{flex:1 1 160px}.photo-input-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}.photo-status{margin-top:var(--space-1);overflow-wrap:anywhere}
-    @media(max-width:430px){body{padding:var(--space-2)}.vet-card{padding:var(--space-3)}.photo-action{flex-basis:100%}}
+    @media(max-width:860px){.vet-layout{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}}
+    @media(max-width:430px){body{padding:var(--space-2)}.vet-shell{padding:var(--space-2) 0 var(--space-4)}.vet-card{padding:var(--space-3)}.photo-action{flex-basis:100%}.submit-row>*{flex-basis:100%}}
   </style>
 </head>
 <body>
   <main class="vet-shell">
   ${brandLockupHtml(`/?lang=${lang}`)}
   <section class="mp-card vet-card">
-  <h1>${iconStethoscope(32)} <span>${t(lang, "vetVisit")}</span></h1>
-  <h2>${safeName}</h2>
-  <span class="badge">${safeCountry}</span>
-  ${photoSection}
-  <div class="status-panel"><span class="vet-badge">${t(lang, "vetVisitActive")}</span><p class="expiry">Session expires: ${safeExpiry} UTC</p></div>
+  <header class="vet-head">
+    <h1>${iconStethoscope(32)} <span>${t(lang, "vetVisit")}</span></h1>
+    <p class="vet-subtitle">Keep track of every veterinary appointment for your furry friend.</p>
+  </header>
+  <div class="vet-layout">
+    <aside class="profile-column">
+      <h2>${safeName}</h2>
+      <span class="badge">${safeCountry}</span>
+      ${photoSection || `<div class="photo-placeholder">${t(lang, "noPhoto")}</div>`}
+      <div class="status-panel"><span class="vet-badge">${t(lang, "vetVisitActive")}</span><p class="expiry">Session expires: ${safeExpiry} UTC</p></div>
+      <p class="note">This visit record is documentation only. No private owner records are shown on this page. The QR returns to Active Profile after submission.</p>
+    </aside>
 
-  <form method="POST" action="/api/cats/${safeId}/vet-visit/finish?lang=${lang}" enctype="multipart/form-data">
-    <label for="clinic_name">${t(lang, "clinicName")} (optional)</label>
-    <input type="text" id="clinic_name" name="clinic_name" maxlength="500" />
+    <form class="visit-form" method="POST" action="/api/cats/${safeId}/vet-visit/finish?lang=${lang}" enctype="multipart/form-data">
+      <section class="form-section">
+        <h2 class="section-title">Add New Visit</h2>
+        <div class="form-grid">
+          <div class="field"><label for="clinic_name">${t(lang, "clinicName")} (optional)</label><input type="text" id="clinic_name" name="clinic_name" maxlength="500" /></div>
+          <div class="field"><label for="vet_name">${t(lang, "vetName")} (optional)</label><input type="text" id="vet_name" name="vet_name" maxlength="500" /></div>
+          <div class="field"><label for="visit_date">${t(lang, "visitDate")}</label><input type="date" id="visit_date" name="visit_date" /></div>
+          <div class="field"><label for="weight">${t(lang, "weight")} (optional)</label><input type="text" id="weight" name="weight" maxlength="30" placeholder="e.g. 4.5 kg" /></div>
+          <div class="field field-wide"><label for="reason">${t(lang, "reason")} (optional)</label><input type="text" id="reason" name="reason" maxlength="500" /></div>
+          <div class="field field-wide"><label for="notes">Notes (optional)</label><textarea id="notes" name="notes" maxlength="500"></textarea></div>
+        </div>
+      </section>
 
-    <label for="vet_name">${t(lang, "vetName")} (optional)</label>
-    <input type="text" id="vet_name" name="vet_name" maxlength="500" />
+      <section class="form-section">
+        <h2 class="section-title">Vaccines</h2>
+        <div class="form-grid">
+          <div class="field"><label for="vaccine_name">Vaccine name (optional)</label><input type="text" id="vaccine_name" name="vaccine_name" maxlength="100" /></div>
+          <div class="field"><label for="vaccine_date">Date given (optional)</label><input type="date" id="vaccine_date" name="vaccine_date" /></div>
+          <div class="field field-wide"><label>Upload documents</label>
+            <div class="photo-picker">
+              <div class="photo-picker-actions">
+                <label class="photo-action" for="vaccine_sticker_photo_capture">${t(lang, "takePhoto")}</label>
+                <label class="photo-action" for="vaccine_sticker_photo_upload">${t(lang, "chooseExistingPhoto")}</label>
+              </div>
+              <input class="photo-input-visually-hidden" type="file" id="vaccine_sticker_photo_capture" name="vaccine_sticker_photo_capture" accept="image/*" capture="environment" data-photo-status="vaccine-sticker-status" />
+              <input class="photo-input-visually-hidden" type="file" id="vaccine_sticker_photo_upload" name="vaccine_sticker_photo_upload" accept="image/*" data-photo-status="vaccine-sticker-status" />
+              <div id="vaccine-sticker-status" class="photo-status">${t(lang, "noPhotoSelected")}</div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-    <label for="visit_date">${t(lang, "visitDate")}</label>
-    <input type="date" id="visit_date" name="visit_date" />
+      <section class="form-section">
+        <h2 class="section-title">${t(lang, "medicationRecord")}</h2>
+        <p class="section-note">Documentation only. Do not use this section for treatment advice.</p>
+        <div class="form-grid">
+          <div class="field"><label for="medication_name">Medication name (optional)</label><input type="text" id="medication_name" name="medication_name" maxlength="100" /></div>
+          <div class="field"><label for="medication_dose">Dose as recorded (optional)</label><input type="text" id="medication_dose" name="medication_dose" maxlength="100" /></div>
+          <div class="field"><label for="medication_duration">Duration (optional)</label><input type="text" id="medication_duration" name="medication_duration" maxlength="100" /></div>
+          <div class="field"><label for="medication_start_date">Start date (optional)</label><input type="date" id="medication_start_date" name="medication_start_date" /></div>
+          <div class="field"><label for="medication_prescriber">Prescriber (optional)</label><input type="text" id="medication_prescriber" name="medication_prescriber" maxlength="100" /></div>
+          <div class="field field-wide"><label for="medication_notes">Medication notes (optional)</label><textarea id="medication_notes" name="medication_notes" maxlength="500"></textarea></div>
+        </div>
+      </section>
 
-    <label for="reason">${t(lang, "reason")} (optional)</label>
-    <input type="text" id="reason" name="reason" maxlength="500" />
-
-    <label for="weight">${t(lang, "weight")} (optional)</label>
-    <input type="text" id="weight" name="weight" maxlength="30" placeholder="e.g. 4.5 kg" />
-
-    <label for="notes">Notes (optional)</label>
-    <textarea id="notes" name="notes" maxlength="500"></textarea>
-
-    <h2>Vaccines</h2>
-    <label for="vaccine_name">Vaccine name (optional)</label>
-    <input type="text" id="vaccine_name" name="vaccine_name" maxlength="100" />
-    <label for="vaccine_date">Date given (optional)</label>
-    <input type="date" id="vaccine_date" name="vaccine_date" />
-    <label>Vaccine sticker photo (optional)</label>
-    <div class="photo-picker">
-      <div class="photo-picker-actions">
-        <label class="photo-action" for="vaccine_sticker_photo_capture">${t(lang, "takePhoto")}</label>
-        <label class="photo-action" for="vaccine_sticker_photo_upload">${t(lang, "chooseExistingPhoto")}</label>
+      <div class="submit-row">
+        <button type="submit" class="submit-btn">${t(lang, "saveFinishVisit")}</button>
+        <a class="mp-btn mp-btn-secondary cancel-btn" href="/c/${safeId}?lang=${lang}">Cancel</a>
       </div>
-      <input class="photo-input-visually-hidden" type="file" id="vaccine_sticker_photo_capture" name="vaccine_sticker_photo_capture" accept="image/*" capture="environment" data-photo-status="vaccine-sticker-status" />
-      <input class="photo-input-visually-hidden" type="file" id="vaccine_sticker_photo_upload" name="vaccine_sticker_photo_upload" accept="image/*" data-photo-status="vaccine-sticker-status" />
-      <div id="vaccine-sticker-status" class="photo-status">${t(lang, "noPhotoSelected")}</div>
-    </div>
-
-    <h2>${t(lang, "medicationRecord")}</h2>
-    <label for="medication_name">Medication name (optional)</label>
-    <input type="text" id="medication_name" name="medication_name" maxlength="100" />
-    <label for="medication_dose">Dose as recorded (optional)</label>
-    <input type="text" id="medication_dose" name="medication_dose" maxlength="100" />
-    <label for="medication_duration">Duration (optional)</label>
-    <input type="text" id="medication_duration" name="medication_duration" maxlength="100" />
-    <label for="medication_start_date">Start date (optional)</label>
-    <input type="date" id="medication_start_date" name="medication_start_date" />
-    <label for="medication_prescriber">Prescriber (optional)</label>
-    <input type="text" id="medication_prescriber" name="medication_prescriber" maxlength="100" />
-    <label for="medication_notes">Medication notes (optional)</label>
-    <textarea id="medication_notes" name="medication_notes" maxlength="500"></textarea>
-
-    <button type="submit" class="submit-btn">${t(lang, "saveFinishVisit")}</button>
-  </form>
-
-  <p class="note">This visit record will be saved to the cat's private history. No medical history is shown on this page. The QR will return to Active Profile after submission.</p>
+    </form>
+  </div>
   </section>
   </main>
 </body>

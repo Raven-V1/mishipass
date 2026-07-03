@@ -239,8 +239,6 @@ function renderMissingProfile(
     : "";
 
   const rows = [
-    [t(lang, "country"), safeCountry],
-    ["Status", t(lang, "missing")],
     [t(lang, "city"), safeCity || t(lang, "unknown")],
     [t(lang, "area"), safeArea || t(lang, "unknown")],
     ...(rewardSection ? [[t(lang, "reward"), rewardSection]] : []),
@@ -263,27 +261,36 @@ function renderMissingProfile(
   <style>
     ${MISHIPASS_DESIGN_CSS}
     body{padding:var(--space-3)}
-    .alert-shell{max-width:864px;margin:var(--space-4) auto}
-    .alert-card{display:grid;grid-template-columns:280px minmax(0,1fr);gap:var(--space-3);padding:var(--space-4)}
-    h1{display:flex;align-items:center;gap:var(--space-1);font-size:clamp(2rem,6vw,3.5rem);line-height:1.08;margin:var(--space-3) 0 var(--space-2);color:var(--teal);overflow-wrap:anywhere}
+    .alert-shell{max-width:960px;margin:0 auto;padding:var(--space-3) 0 var(--space-6)}
+    .alert-head{text-align:center;margin:var(--space-3) auto}
+    .alert-card{display:grid;grid-template-columns:minmax(280px,336px) minmax(0,1fr);gap:var(--space-4);padding:var(--space-4)}
+    h1{display:flex;align-items:center;justify-content:center;gap:var(--space-1);font-size:clamp(2rem,6vw,3.5rem);line-height:1.08;margin:0 0 var(--space-1);color:var(--teal);overflow-wrap:anywhere}
+    .alert-subtitle{margin:0;color:var(--muted);font-weight:700}
+    .alert-pills{display:flex;align-items:center;gap:var(--space-1);flex-wrap:wrap;margin:0 0 var(--space-2)}
     .status{background:#fff0e9;color:#b42318}
     .alert-photo{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;background:#fff7f0}
+    .photo-placeholder{min-height:252px;font-weight:800}
+    .alert-copy h2{font-size:2rem;line-height:1.08;color:var(--teal);margin:0 0 var(--space-2)}
     .data-list{display:grid;gap:var(--space-1);margin:0}
     .data-row{display:grid;grid-template-columns:minmax(120px,180px) minmax(0,1fr);gap:var(--space-2);padding:var(--space-1) 0;border-bottom:1px solid var(--line)}
     .data-row dt{font-weight:900;color:var(--teal)}
     .data-row dd{margin:0;overflow-wrap:anywhere}
     .privacy-note{display:flex;align-items:center;gap:var(--space-1);color:var(--muted);margin:var(--space-2) 0 0}
-    @media(max-width:700px){body{padding:var(--space-2)}.alert-card{grid-template-columns:1fr;padding:var(--space-3)}.data-row{grid-template-columns:1fr;gap:0}.sighting-link .mp-btn{width:100%}}
+    @media(max-width:700px){body{padding:var(--space-2)}.alert-shell{padding:var(--space-2) 0 var(--space-4)}.alert-card{grid-template-columns:1fr;padding:var(--space-3)}.data-row{grid-template-columns:1fr;gap:0}.sighting-link .mp-btn{width:100%}}
   </style>
 </head>
 <body>
   <main class="alert-shell">
     ${brandLockupHtml(`/?lang=${lang}`)}
-    <h1>${iconMegaphone(32)} <span>${t(lang, "missingAlert")}</span></h1>
+    <header class="alert-head">
+      <h1>${iconMegaphone(32)} <span>${t(lang, "missingAlert")}</span></h1>
+      <p class="alert-subtitle">Help reunite your furry friend safely.</p>
+    </header>
     <section class="mp-card alert-card">
       <div>${photoSection}${sightingLink}</div>
-      <div>
-        <h2>${safeName} <span class="status">${t(lang, "missing")}</span></h2>
+      <div class="alert-copy">
+        <p class="alert-pills"><span class="badge">${safeCountry}</span><span class="status">${t(lang, "missing")}</span></p>
+        <h2>${safeName}</h2>
         <dl class="data-list">${rows}</dl>
         <p class="privacy-note">${iconShield(16)} <span>No private cartilla or medical data is shown.</span></p>
       </div>
