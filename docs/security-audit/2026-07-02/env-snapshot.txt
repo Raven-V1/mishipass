@@ -1,0 +1,42 @@
+generated-at: 2026-07-02T00:00:00Z
+audit-id: mishipass-security-audit-2026-07-02
+
+--- TOOLING ---
+node: v24.15.0
+npm: 11.12.1
+python: 3.14.2
+wrangler (npx): 3.114.17
+gitleaks: not available (grep-based fallback used)
+trufflehog: not available
+
+--- GIT IDENTITY ---
+user.email: zhanerke06@users.noreply.github.com
+user.name: zhanerke06
+gh-auth-account: Raven-V1
+gh-token-scopes: gist, read:org, repo
+
+--- REPO STATE ---
+branch: main
+oid: d2209cf3cebe95b79f0ef63ea16fca3d8cb43c9a
+ahead-origin-main: 0
+behind-origin-main: 0
+remote-branches: origin/main, origin/dev, origin/HEAD -> origin/main
+
+--- UNTRACKED FILES AT AUDIT START ---
+.codex-smoke/cdp-capture.mjs
+.codex-smoke/edge-profile/ (directory)
+.codex-smoke/mockup-redo-visual-match/ (directory)
+
+--- DEPENDABOT ALERTS ---
+count: 0
+
+--- OPEN PRS ---
+count: 0
+
+--- WRANGLER CONFIG ---
+app: mishipass
+main: src/index.ts
+compatibility_date: 2026-06-24
+d1-binding: DB (database_id: e1053d77-cf51-4a18-b217-ddecc3de2a16)
+r2-binding: PHOTOS (bucket: mishipass-photos)
+secrets: PUBLIC_BASE_URL, SIGHTING_IP_HMAC_SECRET, LOGTO_* (optional)
