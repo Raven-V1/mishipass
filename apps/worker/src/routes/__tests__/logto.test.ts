@@ -164,6 +164,14 @@ describe("handleLogtoApple", () => {
     const res = await handleLogtoApple(EMPTY_ENV);
     expect(res.status).toBe(503);
   });
+
+  it("returns 503 when base config is present but LOGTO_APPLE_CONNECTOR_TARGET is absent", async () => {
+    const { LOGTO_APPLE_CONNECTOR_TARGET: _, ...envWithoutApple } = FULL_ENV;
+    const res = await handleLogtoApple(envWithoutApple);
+    expect(res.status).toBe(503);
+    const body = await res.json<{ error: string }>();
+    expect(body.error).toBe("Apple login not configured");
+  });
 });
 
 // ── 3-8. Callback validation ──────────────────────────────────────────────────
