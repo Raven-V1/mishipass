@@ -2,6 +2,7 @@ import { getCatForOwner, getSightingReportForOwner, listSightingReportsForOwner 
 import { MISHIPASS_DESIGN_CSS, brandLockupHtml, escapeHtml, htmlResponse } from "../utils/html.js";
 import type { RequestContext } from "../middleware/session.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
+import { renderTopNav, TOP_NAV_CSS } from "./partials/topNav.js";
 
 export async function handleSightingInbox(
   publicId: string,
@@ -49,6 +50,7 @@ export async function handleSightingInbox(
   <title>${t(lang, "reports")} — ${safeName} — MishiPass</title>
   <style>
     ${MISHIPASS_DESIGN_CSS}
+    ${TOP_NAV_CSS}
     body{padding:var(--space-3)}
     .page-shell{max-width:704px;margin:var(--space-4) auto}.inbox-shell{padding:var(--space-4);margin-top:var(--space-3)}
     .nav{margin-bottom:var(--space-3);font-size:0.875rem}
@@ -64,6 +66,7 @@ export async function handleSightingInbox(
 </head>
 <body>
   <main class="page-shell">
+    ${renderTopNav(lang, { authenticated: true })}
     ${brandLockupHtml(`/?lang=${lang}`)}
   <section class="mp-card inbox-shell">
     <div class="nav"><a class="mp-back" href="/dashboard/cats/${safeId}?lang=${lang}">&larr; ${safeName}</a></div>
@@ -119,6 +122,7 @@ export async function handleSightingDetail(
   <title>${t(lang, "reportSighting")} — ${safeName} — MishiPass</title>
   <style>
     ${MISHIPASS_DESIGN_CSS}
+    ${TOP_NAV_CSS}
     body{padding:var(--space-3)}
     .page-shell{max-width:704px;margin:var(--space-4) auto}.detail-shell{padding:var(--space-4);margin-top:var(--space-3)}
     .nav{margin-bottom:var(--space-3);font-size:0.875rem}
@@ -131,6 +135,7 @@ export async function handleSightingDetail(
 </head>
 <body>
   <main class="page-shell">
+    ${renderTopNav(lang, { authenticated: true })}
     ${brandLockupHtml(`/?lang=${lang}`)}
   <section class="mp-card detail-shell">
     <div class="nav"><a class="mp-back" href="/dashboard/cats/${safeId}/sightings?lang=${lang}">&larr; ${t(lang, "reports")}</a></div>
