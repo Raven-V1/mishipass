@@ -3,37 +3,34 @@ import { MISHIPASS_DESIGN_CSS, brandLockupHtml, brandLogoHtml, htmlResponse } fr
 import { getLanguageFromRequest, LANGUAGE_SCRIPT, languageSelectHtml, t } from "../utils/i18n.js";
 import type { LogtoEnv } from "../routes/logto.js";
 
-function featureIcon(kind: string): string {
+function featureIcon(kind: string, size = 24): string {
   const icons: Record<string, string> = {
-    lock: iconLock(24),
-    record: iconDocument(24),
-    qr: iconQrCode(24),
-    alert: iconMegaphone(24),
-    vet: iconStethoscope(24),
-    board: iconDocument(24),
-    profile: iconQrCode(24),
-    message: iconEmail(24),
+    lock: iconLock(size),
+    record: iconDocument(size),
+    qr: iconQrCode(size),
+    alert: iconMegaphone(size),
+    vet: iconStethoscope(size),
   };
-  return icons[kind] || iconQrCode(24);
+  return icons[kind] || iconQrCode(size);
 }
 
-function featureCard(title: string, copy: string, kind: string): string {
-  return `<article class="mp-card feature-card"><div class="feature-icon" aria-hidden="true">${featureIcon(kind)}</div><h3>${title}</h3><p>${copy}</p></article>`;
-}
-
-function stepCard(number: string, title: string): string {
-  return `<article class="mp-card step"><div class="step-num">${number}</div><h3>${title}</h3></article>`;
+function featureColumn(title: string, copy: string, kind: string): string {
+  return `<article class="feature-col"><div class="feature-bubble" aria-hidden="true">${featureIcon(kind, 24)}</div><h3>${title}</h3><p>${copy}</p></article>`;
 }
 
 function socialButtonsHtml(env: LogtoEnv): string {
   const baseConfigured = !!(env.LOGTO_ENDPOINT && env.LOGTO_APP_ID && env.LOGTO_CLIENT_SECRET && env.LOGTO_REDIRECT_URI);
   const google = baseConfigured
-    ? `<a class="social-btn" href="/api/auth/logto/google">${iconGoogle(18)}<span>Continue with Google</span></a>`
-    : `<button class="social-btn provider-pending" type="button" disabled aria-disabled="true" title="Google login config pending">${iconGoogle(18)}<span>Continue with Google</span></button>`;
+    ? `<a class="social-btn" href="/api/auth/logto/google">${iconGoogle(24)}<span>Continue with Google</span></a>`
+    : `<button class="social-btn provider-pending" type="button" disabled aria-disabled="true" title="Google login config pending">${iconGoogle(24)}<span>Continue with Google</span></button>`;
   const apple = baseConfigured && !!env.LOGTO_APPLE_CONNECTOR_TARGET
-    ? `<a class="social-btn" href="/api/auth/logto/apple">${iconApple(18)}<span>Continue with Apple</span></a>`
-    : `<button class="social-btn provider-pending" type="button" disabled aria-disabled="true" title="Apple login config pending">${iconApple(18)}<span>Continue with Apple</span></button>`;
-  return `${google}${apple}${baseConfigured ? "" : `<p class="provider-note">Google and Apple sign-in are code-complete and config pending.</p>`}`;
+    ? `<a class="social-btn" href="/api/auth/logto/apple">${iconApple(24)}<span>Continue with Apple</span></a>`
+    : `<button class="social-btn provider-pending" type="button" disabled aria-disabled="true" title="Apple login config pending">${iconApple(24)}<span>Continue with Apple</span></button>`;
+  return `${google}${apple}`;
+}
+
+function mobileWordmark(): string {
+  return `<span class="mobile-word"><span>M</span><span>I</span><span>S</span><span>H</span><span>I</span><span>P</span><span>A</span><span>S</span><span>S</span></span>`;
 }
 
 function buildRootHtml(request: Request, env: LogtoEnv = {}): string {
@@ -49,185 +46,172 @@ function buildRootHtml(request: Request, env: LogtoEnv = {}): string {
   <style>
     ${MISHIPASS_DESIGN_CSS}
     body{background-color:var(--cream)}
-    .site-header{position:sticky;top:0;z-index:5;background:rgba(255,248,243,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-    .header-inner{height:80px;display:grid;grid-template-columns:1fr auto auto;gap:var(--space-3);align-items:center}
-    .nav{display:flex;gap:var(--space-3);align-items:center}
-    .nav a{font-weight:800;text-decoration:none;color:var(--ink)}
-    .header-cta{display:flex;gap:var(--space-2);align-items:center}
-    .mobile-nav{display:none}
-    .language{min-width:128px}
-    .language label{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
-    .hero{position:relative;overflow:hidden;padding:var(--space-8) 0 var(--space-6)}
-    .hero-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:var(--space-4);align-items:center}
-    .welcome-zone{grid-column:1/span 5}
-    .feature-zone{grid-column:6/span 7}
-    .welcome-zone,.feature-zone,.feature-card,.login-left,.login-right{min-width:0}
-    .eyebrow{display:inline-flex;min-height:32px;align-items:center;padding:0 var(--space-2);border-radius:999px;background:#e9f5ef;color:var(--teal);font-weight:900;font-size:.875rem}
-    h1{font-size:clamp(2.5rem,5vw,4.75rem);line-height:1.02;margin:var(--space-2) 0;color:var(--teal);overflow-wrap:anywhere}
-    h2{font-size:clamp(1.75rem,3vw,2.5rem);line-height:1.12;margin:0 0 var(--space-3);color:var(--teal);overflow-wrap:anywhere}
-    h3{margin:0 0 var(--space-1);font-size:1.05rem;color:var(--ink);overflow-wrap:anywhere}
-    p{overflow-wrap:anywhere}
-    .hero-copy{font-size:1.125rem;color:var(--muted);margin:0 0 var(--space-3)}
-    .hero-actions{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-3)}
-    .mobile-brand-mark{display:none;margin:0 auto var(--space-2)}
-    .cat-card{position:relative;margin-top:var(--space-4);min-height:280px;padding:var(--space-4);overflow:hidden;background:linear-gradient(135deg,#fffdf9,#fff0e9)}
-    .cat-card:before{content:"";position:absolute;inset:auto -48px -64px auto;width:224px;height:224px;border-radius:50%;background:rgba(102,209,195,.34)}
-    .cat-illustration{position:relative;display:flex;align-items:center;justify-content:center;min-height:208px}
-    .cat-illustration .brand-logo-large{width:min(100%,208px);height:min(100%,208px)}
-    .feature-zone .headline{font-size:clamp(2rem,4vw,3.5rem);line-height:1.05;margin:0 0 var(--space-3);color:var(--ink)}
-    .feature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-2)}
-    .feature-card{padding:var(--space-3);min-height:192px}
-    .feature-icon{width:48px;height:48px;border-radius:8px;background:#e8faf7;display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-2);font-size:1.75rem;color:var(--teal)}
-    .feature-card p{margin:0;color:var(--muted)}
-    .login-card{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:0;overflow:hidden}
-    .login-left{grid-column:1/span 7;padding:var(--space-4)}
-    .login-right{grid-column:8/span 5;padding:var(--space-4);background:#fff4f3;border-left:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;gap:var(--space-2)}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+    .home-page{min-height:100vh}
+    .home-header{height:96px;display:flex;align-items:center;border-bottom:1px solid rgba(234,216,208,.72);background:rgba(255,248,243,.82);backdrop-filter:blur(8px)}
+    .home-header .mp-container{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4)}
+    .home-nav{display:flex;align-items:center;gap:var(--space-5)}
+    .home-nav a{font-weight:900;color:var(--ink);text-decoration:none;font-size:.9375rem}
+    .signup-pill{min-width:96px;border-radius:999px;background:#fff0e9;color:var(--brand-coral);border-color:#fff0e9}
+    .desktop-home{display:block;min-height:calc(100vh - 96px);padding:var(--space-6) 0 var(--space-3)}
+    .home-hero{display:grid;grid-template-columns:312px minmax(0,1fr);gap:var(--space-10);align-items:start}
+    .welcome-panel{text-align:center;padding-top:var(--space-2)}
+    .welcome-panel h1{font-size:2rem;line-height:1.1;margin:0 0 var(--space-2);color:var(--teal);letter-spacing:0}
+    .welcome-panel .coral-copy{font-size:1.125rem;line-height:1.28;color:var(--brand-coral);font-weight:900;margin:0 auto var(--space-3);max-width:248px}
+    .paw-divider{display:flex;align-items:center;gap:var(--space-2);justify-content:center;margin:var(--space-2) auto var(--space-4);color:var(--brand-coral)}
+    .paw-divider:before,.paw-divider:after{content:"";width:64px;height:1px;background:var(--line)}
+    .paw-divider .paw-icon{width:24px;height:24px}
+    .peek-cat{display:flex;justify-content:center;margin:0 auto var(--space-4)}
+    .peek-cat .brand-logo-large{width:272px}
+    .welcome-panel .small-copy{font-weight:700;color:var(--teal);font-size:.9375rem;line-height:1.48;max-width:296px;margin:0 auto}
+    .features-panel{padding-top:var(--space-3)}
+    .features-panel h2{text-align:center;font-size:1.5rem;line-height:1.28;color:var(--teal);margin:0 auto var(--space-4);max-width:360px}
+    .feature-row{display:grid;grid-template-columns:repeat(6,minmax(96px,1fr));gap:var(--space-3);align-items:start}
+    .feature-col{text-align:center;min-width:0}
+    .feature-bubble{width:64px;height:64px;border-radius:50%;margin:0 auto var(--space-2);display:flex;align-items:center;justify-content:center;background:#fff0e9;color:var(--teal);box-shadow:0 8px 24px rgba(56,38,26,.06)}
+    .feature-col h3{font-size:.8125rem;line-height:1.24;color:var(--ink);margin:0 0 var(--space-1);font-weight:900}
+    .feature-col p{font-size:.75rem;line-height:1.48;color:var(--teal);font-weight:700;margin:0}
+    .login-card-wrap{max-width:736px;margin:var(--space-8) auto var(--space-4)}
+    .desktop-login{display:grid;grid-template-columns:192px minmax(240px,1fr) 240px;gap:var(--space-3);align-items:center;padding:var(--space-3);border-radius:8px;background:rgba(255,253,249,.96);border:1px solid rgba(234,216,208,.8);box-shadow:0 16px 48px rgba(56,38,26,.10)}
+    .login-copy h2{font-size:1.375rem;line-height:1.2;margin:0 0 var(--space-1);color:var(--teal)}
+    .login-copy .brand-inline{display:block;font-size:1.5rem;font-weight:900;color:var(--brand-coral)}
+    .login-copy .brand-inline span{color:var(--brand-mint)}
+    .login-copy p{font-size:.8125rem;line-height:1.48;color:var(--teal);font-weight:700;margin:var(--space-2) 0 0}
+    .login-form{padding:0 var(--space-3);border-left:1px solid var(--line);border-right:1px solid var(--line)}
     .form-row{margin-bottom:var(--space-2)}
-    .form-meta{display:flex;justify-content:space-between;gap:var(--space-2);align-items:center;margin:var(--space-2) 0;flex-wrap:wrap}
-    .check-label{display:inline-flex;gap:var(--space-1);align-items:center;margin:0;font-weight:700}
+    .form-row label{font-size:.75rem;color:var(--ink)}
+    .form-row input{border-radius:8px;background:#fff;border-color:#f0d9d2;min-height:48px}
+    .form-meta{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);margin:var(--space-1) 0 var(--space-2);font-size:.75rem}
+    .check-label{display:inline-flex;align-items:center;gap:var(--space-1);font-size:.75rem;margin:0;color:var(--muted)}
     .check-label input{width:16px;min-height:16px}
-    .divider{display:flex;align-items:center;gap:var(--space-2);color:var(--muted);font-weight:900}
+    .login-form .mp-btn{width:100%;border-radius:8px;background:var(--brand-orange);border-color:var(--brand-orange)}
+    .social-panel{display:grid;gap:var(--space-2)}
+    .divider{display:flex;align-items:center;gap:var(--space-2);font-size:.75rem;font-weight:900;color:var(--ink);text-align:center}
     .divider:before,.divider:after{content:"";height:1px;background:var(--line);flex:1}
-    .social-btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-1);min-height:var(--touch-target);padding:var(--space-1) var(--space-2);border-radius:8px;background:#fff;color:var(--ink);border:1px solid var(--line);font:inherit;text-decoration:none;font-weight:800}
-    .provider-note{margin:0;color:var(--muted);font-size:.875rem}
-    .section-intro{max-width:736px;color:var(--muted);font-size:1.05rem;margin:0 0 var(--space-4)}
-    .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-3)}
-    .card{padding:var(--space-3);min-width:0}
-    .step-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--space-2)}
-    .step{padding:var(--space-3);min-height:176px;position:relative}
-    .step-num{width:40px;height:40px;border-radius:50%;background:var(--coral);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;margin-bottom:var(--space-2)}
-    .contact-panel{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:var(--space-3);align-items:center;padding:var(--space-4)}
-    .contact-panel>div{grid-column:1/span 8}
-    .contact-panel>a{grid-column:9/span 4}
-    .site-footer{padding:var(--space-4) var(--space-2);text-align:center;color:var(--muted);font-size:.875rem}
-    @media(max-width:900px){.header-inner{height:auto;min-height:80px;grid-template-columns:1fr auto;gap:var(--space-2);padding:var(--space-2) 0}.nav,.header-cta{display:none}.mobile-nav{display:block;grid-column:1/-1}.mobile-nav summary{min-height:44px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:8px;background:#fff;font-weight:900;cursor:pointer}.mobile-nav div{display:grid;gap:var(--space-1);padding:var(--space-2) 0}.mobile-nav a{min-height:44px;display:flex;align-items:center;color:var(--ink);font-weight:800;text-decoration:none}.hero-grid{grid-template-columns:repeat(8,minmax(0,1fr))}.welcome-zone,.feature-zone{grid-column:1/-1}.feature-grid,.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.step-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.login-left,.login-right{grid-column:1/-1}.login-right{border-left:0;border-top:1px solid var(--line)}.contact-panel>div,.contact-panel>a{grid-column:1/-1}}
-    @media(max-width:600px){body{overflow-x:hidden}.mp-container{width:100%;max-width:100%;overflow:hidden}.hero-grid{display:block;max-width:100%}.welcome-zone,.feature-zone,.feature-card,.card,.step,.login-card,.cat-card{width:calc(100vw - 32px);max-width:calc(100vw - 32px)}.feature-grid,.cards,.step-grid{grid-template-columns:minmax(0,1fr);max-width:100%}.hero-copy,.feature-zone .headline,.feature-card p,.section-intro{width:calc(100vw - 32px);max-width:calc(100vw - 32px);overflow-wrap:anywhere}.hero-actions,.cat-card,.feature-zone{display:none}.mobile-brand-mark{display:block}.welcome-zone{text-align:center}.welcome-zone .eyebrow{display:none}.hero-copy{margin-left:auto;margin-right:auto}.social-btn{width:100%}.login-card{margin-top:0}.login-left{display:none}.login-right{background:var(--card);border-top:0;text-align:center}.login-right h2{display:block}.provider-note{text-align:center}}
-    @media(max-width:430px){.hero{padding:var(--space-4) 0 var(--space-2)}.cat-card{min-height:264px;padding:var(--space-3)}.feature-grid,.cards,.step-grid{grid-template-columns:1fr}.feature-card{min-height:160px}.hero-actions .mp-btn{width:100%}.login-left,.login-right,.contact-panel{padding:var(--space-3)}h1{font-size:2.5rem}.hero-copy{font-size:1rem}}
+    .social-btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);min-height:48px;padding:var(--space-1) var(--space-2);border-radius:8px;background:#fff7f0;color:var(--brand-coral);border:1px solid #f4ded7;font:inherit;text-decoration:none;font-weight:900;font-size:.8125rem}
+    .provider-pending{opacity:.62;cursor:not-allowed}
+    .signup-note{font-size:.75rem;text-align:center;margin:0;color:var(--ink);font-weight:700}
+    .privacy-line{display:flex;align-items:center;justify-content:center;gap:var(--space-2);margin-top:var(--space-4);font-size:.875rem;font-weight:800;color:var(--teal)}
+    .privacy-line .paw-icon{width:20px;height:20px}
+    .mobile-auth{display:none}
+    .lower-sections{padding:0 0 var(--space-6)}
+    .lower-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-3)}
+    .lower-card{padding:var(--space-3)}
+    .lower-card h2,.lower-card h3{color:var(--teal)}
+    .site-footer{padding:var(--space-3);text-align:center;color:var(--ink);font-size:.875rem}
+    @media(max-width:1120px){.home-hero{grid-template-columns:280px minmax(0,1fr);gap:var(--space-5)}.feature-row{grid-template-columns:repeat(3,minmax(112px,1fr))}.login-card-wrap{max-width:864px}.desktop-login{grid-template-columns:1fr 1.5fr 1fr}}
+    @media(max-width:760px){
+      body{overflow-x:hidden}
+      .home-header,.desktop-home,.lower-sections,.desktop-footer{display:none}
+      .mobile-auth{display:block;min-height:100vh;padding:var(--space-2);background:transparent}
+      .phone-shell{position:relative;min-height:calc(100vh - 32px);max-width:390px;margin:0 auto;padding:var(--space-6) var(--space-4) var(--space-4);border:4px solid #3b3b3b;border-radius:48px;background:linear-gradient(180deg,#fff,#fffdf9);box-shadow:0 8px 32px rgba(0,0,0,.08);overflow:hidden}
+      .phone-shell:before{content:"";position:absolute;top:0;left:50%;width:176px;height:40px;transform:translateX(-50%);border:4px solid #3b3b3b;border-top:0;border-radius:0 0 32px 32px;background:#f7f7f4}
+      .mobile-cat{display:flex;justify-content:center;margin:var(--space-5) auto var(--space-3)}
+      .mobile-cat .brand-logo-large{width:192px}
+      .welcome-to{display:block;text-align:center;font-size:2rem;line-height:1.1;font-weight:900;letter-spacing:.16em;color:var(--teal);margin:0 0 var(--space-1)}
+      .mobile-word{display:flex;justify-content:center;gap:var(--space-1);font-size:1.75rem;line-height:1;font-weight:900;letter-spacing:.08em;margin-bottom:var(--space-5)}
+      .mobile-word span:nth-child(-n+5){color:var(--brand-coral)}.mobile-word span:nth-child(n+6){color:var(--brand-mint)}
+      .mobile-tagline{text-align:center;color:var(--teal);font-weight:900;letter-spacing:.16em;font-size:1rem;line-height:1.4;margin:0 auto var(--space-5);max-width:312px}
+      .create-title{text-align:center;font-size:1rem;letter-spacing:.24em;color:var(--teal);font-weight:900;margin:0 0 var(--space-3)}
+      .mobile-actions{display:grid;gap:var(--space-2);margin-bottom:var(--space-3)}
+      .mobile-actions .social-btn,.email-pill{min-height:56px;border-radius:999px;background:#fff0e9;border:0;color:var(--brand-coral);font-size:1rem;font-weight:900;letter-spacing:.04em}
+      .email-pill{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);text-decoration:none}
+      .mobile-divider{text-align:center;color:var(--teal);font-weight:900;letter-spacing:.16em;margin:var(--space-3) 0}
+      .mobile-login{text-align:center;color:var(--teal);font-weight:900;letter-spacing:.16em;line-height:1.6;margin:0}
+      .mobile-login a{display:block;color:var(--teal);text-decoration:none}
+      .mobile-footer{position:absolute;left:0;right:0;bottom:var(--space-3);text-align:center;font-size:.75rem;color:#222}
+    }
+    @media(max-width:430px){.mobile-auth{padding:var(--space-1)}.phone-shell{min-height:calc(100vh - 16px);border-radius:40px;padding:var(--space-6) var(--space-3) var(--space-4)}.mobile-cat{margin:var(--space-6) auto var(--space-4)}.mobile-cat .brand-logo-large{width:216px}.welcome-to{font-size:1.75rem}.mobile-word{font-size:1.5rem;margin-bottom:var(--space-6)}.mobile-tagline{margin-bottom:var(--space-6);font-size:.875rem}.mobile-actions .social-btn,.email-pill{min-height:56px}.mobile-footer{font-size:.6875rem}}
   </style>
 </head>
 <body>
-  <div class="mp-page">
-  <header class="site-header">
-    <div class="mp-container header-inner">
-      ${brandLockupHtml(`/?lang=${lang}`)}
-      <nav class="nav" aria-label="Primary">
-        <a href="#about">About</a>
-        <a href="#features">Features</a>
-        <a href="#how-it-works">How it works</a>
-        <a href="#contact">Contact</a>
-      </nav>
-      <div class="header-cta">
-        <div class="language">${languageSelectHtml(lang)}</div>
-        <a class="mp-btn mp-btn-primary" href="#sign-up">Sign up</a>
-      </div>
-      <details class="mobile-nav">
-        <summary>Menu</summary>
-        <div>
+  <div class="home-page">
+    <header class="home-header">
+      <div class="mp-container">
+        ${brandLockupHtml(`/?lang=${lang}`)}
+        <nav class="home-nav" aria-label="Primary">
           <a href="#about">About</a>
           <a href="#features">Features</a>
           <a href="#how-it-works">How it works</a>
           <a href="#contact">Contact</a>
-          <a href="#sign-up">Sign up</a>
-        </div>
-      </details>
-    </div>
-  </header>
-  <main>
-    <section class="hero" data-section="hero">
-      <div class="mp-container hero-grid">
-        <div class="welcome-zone">
-          <div class="mobile-brand-mark">${brandLogoHtml("brand-logo-large")}</div>
-          <span class="eyebrow">Welcome to MishiPass</span>
-          <h1>MishiPass</h1>
-          <p class="hero-copy">The digital passport for your cat</p>
-          <p class="hero-copy">A privacy-first dynamic QR system for everyday cat care, missing alerts, and documentation-only records.</p>
-          <div class="hero-actions">
-            <a class="mp-btn mp-btn-primary" href="/dashboard?lang=${lang}">${t(lang, "dashboard")}</a>
-            <a class="mp-btn mp-btn-secondary" href="/recovery-board?lang=${lang}">${t(lang, "recoveryBoard")}</a>
-          </div>
-          <div class="mp-card cat-card" aria-label="${t(lang, "rootHeroAlt")}">
-            <div class="cat-illustration">${brandLogoHtml("brand-logo-large")}</div>
-          </div>
-        </div>
-        <div class="feature-zone">
-          <p class="headline">Everything your cat needs, all in one place</p>
-          <div class="feature-grid">
-            ${featureCard("Secure & Private", "Owner-controlled modes keep sensitive records private.", "lock")}
-            ${featureCard("All-in-One Records", "Keep core profile details and documentation in one workspace.", "record")}
-            ${featureCard("QR Passport", "One permanent QR adapts to the current mode.", "qr")}
-            ${featureCard("Missing Alerts", "Public-safe alert pages help people report sightings.", "alert")}
-            ${featureCard("Vet Visit Ready", "Temporary visit forms collect documentation only.", "vet")}
-            ${featureCard("Recovery Board", "Opt-in listings support community search workflows.", "board")}
-          </div>
-        </div>
+          <a class="mp-btn signup-pill" href="#sign-up">Sign up</a>
+        </nav>
       </div>
-    </section>
-    <section id="sign-up" class="mp-section" data-section="auth">
-      <div class="mp-container">
-        <div class="mp-card login-card">
-          <div class="login-left">
-            <h2>Welcome back to MishiPass</h2>
-            <div class="form-row"><label for="home-email">Email</label><input id="home-email" type="email" autocomplete="email" /></div>
-            <div class="form-row"><label for="home-password">Password</label><input id="home-password" type="password" autocomplete="current-password" /></div>
-            <div class="form-meta"><label class="check-label"><input type="checkbox" /> Remember me</label><a href="/dashboard?lang=${lang}">Forgot password?</a></div>
-            <a class="mp-btn mp-btn-primary" href="/dashboard?lang=${lang}">Log in</a>
-          </div>
-          <div class="login-right">
-            <h2>Create your account</h2>
-            <a class="social-btn" href="/dashboard?lang=${lang}">${iconEmail(18)}<span>Sign up with Email</span></a>
+    </header>
+
+    <main>
+      <section class="desktop-home" aria-label="MishiPass homepage">
+        <div class="mp-container home-hero">
+          <aside class="welcome-panel">
+            <h1>Welcome back!</h1>
+            <p class="coral-copy">Sign in to continue managing your cat's passport</p>
+            <div class="paw-divider"><span class="paw-icon" aria-hidden="true"></span></div>
+            <div class="peek-cat">${brandLogoHtml("brand-logo-large")}<span class="sr-only">${t(lang, "rootHeroAlt")}</span></div>
+            <p class="small-copy">MishiPass helps you keep vaccines, vet visits, and important cat information safe and accessible.</p>
+          </aside>
+
+          <section class="features-panel" id="features">
+            <h2>Everything your cat needs, all in one place</h2>
+            <div class="feature-row">
+              ${featureColumn("Secure & Private", "Your cat's data stays encrypted and owner-controlled.", "lock")}
+              ${featureColumn("Digital Cartilla", "Vaccines, vet visits, and documentation-only records in one place.", "record")}
+              ${featureColumn("QR Passport", "One QR opens the right profile when help is needed.", "qr")}
+              ${featureColumn("Missing Alerts", "Switch to missing mode and share a public alert fast.", "alert")}
+              ${featureColumn("Vet Visit Mode", "Temporary visit access keeps the exam flow simple.", "vet")}
+              ${featureColumn("Recovery Board", "Track sightings and follow the return-to-home flow.", "alert")}
+            </div>
+          </section>
+        </div>
+
+        <div class="mp-container" id="sign-up">
+          <section class="desktop-login" aria-label="MishiPass login and social sign in">
+            <div class="login-copy">
+              <h2>Welcome back to <span class="brand-inline">Mishi<span>Pass</span></span></h2>
+              <p>Sign in to continue managing your cat's passport</p>
+            </div>
+            <form class="login-form" action="/dashboard" method="GET">
+              <div class="form-row"><label for="home-email">Email</label><input id="home-email" type="email" autocomplete="email" placeholder="Enter your email" /></div>
+              <div class="form-row"><label for="home-password">Password</label><input id="home-password" type="password" autocomplete="current-password" placeholder="Enter your password" /></div>
+              <div class="form-meta"><label class="check-label"><input type="checkbox" /> Remember me</label><a href="/dashboard?lang=${lang}">Forgot password?</a></div>
+              <button class="mp-btn" type="submit">Log In</button>
+            </form>
+            <aside class="social-panel">
+              <div class="divider">OR</div>
+              ${socialButtons}
+              <p class="signup-note">Don't have an account? <a href="/dashboard?lang=${lang}">Sign up</a></p>
+            </aside>
+          </section>
+          <p class="privacy-line"><span class="paw-icon paw-icon-sm" aria-hidden="true"></span><span>Your cat's data stays private and secure with MishiPass</span></p>
+        </div>
+      </section>
+
+      <section class="mobile-auth" aria-label="MishiPass mobile sign up">
+        <div class="phone-shell">
+          <div class="mobile-cat">${brandLogoHtml("brand-logo-large")}<span class="sr-only">${t(lang, "rootHeroAlt")}</span></div>
+          <span class="welcome-to">WELCOME TO</span>
+          ${mobileWordmark()}
+          <p class="mobile-tagline">THE DIGITAL PASSPORT FOR YOUR CAT</p>
+          <p class="create-title">Create your account</p>
+          <div class="mobile-actions">
+            <a class="email-pill" href="/dashboard?lang=${lang}">${iconEmail(24)}<span>Sign up with Email</span></a>
             ${socialButtons}
-            <div class="divider">OR</div>
-            <p>Already have an account? <a href="/dashboard?lang=${lang}">Log in</a></p>
           </div>
+          <div class="mobile-divider">OR</div>
+          <p class="mobile-login">Already have an account?<a href="/dashboard?lang=${lang}">Log in</a></p>
+          <footer class="mobile-footer">&copy; 2026 Belvenar Analytics | All Rights Reserved</footer>
         </div>
-      </div>
-    </section>
-    <section id="about" class="mp-section" data-section="about">
-      <div class="mp-container">
-        <h2>About MishiPass</h2>
-        <p class="section-intro">MishiPass is a privacy-first dynamic QR passport and recovery system for cats. One static QR can show the right public-safe experience while the private cartilla stays private.</p>
-        <div class="cards">
-          <article class="mp-card card"><h3>One static QR</h3><p>The printed QR can stay the same while the current mode changes behind it.</p></article>
-          <article class="mp-card card"><h3>Owner-controlled modes</h3><p>Switch between Active Profile, Missing Alert, and Vet Visit mode when needed.</p></article>
-          <article class="mp-card card"><h3>Public-safe info</h3><p>Public pages avoid exact addresses, private cartilla data, and owner full names.</p></article>
+      </section>
+
+      <section class="lower-sections" id="about">
+        <div class="mp-container lower-grid">
+          <article class="mp-card lower-card"><h2>About</h2><p>MishiPass keeps one QR useful across everyday profile, missing alert, and vet visit moments.</p></article>
+          <article class="mp-card lower-card" id="how-it-works"><h3>How it works</h3><p>Register a cat, keep one permanent QR, then switch the public mode when needed.</p></article>
+          <article class="mp-card lower-card" id="contact"><h3>Contact</h3><p>Owner-controlled contact settings protect private details while keeping help reachable.</p></article>
         </div>
-      </div>
-    </section>
-    <section id="features" class="mp-section" data-section="features">
-      <div class="mp-container">
-        <h2>Features</h2>
-        <div class="cards">
-          ${featureCard("Active Profile", "Everyday public profile with safe details.", "profile")}
-          ${featureCard("Missing Alert", "Temporary alert mode for sightings and recovery.", "alert")}
-          ${featureCard("Vet Visit", "Mode-gated forms for documentation-only visit records.", "vet")}
-          ${featureCard("Digital Cartilla", "Private owner record cards for vaccines and notes.", "record")}
-          ${featureCard("WhatsApp-ready missing card", "Share a concise missing cat preview.", "message")}
-          ${featureCard("Recovery Board opt-in", "List missing alerts only when the owner chooses.", "board")}
-        </div>
-      </div>
-    </section>
-    <section id="how-it-works" class="mp-section" data-section="how-it-works">
-      <div class="mp-container">
-        <h2>How it works</h2>
-        <div class="step-grid">
-          ${stepCard("1", "Register your cat")}
-          ${stepCard("2", "Get one permanent QR")}
-          ${stepCard("3", "Choose the current mode")}
-          ${stepCard("4", "Scan the same QR and see the right experience")}
-          ${stepCard("5", "Return to Active Profile when done")}
-        </div>
-      </div>
-    </section>
-    <section id="contact" class="mp-section" data-section="contact">
-      <div class="mp-container">
-        <div class="mp-card contact-panel">
-          <div><h2>Contact</h2><p class="section-intro">Demo-safe contact relay pages help a finder reach the owner without exposing private personal details.</p></div>
-          <a class="mp-btn mp-btn-primary" href="/dashboard?lang=${lang}">Open dashboard</a>
-        </div>
-      </div>
-    </section>
-  </main>
-  <footer class="site-footer">&copy; 2026 Belvenar Analytics | All Rights Reserved</footer>
+      </section>
+    </main>
+
+    <footer class="site-footer desktop-footer">&copy; 2026 Belvenar Analytics | All Rights Reserved</footer>
   </div>
   ${LANGUAGE_SCRIPT}
 </body>
@@ -236,7 +220,7 @@ function buildRootHtml(request: Request, env: LogtoEnv = {}): string {
 
 function buildHistoryHtml(request: Request): string {
   const lang = getLanguageFromRequest(request);
-  return `<!DOCTYPE html><html lang="${lang}"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>${t(lang, "history")} — MishiPass</title><style>*{box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.65;color:#111}a{color:#111}.language{margin-bottom:1rem}.language label{display:block;font-size:.8rem;font-weight:700}.language select{padding:.55rem;border:1px solid #ccc;border-radius:6px;min-height:42px}h1{font-size:clamp(1.8rem,6vw,2.5rem);overflow-wrap:anywhere}p{overflow-wrap:anywhere}</style></head><body><div class="language">${languageSelectHtml(lang)}</div><p><a href="/?lang=${lang}">&larr; ${t(lang, "home")}</a></p><h1>${t(lang, "history")}</h1><p>${t(lang, "historyIntro1")}</p><p>${t(lang, "historyIntro2")}</p><p>${t(lang, "historyIntro3")}</p>${LANGUAGE_SCRIPT}</body></html>`;
+  return `<!DOCTYPE html><html lang="${lang}"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>${t(lang, "history")} - MishiPass</title><style>*{box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.65;color:#111}a{color:#111}.language{margin-bottom:1rem}.language label{display:block;font-size:.8rem;font-weight:700}.language select{padding:.55rem;border:1px solid #ccc;border-radius:6px;min-height:42px}h1{font-size:clamp(1.8rem,6vw,2.5rem);overflow-wrap:anywhere}p{overflow-wrap:anywhere}</style></head><body><div class="language">${languageSelectHtml(lang)}</div><p><a href="/?lang=${lang}">&larr; ${t(lang, "home")}</a></p><h1>${t(lang, "history")}</h1><p>${t(lang, "historyIntro1")}</p><p>${t(lang, "historyIntro2")}</p><p>${t(lang, "historyIntro3")}</p>${LANGUAGE_SCRIPT}</body></html>`;
 }
 
 export function handleRoot(request: Request, env: LogtoEnv = {}): Response {
