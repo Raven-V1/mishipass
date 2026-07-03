@@ -78,10 +78,16 @@ changes the mode. The QR never changes.
   cannot view or manage another owner's cats.
 - Cat profile photos are served through Worker media routes (`/media/cats/:publicId/photo`),
   not raw R2 URLs.
+- Cat gallery photos are owner-only — accessible only through authenticated
+  Worker routes (`/media/cats/:publicId/photos/:photoId`). Only the selected
+  profile photo is served publicly via the profile photo route.
 - Vaccine sticker photos are private cartilla media and are served only through
   authenticated owner-checked Worker routes.
 - Sighting photos are owner-only — accessible only through authenticated
   dashboard routes. Raw R2 keys are never exposed.
+- Sighting report detail view (`/dashboard/cats/:publicId/sightings/:timestamp`)
+  is owner-scoped — returns 404 if the cat does not belong to the authenticated
+  owner.
 - Temporary vet access is reachable only while the cat is in Vet Visit mode.
   Vet Visit mode is implemented with purely mode-gated access (no vet token).
   The session expires after 24 hours or on Save & Finish Visit.
@@ -264,6 +270,8 @@ Recovery Board and WhatsApp-ready Missing Card closure.
 | HMAC-SHA256 reporter IP hashing | `SIGHTING_IP_HMAC_SECRET` environment variable | Active — missing secret fails closed |
 | R2 key non-exposure | Worker media routes serve photos; raw keys never in responses | Active |
 | Sighting photo owner-only access | Authenticated owner check on photo route | Active |
+| Sighting detail owner-scoped | Ownership check on detail view route, 404 for non-owners | Active |
+| Cat photo gallery access control | Gallery photos owner-only via authenticated routes; only profile photo public | Active |
 | Owner language preference | `owner_settings.language_code` allowlist (`en`, `es`, `kk-KZ`) | Active |
 | WhatsApp-ready Missing Card | Owner-only generated share link, public fields only | Active |
 | Recovery Board | Missing-mode only, city/age filters, public-safe fields only | Active |

@@ -61,3 +61,26 @@ export async function listSightingReportsForOwner(
     .all<SightingReportOwnerView>();
   return result.results;
 }
+
+/**
+ * Get a single sighting report by created_at timestamp for an owner's cat.
+ * Ownership enforced via the cat_id subquery.
+ * Returns null if no such report exists for this owner's cat.
+ */
+export async function getSightingReportForOwner(
+  db: D1Database,
+  catPublicId: string,
+  ownerId: number,
+  createdAt: string,
+): Promise<SightingReportOwnerView | null> {
+  return db
+    .prepare(
+      `SELECT sr.message, sr.photo_r2_key, sr.location_text, sr.created_at
+       FROM sighting_reports sr
+       WHERE sr.cat_id = (SELECT id FROM cats WHERE public_id = ? AND owner_id = ?)
+         AND sr.created_at = ?
+       LIMIT 1`,
+    )
+    .bind(catPublicId, ownerId, createdAt)
+    .first<SightingReportOwnerView>();
+}
