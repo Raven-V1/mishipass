@@ -48,10 +48,10 @@ function buildDashboardHtml(): string {
     .cat-card h3,.cat-card .cat-meta,.cat-card .cat-stats,.cat-card .cat-actions,.cat-card .mode-actions{grid-column:2}
     .cat-card h3{font-size:1.625rem;line-height:1.1;margin:0;color:var(--teal)}
     .cat-meta{font-size:1rem;color:var(--ink);margin:0}
-    .cat-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-1);margin:0}
-    .cat-stat{padding:var(--space-1);border-radius:8px;background:#fff7f0;border:1px solid var(--line);min-width:0}
-    .cat-stat strong{display:block;font-size:.75rem;color:var(--muted);margin-bottom:4px;overflow-wrap:anywhere}
-    .cat-stat span{display:block;font-size:.9375rem;font-weight:800;color:var(--ink);overflow-wrap:anywhere}
+    .cat-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-1);margin:0}
+    .cat-stat{padding:var(--space-2) var(--space-1);border-radius:8px;background:#fff7f0;border:1px solid var(--line);min-width:0}
+    .cat-stat strong{display:block;font-size:.6875rem;color:var(--muted);margin-bottom:4px;word-break:normal;overflow-wrap:break-word;hyphens:none}
+    .cat-stat span{display:block;font-size:.9375rem;font-weight:800;color:var(--ink);word-break:normal;overflow-wrap:break-word;hyphens:none}
     .cat-actions,.mode-actions{gap:var(--space-1);margin-top:0}
     .cat-actions>*{flex:1 1 148px;min-width:0}
     .cat-actions a,.cat-actions button,.mode-actions button,.mode-actions span{min-height:48px;justify-content:space-between;overflow-wrap:anywhere;white-space:normal}
@@ -70,7 +70,7 @@ function buildDashboardHtml(): string {
     .swatch{height:64px;border-radius:8px}
     @keyframes breedShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
     #create-cat-form>button[type=submit]{margin-top:var(--space-4)}
-    @media(max-width:768px){body{padding:var(--space-2)}.auth-main,.auth-side{grid-column:1/-1}.auth-side{border-left:0;border-top:1px solid var(--line)}.tab-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.selector-tools{grid-template-columns:1fr}.breed-card-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2)}.swatch-grid{grid-template-columns:repeat(auto-fit,minmax(144px,1fr))}.topbar{align-items:flex-start}.topbar-actions{justify-content:flex-start}.cat-card{grid-template-columns:1fr}.cat-photo,.cat-photo-placeholder,.cat-card h3,.cat-card .cat-meta,.cat-card .cat-stats,.cat-card .cat-actions,.cat-card .mode-actions{grid-column:1}.cat-photo,.cat-photo-placeholder{grid-row:auto}.cat-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-1)}}
+    @media(max-width:768px){body{padding:var(--space-2)}.auth-main,.auth-side{grid-column:1/-1}.auth-side{border-left:0;border-top:1px solid var(--line)}.tab-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.selector-tools{grid-template-columns:1fr}.breed-card-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2)}.swatch-grid{grid-template-columns:repeat(auto-fit,minmax(144px,1fr))}.topbar{align-items:flex-start}.topbar-actions{justify-content:flex-start}.cat-card{grid-template-columns:1fr}.cat-photo,.cat-photo-placeholder,.cat-card h3,.cat-card .cat-meta,.cat-card .cat-stats,.cat-card .cat-actions,.cat-card .mode-actions{grid-column:1}.cat-photo,.cat-photo-placeholder{grid-row:auto}}
     @media(max-width:430px){body{padding:var(--space-2)}.cat-board{grid-template-columns:1fr}.cat-actions>*,.mode-actions>*{flex:1 1 100%}.tab-nav{grid-template-columns:1fr}.tab-btn,.tab-link{width:100%;min-width:0;min-height:80px;padding:var(--space-2)}.breed-card-grid{grid-template-columns:1fr;gap:var(--space-2);max-height:none;overflow:visible}.swatch-grid{grid-template-columns:repeat(auto-fit,minmax(128px,1fr));max-height:384px}.breed-card img,.breed-fallback,.breed-placeholder-art,.breed-card.compact img,.breed-card.compact .breed-fallback,.breed-card.compact .breed-placeholder-art{height:104px}.choice-card,.choice-card.compact{min-height:208px}.auth-main,.auth-side,.panel,.settings-card,.contact-card,.cat-card{padding:var(--space-2)}.tab-visual{width:48px;height:48px;flex-basis:48px}.tab-copy{font-size:.75rem}}
   </style>
 </head>
