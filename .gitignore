@@ -26,3 +26,6 @@ Thumbs.db
 
 # Local reference material, not part of the project
 Hackathon_info/
+
+# Browser/test smoke profiles (local tooling only)
+.codex-smoke/

@@ -1,14 +1,5 @@
 import type { VetSessionInsert, VetSessionRow } from "../types.js";
 
-// TODO (Day 7 — §9 open items q1/q2):
-// Before implementing vet session expiry or token enforcement, the Project Owner must
-// decide and log in docs/decision-log.md:
-//   q1: Is vet access token-based (hash the token, mirror sessions.token_hash)
-//       or purely mode-gated (token_hash nullable, known Beta limitation)?
-//   q2: What is the expires_at rule — 24 h from activated_at OR immediate on
-//       Save & Finish Visit, whichever comes first?
-// Do NOT add expiry logic or token enforcement here until that decision is made.
-
 /**
  * Insert a new vet session for a cat.
  * Ownership enforced: cat_id is resolved via public_id + ownerId subquery.
