@@ -635,3 +635,19 @@ Pinning to a specific 3.x patch (rejected — vitest-pool-workers constraint
 requires 2.x).
 
 Decided by: Carlos
+
+---
+
+## [2026-07-03] — Cat registration promoted to independent dashboard tab
+
+Decision: Register New Cat becomes a top-level authenticated tab, separate
+from My Cats.
+
+Reason: Carlos alignment note; reduces nesting and clarifies the dashboard
+surface. Registration was previously nested under a details toggle inside the
+My Cats tab, making it harder to discover.
+
+Alternatives considered: Keep nested under My Cats (rejected -- per correction
+instruction from Carlos).
+
+Decided by: Carlos

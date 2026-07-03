@@ -31,15 +31,15 @@ function buildDashboardHtml(): string {
     .auth-side{grid-column:8/span 5;padding:var(--space-4);background:#fff4f3;border-left:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;gap:var(--space-2)}
     .auth-meta{display:flex;gap:var(--space-2);align-items:center;justify-content:space-between;flex-wrap:wrap;margin:var(--space-2) 0}.remember{display:inline-flex;gap:var(--space-1);align-items:center;margin:0}.remember input{width:16px;min-height:16px}.divider{display:flex;align-items:center;gap:var(--space-2);font-weight:900;color:var(--muted)}.divider:before,.divider:after{content:"";height:1px;background:var(--line);flex:1}.social-btn{background:#fff;color:var(--ink);border:1px solid var(--line)}.visual-only{margin:0;color:var(--muted);font-size:.875rem}
     .section-head{margin:var(--space-3) 0}.section-head h2{font-size:2.25rem;color:var(--teal);margin:0}.section-head p{margin:var(--space-1) 0 0;color:var(--muted);font-weight:700}
-    .tab-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-2);border-bottom:0;margin:0 0 var(--space-4);padding:0;background:transparent;border:0}
-    .tab-btn,.tab-link{display:flex;align-items:center;justify-content:flex-start;gap:var(--space-2);border-radius:8px;border:1px solid var(--line);background:rgba(255,253,249,.94);color:var(--teal);font-weight:900;font-size:1rem;line-height:1.3;min-height:96px;padding:var(--space-3);white-space:normal;text-align:left;box-shadow:0 10px 24px rgba(56,38,26,.08)}
+    .tab-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--space-2);border-bottom:0;margin:0 0 var(--space-4);padding:0;background:transparent;border:0}
+    .tab-btn,.tab-link{display:flex;align-items:center;justify-content:flex-start;gap:var(--space-2);border-radius:8px;border:1px solid var(--line);background:rgba(255,253,249,.94);color:var(--teal);font-weight:900;font-size:1rem;line-height:1.3;min-height:auto;padding:var(--space-2) var(--space-3);white-space:normal;text-align:left;box-shadow:0 10px 24px rgba(56,38,26,.08)}
     .tab-btn.active{background:var(--brand-coral);border-color:var(--brand-coral);color:#fff}
     .tab-btn.active .tab-visual{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.18)}
-    .tab-visual{display:flex;align-items:center;justify-content:center;flex:0 0 56px;width:56px;height:56px;border-radius:8px;background:#fff7f0;border:1px solid var(--line);color:inherit}
+    .tab-visual{display:flex;align-items:center;justify-content:center;flex:0 0 44px;width:44px;height:44px;border-radius:8px;background:#fff7f0;border:1px solid var(--line);color:inherit}
     .tab-cat-art{width:56px;height:56px;background:transparent}
-    .tab-text{display:grid;gap:var(--space-1)}
-    .tab-title{display:block}
-    .tab-copy{display:block;font-size:.8125rem;font-weight:700;opacity:.82}
+    .tab-text{display:grid;gap:var(--space-1);min-width:0}
+    .tab-title{display:block;overflow-wrap:anywhere}
+    .tab-copy{display:block;font-size:.8125rem;font-weight:700;opacity:.82;overflow-wrap:anywhere}
     .panel,.settings-card,.contact-card,.cat-card{border-color:var(--line);border-radius:8px;background:var(--card);box-shadow:var(--shadow);padding:var(--space-3)}
     .form-grid{gap:var(--space-2)}.field{margin-bottom:var(--space-2)}
     .cat-board{grid-template-columns:repeat(auto-fit,minmax(min(100%,560px),1fr));gap:var(--space-3)}
@@ -49,12 +49,12 @@ function buildDashboardHtml(): string {
     .cat-card h3{font-size:1.625rem;line-height:1.1;margin:0;color:var(--teal)}
     .cat-meta{font-size:1rem;color:var(--ink);margin:0}
     .cat-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-1);margin:0}
-    .cat-stat{padding:var(--space-1);border-radius:8px;background:#fff7f0;border:1px solid var(--line);min-width:0;overflow:hidden}
-    .cat-stat strong{display:block;font-size:.75rem;color:var(--muted);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .cat-stat span{display:block;font-size:.9375rem;font-weight:800;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .cat-stat{padding:var(--space-1);border-radius:8px;background:#fff7f0;border:1px solid var(--line);min-width:0}
+    .cat-stat strong{display:block;font-size:.75rem;color:var(--muted);margin-bottom:4px;overflow-wrap:anywhere}
+    .cat-stat span{display:block;font-size:.9375rem;font-weight:800;color:var(--ink);overflow-wrap:anywhere}
     .cat-actions,.mode-actions{gap:var(--space-1);margin-top:0}
-    .cat-actions>*{flex:1 1 148px}
-    .cat-actions a,.cat-actions button,.mode-actions button,.mode-actions span{min-height:48px;justify-content:space-between}
+    .cat-actions>*{flex:1 1 148px;min-width:0}
+    .cat-actions a,.cat-actions button,.mode-actions button,.mode-actions span{min-height:48px;justify-content:space-between;overflow-wrap:anywhere;white-space:normal}
     .mode-actions .btn-primary{background:var(--green);border-color:var(--green)}
     .mode-actions .btn-warn{background:var(--brand-coral);border-color:var(--brand-coral)}
     .mode-actions .btn-danger{background:#d64545}
@@ -97,7 +97,8 @@ function buildDashboardHtml(): string {
   <div id="dashboard-section" class="hidden">
     <div class="section-head"><div><h2>Welcome back!</h2><p>Here's everything about your furry friend.</p></div><button id="logout-btn" class="btn-secondary">${iconLogout(16)} <span>Logout</span></button></div>
     <div class="tab-nav">
-      <button class="tab-btn active" data-tab="cats-tab"><span class="tab-visual">${brandLogoHtml("tab-cat-art")}</span><span class="tab-text"><span class="tab-title" data-i18n="registerCat">Register a Cat</span><span class="tab-copy">Profile setup and QR mode control</span></span></button>
+      <button class="tab-btn active" data-tab="cats-tab"><span class="tab-visual">${brandLogoHtml("tab-cat-art")}</span><span class="tab-text"><span class="tab-title" data-i18n="myCats">My Cats</span><span class="tab-copy">Profile setup and QR mode control</span></span></button>
+      <button class="tab-btn" data-tab="register-tab"><span class="tab-visual">${iconQrCode(24)}</span><span class="tab-text"><span class="tab-title" data-i18n="registerCat">Register a Cat</span><span class="tab-copy">Add a new cat to MishiPass</span></span></button>
       <button class="tab-btn" data-tab="contact-tab"><span class="tab-visual">${iconContact(24)}</span><span class="tab-text"><span class="tab-title" data-i18n="contactPrivacy">Contact &amp; Privacy</span><span class="tab-copy">Owner-controlled public contact</span></span></button>
       <button class="tab-btn" data-tab="settings-tab"><span class="tab-visual">${iconSettings(24)}</span><span class="tab-text"><span class="tab-title" data-i18n="settings">Settings</span><span class="tab-copy">Language and account options</span></span></button>
       <a class="tab-link" id="board-link" href="/recovery-board"><span class="tab-visual">${iconMegaphone(24)}</span><span class="tab-text"><span class="tab-title" data-i18n="missingCatBoard">Missing Cat Board</span><span class="tab-copy">Public alerts and recovery updates</span></span></a>
@@ -105,36 +106,36 @@ function buildDashboardHtml(): string {
 
     <div id="cats-tab" class="tab-panel active">
       <div id="cat-list"></div>
-      <details>
-        <summary data-i18n="registerCat">Register a Cat</summary>
-        <div id="create-error" class="error hidden"></div>
-        <form id="create-cat-form" class="panel">
-          <div class="form-grid">
-            <div class="field"><label for="cat-name" data-i18n="name">Name</label><input type="text" id="cat-name" required /></div>
-            <div class="field"><label for="cat-country" data-i18n="country">Country</label><select id="cat-country" required><option value="" data-i18n="selectCountry">Select country</option>${countryOptions}</select></div>
-            <div class="field"><label for="cat-sex" data-i18n="sex">Sex</label><select id="cat-sex"><option value="" data-i18n="unknown">Unknown</option><option value="female">Female</option><option value="male">Male</option></select></div>
-          </div>
+    </div>
 
-          <label data-i18n="colorMarkings">Color / Markings</label>
-          <div id="color-swatch-grid" class="swatch-grid"></div>
-          <input type="hidden" id="cat-color" />
-          <div id="color-summary" class="selector-summary"></div>
-          <div id="color-other-wrap" class="other-field hidden"><input type="text" id="cat-color-other" maxlength="80" placeholder="Mixed / Other" /></div>
-          <div class="field"><label for="cat-markings-note" data-i18n="optionalMarkingsNotes">Optional markings notes</label><textarea id="cat-markings-note" maxlength="200"></textarea></div>
+    <div id="register-tab" class="tab-panel">
+      <div id="create-error" class="error hidden"></div>
+      <form id="create-cat-form" class="panel">
+        <div class="form-grid">
+          <div class="field"><label for="cat-name" data-i18n="name">Name</label><input type="text" id="cat-name" required /></div>
+          <div class="field"><label for="cat-country" data-i18n="country">Country</label><select id="cat-country" required><option value="" data-i18n="selectCountry">Select country</option>${countryOptions}</select></div>
+          <div class="field"><label for="cat-sex" data-i18n="sex">Sex</label><select id="cat-sex"><option value="" data-i18n="unknown">Unknown</option><option value="female">Female</option><option value="male">Male</option></select></div>
+        </div>
 
-          <label data-i18n="breedMix">Breed / Mix</label>
-          <div class="selector-tools"><input type="search" id="breed-search" data-i18n-placeholder="searchBreed" placeholder="Search breeds" /><button type="button" id="show-more-breeds" class="btn-secondary" data-i18n="showMoreBreeds">Show more breeds</button></div>
-          <div class="breed-section-title" data-i18n="featuredBreeds">Featured visual breeds</div>
-          <div id="breed-card-grid" class="breed-card-grid featured-breed-grid"></div>
-          <div class="breed-section-title" data-i18n="allBreeds">All breeds</div>
-          <div id="all-breed-grid" class="breed-card-grid all-breed-grid"></div>
-          <input type="hidden" id="cat-breed" />
-          <div id="breed-summary" class="selector-summary"></div>
-          <div id="breed-other-wrap" class="other-field hidden"><input type="text" id="cat-breed-other" maxlength="100" placeholder="Mixed / Unknown / Other" /></div>
+        <label data-i18n="colorMarkings">Color / Markings</label>
+        <div id="color-swatch-grid" class="swatch-grid"></div>
+        <input type="hidden" id="cat-color" />
+        <div id="color-summary" class="selector-summary"></div>
+        <div id="color-other-wrap" class="other-field hidden"><input type="text" id="cat-color-other" maxlength="80" placeholder="Mixed / Other" /></div>
+        <div class="field"><label for="cat-markings-note" data-i18n="optionalMarkingsNotes">Optional markings notes</label><textarea id="cat-markings-note" maxlength="200"></textarea></div>
 
-          <button type="submit" class="btn-primary" data-i18n="registerCat">Register a Cat</button>
-        </form>
-      </details>
+        <label data-i18n="breedMix">Breed / Mix</label>
+        <div class="selector-tools"><input type="search" id="breed-search" data-i18n-placeholder="searchBreed" placeholder="Search breeds" /><button type="button" id="show-more-breeds" class="btn-secondary" data-i18n="showMoreBreeds">Show more breeds</button></div>
+        <div class="breed-section-title" data-i18n="featuredBreeds">Featured visual breeds</div>
+        <div id="breed-card-grid" class="breed-card-grid featured-breed-grid"></div>
+        <div class="breed-section-title" data-i18n="allBreeds">All breeds</div>
+        <div id="all-breed-grid" class="breed-card-grid all-breed-grid"></div>
+        <input type="hidden" id="cat-breed" />
+        <div id="breed-summary" class="selector-summary"></div>
+        <div id="breed-other-wrap" class="other-field hidden"><input type="text" id="cat-breed-other" maxlength="100" placeholder="Mixed / Unknown / Other" /></div>
+
+        <button type="submit" class="btn-primary" data-i18n="registerCat">Register a Cat</button>
+      </form>
     </div>
 
     <div id="contact-tab" class="tab-panel"><div id="contact-list"><p>Loading...</p></div></div>
@@ -151,9 +152,9 @@ function buildDashboardHtml(): string {
     var colorGrid=document.getElementById("color-swatch-grid"),colorInput=document.getElementById("cat-color"),colorSummary=document.getElementById("color-summary"),colorOtherWrap=document.getElementById("color-other-wrap"),colorOther=document.getElementById("cat-color-other");
     var currentLanguage="en",allBreeds=[],featuredBreeds=[],visibleBreedCount=24;
     var labels={
-      en:{home:"Home",language:"Language",login:"Login",register:"Register",dashboard:"Owner Dashboard",registerCat:"Register a Cat",contactPrivacy:"Contact & Privacy",settings:"Settings",missingCatBoard:"Missing Cat Board",name:"Name",country:"Country",selectCountry:"Select country",sex:"Sex",unknown:"Unknown",colorMarkings:"Color / Markings",optionalMarkingsNotes:"Optional markings notes",breedMix:"Breed / Mix",searchBreed:"Search breeds",showMoreBreeds:"Show more breeds",featuredBreeds:"Featured visual breeds",allBreeds:"All breeds",save:"Save",details:"Details",qrCard:"QR Card",cartilla:"Digital Cartilla",reports:"Reports",photoUpload:"Photo upload",delete:"Delete",mode:"Mode",noPhoto:"No photo",noCats:"No cats registered yet.",viewPublicProfile:"View Public Profile",viewBoard:"View Board",openPublicAlert:"Open public alert",whatsappCard:"WhatsApp Card",switchToMissing:"Switch to Missing",startVetVisit:"Start Vet Visit",switchToActive:"Switch to Active",endVetVisit:"End Vet Visit",vetVisitActive:"Vet Visit Active",confirmMissing:"Confirm Missing",city:"City",area:"Area / neighborhood",reward:"Reward",working:"Working...",uploading:"Uploading...",saved:"Saved",error:"Error",networkError:"Network error.",removeConfirm:"Remove this cat from MishiPass?",startVetConfirm:"Start Vet Visit? While active, anyone scanning this QR can submit a vet visit record. Save & Finish returns the QR to Active Profile.",hidden:"Hidden",relay:"Relay",publicPhone:"Public phone",phone:"Phone",nextVaccine:"Next vaccine",weight:"Weight",age:"Age",qrStatus:"QR Status",pending:"Pending",notSet:"Not set",backToDashboard:"Back to Dashboard"},
-      es:{home:"Inicio",language:"Idioma",login:"Iniciar sesión",register:"Registrar",dashboard:"Panel del dueño",registerCat:"Registrar un gato",contactPrivacy:"Contacto y privacidad",settings:"Configuración",missingCatBoard:"Tablero de gatos perdidos",name:"Nombre",country:"País",selectCountry:"Seleccionar país",sex:"Sexo",unknown:"Desconocido",colorMarkings:"Color / marcas",optionalMarkingsNotes:"Notas opcionales de marcas",breedMix:"Raza / mezcla",searchBreed:"Buscar razas",showMoreBreeds:"Mostrar más razas",featuredBreeds:"Razas visuales destacadas",allBreeds:"Todas las razas",save:"Guardar",details:"Detalles",qrCard:"Tarjeta QR",cartilla:"Cartilla digital",reports:"Reportes",photoUpload:"Subir foto",delete:"Eliminar",mode:"Modo",noPhoto:"Sin foto",noCats:"Aún no hay gatos registrados.",viewPublicProfile:"Ver perfil público",viewBoard:"Ver tablero",openPublicAlert:"Abrir alerta pública",whatsappCard:"Tarjeta WhatsApp",switchToMissing:"Cambiar a perdido",startVetVisit:"Iniciar visita veterinaria",switchToActive:"Cambiar a activo",endVetVisit:"Finalizar visita veterinaria",vetVisitActive:"Visita veterinaria activa",confirmMissing:"Confirmar perdido",city:"Ciudad",area:"Zona / vecindario",reward:"Recompensa",working:"Trabajando...",uploading:"Subiendo...",saved:"Guardado",error:"Error",networkError:"Error de red.",removeConfirm:"¿Eliminar este gato de MishiPass?",startVetConfirm:"¿Iniciar visita veterinaria? Mientras esté activa, cualquiera que escanee este QR puede enviar un registro veterinario. Guardar y finalizar devuelve el QR al Perfil activo.",hidden:"Oculto",relay:"Relay",publicPhone:"Teléfono público",phone:"Teléfono",nextVaccine:"Siguiente vacuna",weight:"Peso",age:"Edad",qrStatus:"Estado QR",pending:"Pendiente",notSet:"No establecido",backToDashboard:"Volver al panel"},
-      "kk-KZ":{home:"Басты бет",language:"Тіл",login:"Кіру",register:"Тіркелу",dashboard:"Ие панелі",registerCat:"Мысықты тіркеу",contactPrivacy:"Байланыс және құпиялылық",settings:"Баптаулар",missingCatBoard:"Жоғалған мысықтар тақтасы",name:"Аты",country:"Ел",selectCountry:"Ел таңдаңыз",sex:"Жынысы",unknown:"Белгісіз",colorMarkings:"Түсі / белгілері",optionalMarkingsNotes:"Белгілер туралы қосымша ескертпе",breedMix:"Тұқым / аралас",searchBreed:"Тұқымдарды іздеу",showMoreBreeds:"Көбірек тұқым көрсету",featuredBreeds:"Көрнекі таңдаулы тұқымдар",allBreeds:"Барлық тұқымдар",save:"Сақтау",details:"Мәліметтер",qrCard:"QR картасы",cartilla:"Цифрлық картилья",reports:"Хабарламалар",photoUpload:"Фото жүктеу",delete:"Жою",mode:"Режим",noPhoto:"Фото жоқ",noCats:"Әлі мысық тіркелмеген.",viewPublicProfile:"Қоғамдық профильді көру",viewBoard:"Тақтаны көру",openPublicAlert:"Қоғамдық ескертуді ашу",whatsappCard:"WhatsApp картасы",switchToMissing:"Жоғалғанға ауыстыру",startVetVisit:"Вет сапарын бастау",switchToActive:"Белсендіге ауыстыру",endVetVisit:"Вет сапарын аяқтау",vetVisitActive:"Вет сапары белсенді",confirmMissing:"Жоғалғанын растау",city:"Қала",area:"Аудан / маңай",reward:"Сыйақы",working:"Орындалуда...",uploading:"Жүктелуде...",saved:"Сақталды",error:"Қате",networkError:"Желі қатесі.",removeConfirm:"Бұл мысықты MishiPass ішінен жою керек пе?",startVetConfirm:"Вет сапарын бастау керек пе? Белсенді кезде осы QR-ды сканерлеген кез келген адам вет жазбасын жібере алады. Сақтау және аяқтау QR-ды Белсенді профильге қайтарады.",hidden:"Жасырын",relay:"Relay",publicPhone:"Қоғамдық телефон",phone:"Телефон",nextVaccine:"Келесі вакцина",weight:"Салмақ",age:"Жасы",qrStatus:"QR күйі",pending:"Күтуде",notSet:"Орнатылмаған",backToDashboard:"Ие панеліне оралу"}
+      en:{home:"Home",language:"Language",login:"Login",register:"Register",dashboard:"Owner Dashboard",myCats:"My Cats",registerCat:"Register a Cat",contactPrivacy:"Contact & Privacy",settings:"Settings",missingCatBoard:"Missing Cat Board",name:"Name",country:"Country",selectCountry:"Select country",sex:"Sex",unknown:"Unknown",colorMarkings:"Color / Markings",optionalMarkingsNotes:"Optional markings notes",breedMix:"Breed / Mix",searchBreed:"Search breeds",showMoreBreeds:"Show more breeds",featuredBreeds:"Featured visual breeds",allBreeds:"All breeds",save:"Save",details:"Details",qrCard:"QR Card",cartilla:"Digital Cartilla",reports:"Reports",photoUpload:"Photo upload",delete:"Delete",mode:"Mode",noPhoto:"No photo",noCats:"No cats registered yet.",viewPublicProfile:"View Public Profile",viewBoard:"View Board",openPublicAlert:"Open public alert",whatsappCard:"WhatsApp Card",switchToMissing:"Switch to Missing",startVetVisit:"Start Vet Visit",switchToActive:"Switch to Active",endVetVisit:"End Vet Visit",vetVisitActive:"Vet Visit Active",confirmMissing:"Confirm Missing",city:"City",area:"Area / neighborhood",reward:"Reward",working:"Working...",uploading:"Uploading...",saved:"Saved",error:"Error",networkError:"Network error.",removeConfirm:"Remove this cat from MishiPass?",startVetConfirm:"Start Vet Visit? While active, anyone scanning this QR can submit a vet visit record. Save & Finish returns the QR to Active Profile.",hidden:"Hidden",relay:"Relay",publicPhone:"Public phone",phone:"Phone",nextVaccine:"Next vaccine",weight:"Weight",age:"Age",qrStatus:"QR Status",pending:"Pending",notSet:"Not set",backToDashboard:"Back to Dashboard"},
+      es:{home:"Inicio",language:"Idioma",login:"Iniciar sesión",register:"Registrar",dashboard:"Panel del dueño",myCats:"Mis gatos",registerCat:"Registrar un gato",contactPrivacy:"Contacto y privacidad",settings:"Configuración",missingCatBoard:"Tablero de gatos perdidos",name:"Nombre",country:"País",selectCountry:"Seleccionar país",sex:"Sexo",unknown:"Desconocido",colorMarkings:"Color / marcas",optionalMarkingsNotes:"Notas opcionales de marcas",breedMix:"Raza / mezcla",searchBreed:"Buscar razas",showMoreBreeds:"Mostrar más razas",featuredBreeds:"Razas visuales destacadas",allBreeds:"Todas las razas",save:"Guardar",details:"Detalles",qrCard:"Tarjeta QR",cartilla:"Cartilla digital",reports:"Reportes",photoUpload:"Subir foto",delete:"Eliminar",mode:"Modo",noPhoto:"Sin foto",noCats:"Aún no hay gatos registrados.",viewPublicProfile:"Ver perfil público",viewBoard:"Ver tablero",openPublicAlert:"Abrir alerta pública",whatsappCard:"Tarjeta WhatsApp",switchToMissing:"Cambiar a perdido",startVetVisit:"Iniciar visita veterinaria",switchToActive:"Cambiar a activo",endVetVisit:"Finalizar visita veterinaria",vetVisitActive:"Visita veterinaria activa",confirmMissing:"Confirmar perdido",city:"Ciudad",area:"Zona / vecindario",reward:"Recompensa",working:"Trabajando...",uploading:"Subiendo...",saved:"Guardado",error:"Error",networkError:"Error de red.",removeConfirm:"¿Eliminar este gato de MishiPass?",startVetConfirm:"¿Iniciar visita veterinaria? Mientras esté activa, cualquiera que escanee este QR puede enviar un registro veterinario. Guardar y finalizar devuelve el QR al Perfil activo.",hidden:"Oculto",relay:"Relay",publicPhone:"Teléfono público",phone:"Teléfono",nextVaccine:"Siguiente vacuna",weight:"Peso",age:"Edad",qrStatus:"Estado QR",pending:"Pendiente",notSet:"No establecido",backToDashboard:"Volver al panel"},
+      "kk-KZ":{home:"Басты бет",language:"Тіл",login:"Кіру",register:"Тіркелу",dashboard:"Ие панелі",myCats:"Менің мысықтарым",registerCat:"Мысықты тіркеу",contactPrivacy:"Байланыс және құпиялылық",settings:"Баптаулар",missingCatBoard:"Жоғалған мысықтар тақтасы",name:"Аты",country:"Ел",selectCountry:"Ел таңдаңыз",sex:"Жынысы",unknown:"Белгісіз",colorMarkings:"Түсі / белгілері",optionalMarkingsNotes:"Белгілер туралы қосымша ескертпе",breedMix:"Тұқым / аралас",searchBreed:"Тұқымдарды іздеу",showMoreBreeds:"Көбірек тұқым көрсету",featuredBreeds:"Көрнекі таңдаулы тұқымдар",allBreeds:"Барлық тұқымдар",save:"Сақтау",details:"Мәліметтер",qrCard:"QR картасы",cartilla:"Цифрлық картилья",reports:"Хабарламалар",photoUpload:"Фото жүктеу",delete:"Жою",mode:"Режим",noPhoto:"Фото жоқ",noCats:"Әлі мысық тіркелмеген.",viewPublicProfile:"Қоғамдық профильді көру",viewBoard:"Тақтаны көру",openPublicAlert:"Қоғамдық ескертуді ашу",whatsappCard:"WhatsApp картасы",switchToMissing:"Жоғалғанға ауыстыру",startVetVisit:"Вет сапарын бастау",switchToActive:"Белсендіге ауыстыру",endVetVisit:"Вет сапарын аяқтау",vetVisitActive:"Вет сапары белсенді",confirmMissing:"Жоғалғанын растау",city:"Қала",area:"Аудан / маңай",reward:"Сыйақы",working:"Орындалуда...",uploading:"Жүктелуде...",saved:"Сақталды",error:"Қате",networkError:"Желі қатесі.",removeConfirm:"Бұл мысықты MishiPass ішінен жою керек пе?",startVetConfirm:"Вет сапарын бастау керек пе? Белсенді кезде осы QR-ды сканерлеген кез келген адам вет жазбасын жібере алады. Сақтау және аяқтау QR-ды Белсенді профильге қайтарады.",hidden:"Жасырын",relay:"Relay",publicPhone:"Қоғамдық телефон",phone:"Телефон",nextVaccine:"Келесі вакцина",weight:"Салмақ",age:"Жасы",qrStatus:"QR күйі",pending:"Күтуде",notSet:"Орнатылмаған",backToDashboard:"Ие панеліне оралу"}
     };
     function tr(k){return(labels[currentLanguage]&&labels[currentLanguage][k])||labels.en[k]||k}
     function esc(s){var d=document.createElement("div");d.appendChild(document.createTextNode(String(s||"")));return d.innerHTML}
