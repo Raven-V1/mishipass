@@ -143,7 +143,13 @@ export async function handleLogtoApple(env: LogtoEnv): Promise<Response> {
       { status: 503, headers: { "Content-Type": "application/json" } },
     );
   }
-  const target = env.LOGTO_APPLE_CONNECTOR_TARGET || "apple";
+  const target = env.LOGTO_APPLE_CONNECTOR_TARGET;
+  if (!target) {
+    return new Response(
+      JSON.stringify({ error: "Apple login not configured" }),
+      { status: 503, headers: { "Content-Type": "application/json" } },
+    );
+  }
   return startOidcFlow(config, target);
 }
 
