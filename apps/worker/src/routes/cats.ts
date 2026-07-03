@@ -36,6 +36,8 @@ export async function handleListCats(
     hasPhoto: Boolean(cat.photo_r2_key),
     photoUrl: cat.photo_r2_key ? `/media/cats/${cat.public_id}/photo` : null,
     weight: cat.weight ?? null,
+    birthDate: cat.birth_date ?? null,
+    nextVaccineDate: cat.next_vaccine_date ?? null,
   }));
 
   return Response.json(result, { status: 200 });

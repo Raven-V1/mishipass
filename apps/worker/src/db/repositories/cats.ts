@@ -13,8 +13,8 @@ export async function insertCat(
 ): Promise<void> {
   await db
     .prepare(
-      `INSERT INTO cats (public_id, owner_id, name, country_code, photo_r2_key, current_mode, sex, birth_date, color_markings, breed_mix, weight, notes)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO cats (public_id, owner_id, name, country_code, photo_r2_key, current_mode, sex, birth_date, next_vaccine_date, color_markings, breed_mix, weight, notes)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .bind(
       data.public_id,
@@ -25,6 +25,7 @@ export async function insertCat(
       data.current_mode ?? "active",
       data.sex ?? null,
       data.birth_date ?? null,
+      data.next_vaccine_date ?? null,
       data.color_markings ?? null,
       data.breed_mix ?? null,
       data.weight ?? null,
@@ -46,7 +47,7 @@ export async function getCatForOwner(
   return db
     .prepare(
       `SELECT public_id, name, country_code, photo_r2_key, current_mode,
-              sex, birth_date, color_markings, breed_mix, weight, notes
+              sex, birth_date, next_vaccine_date, color_markings, breed_mix, weight, notes
        FROM cats
        WHERE public_id = ? AND owner_id = ?`,
     )
@@ -69,7 +70,7 @@ export async function getCatPublicProfile(
   return db
     .prepare(
       `SELECT public_id, name, country_code, photo_r2_key, current_mode,
-              sex, birth_date, color_markings, breed_mix, weight
+              sex, birth_date, next_vaccine_date, color_markings, breed_mix, weight
        FROM cats
        WHERE public_id = ? AND deleted_at IS NULL`,
     )
@@ -90,7 +91,7 @@ export async function listCatsForOwner(
   const result = await db
     .prepare(
       `SELECT public_id, name, country_code, photo_r2_key, current_mode,
-              sex, birth_date, color_markings, breed_mix, weight
+              sex, birth_date, next_vaccine_date, color_markings, breed_mix, weight
        FROM cats
        WHERE owner_id = ? AND deleted_at IS NULL
        ORDER BY created_at ASC`,
