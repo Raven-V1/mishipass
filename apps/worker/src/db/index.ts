@@ -63,6 +63,16 @@ export {
   updateCatPhoto,
 } from "./repositories/cats.js";
 
+// Cat photos (gallery)
+export {
+  deleteCatPhoto,
+  getCatPhotoR2Key,
+  insertCatPhoto,
+  listCatPhotos,
+  setCatProfilePhoto,
+} from "./repositories/catPhotos.js";
+export type { CatPhotoRow, CatPhotoView } from "./repositories/catPhotos.js";
+
 // Contact settings
 export {
   getContactSettingsForOwner,
@@ -88,6 +98,7 @@ export {
 
 // Sighting reports
 export {
+  getSightingReportForOwner,
   insertSightingReport,
   listSightingReportsForOwner,
 } from "./repositories/sightingReports.js";
