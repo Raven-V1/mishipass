@@ -1,4 +1,4 @@
-import { MISHIPASS_BACKGROUND_SRC, MISHIPASS_LOGO_SRC } from "./brandAssets.js";
+import { MISHIPASS_BACKGROUND_SRC, MISHIPASS_LOGO_SRC, MISHIPASS_PAW_SRC } from "./brandAssets.js";
 
 // Shared HTML utility functions.
 
@@ -53,7 +53,7 @@ export const MISHIPASS_DESIGN_CSS = `
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);line-height:1.5;background:var(--cream);background-image:linear-gradient(rgba(255,248,243,.90),rgba(255,248,243,.92)),url("${MISHIPASS_BACKGROUND_SRC}");background-size:cover;background-position:center top;background-attachment:fixed}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);line-height:1.5;background:var(--cream);background-image:linear-gradient(rgba(255,248,243,.76),rgba(255,248,243,.82)),url("${MISHIPASS_BACKGROUND_SRC}");background-size:cover;background-position:center top;background-attachment:fixed}
 a{color:var(--teal);text-decoration-thickness:2px;text-underline-offset:3px}
 img,svg{max-width:100%}
 .mp-page{min-height:100vh}
@@ -77,18 +77,22 @@ textarea{min-height:96px;resize:vertical}
 .badge,.country-badge,.mode-badge,.status,.vet-badge{display:inline-flex;align-items:center;gap:var(--space-1);max-width:100%;min-height:32px;padding:0 var(--space-2);border-radius:999px;background:#e8faf7;color:var(--teal);font-size:.875rem;font-weight:800;overflow-wrap:anywhere}
 .mp-cat-placeholder,.photo-placeholder,.cat-photo-placeholder,.placeholder,.breed-placeholder-art{display:flex;align-items:center;justify-content:center;color:var(--muted);background:linear-gradient(135deg,#fff7f0,#e8faf7);border:1px dashed #d8c8bd;text-align:center}
 .mp-back{display:inline-flex;align-items:center;min-height:var(--touch-target);margin-bottom:var(--space-2);font-weight:800}
-.brand-lockup{display:inline-grid;grid-template-columns:48px minmax(0,1fr);gap:var(--space-2);align-items:center;color:var(--ink);text-decoration:none;min-width:0}
-.brand-logo{width:48px;height:48px;border-radius:8px;background:#fff url("${MISHIPASS_LOGO_SRC}") center/contain no-repeat;border:1px solid var(--line);display:block}
-.brand-logo-large{width:96px;height:96px;border-radius:8px;background:#fff url("${MISHIPASS_LOGO_SRC}") center/contain no-repeat;border:1px solid var(--line);display:block}
-.brand-word{display:block;font-size:1.25rem;font-weight:900;line-height:1;color:var(--teal);overflow-wrap:anywhere}
-.brand-sub{display:block;font-size:.75rem;color:var(--muted);margin-top:var(--space-1);overflow-wrap:anywhere}
+.brand-lockup{display:inline-grid;grid-template-columns:72px minmax(0,1fr);gap:var(--space-1);align-items:center;width:clamp(176px,18vw,220px);color:var(--ink);text-decoration:none;min-width:0}
+.brand-logo{width:72px;aspect-ratio:946/513;border-radius:0;background:transparent url("${MISHIPASS_LOGO_SRC}") center/contain no-repeat;border:0;display:block}
+.brand-logo-large{width:224px;max-width:100%;aspect-ratio:946/513;border-radius:0;background:transparent url("${MISHIPASS_LOGO_SRC}") center/contain no-repeat;border:0;display:block}
+.brand-word{display:block;font-size:1.875rem;font-weight:900;line-height:.95;color:var(--teal);white-space:nowrap;overflow-wrap:normal}
+.brand-word .coral{color:var(--brand-coral)}.brand-word .mint{color:var(--brand-mint)}
+.brand-sub{display:block;font-size:.75rem;color:var(--teal);margin-top:var(--space-1);font-weight:800;overflow-wrap:anywhere}
+.paw-icon{display:inline-block;width:24px;height:24px;background:transparent url("${MISHIPASS_PAW_SRC}") center/contain no-repeat;flex:0 0 auto}
+.paw-icon-sm{width:20px;height:20px}
+.paw-icon-lg{width:32px;height:32px}
 .mp-header{border-bottom:1px solid var(--line);background:rgba(255,248,243,.94);backdrop-filter:blur(12px)}
 .mp-header-inner{min-height:80px;display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)}
 .mp-header-actions{display:flex;align-items:center;gap:var(--space-1);flex-wrap:wrap;justify-content:flex-end}
 .icon-label{display:inline-flex;align-items:center;gap:var(--space-1)}
 .provider-pending{opacity:.72}
 @media(max-width:768px){.mp-container,.mp-narrow{padding:0 var(--space-2)}.mp-section{padding:var(--space-6) 0}.mp-grid{grid-template-columns:repeat(8,minmax(0,1fr));gap:var(--space-2)}}
-@media(max-width:430px){.mp-container,.mp-narrow{padding:0 var(--space-2)}.mp-section{padding:var(--space-4) 0}.mp-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-2)}.brand-lockup{grid-template-columns:40px minmax(0,1fr)}.brand-logo{width:40px;height:40px}.mp-header-inner{min-height:64px;gap:var(--space-1)}}
+@media(max-width:430px){.mp-container,.mp-narrow{padding:0 var(--space-2)}.mp-section{padding:var(--space-4) 0}.mp-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-2)}.brand-lockup{grid-template-columns:56px minmax(0,1fr);width:clamp(144px,54vw,176px)}.brand-logo{width:56px}.brand-word{font-size:1.5rem}.brand-sub{font-size:.625rem}.mp-header-inner{min-height:64px;gap:var(--space-1)}}
 `;
 
 export function brandLogoHtml(className = "brand-logo"): string {
@@ -96,5 +100,5 @@ export function brandLogoHtml(className = "brand-logo"): string {
 }
 
 export function brandLockupHtml(href = "/", subcopy = "The digital passport for your cat"): string {
-  return `<a class="brand-lockup" href="${href}" aria-label="MishiPass home">${brandLogoHtml()}<span><span class="brand-word">MishiPass</span><span class="brand-sub">${subcopy}</span></span></a>`;
+  return `<a class="brand-lockup" href="${href}" aria-label="MishiPass home">${brandLogoHtml()}<span><span class="brand-word"><span class="coral">Mishi</span><span class="mint">Pass</span></span><span class="brand-sub">${subcopy}</span></span></a>`;
 }
