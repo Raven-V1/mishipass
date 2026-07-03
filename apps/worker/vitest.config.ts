@@ -16,6 +16,7 @@ export default defineWorkersConfig(async () => ({
         miniflare: {
           bindings: {
             TEST_MIGRATIONS: await readD1Migrations(migrationsPath),
+            PUBLIC_BASE_URL: "https://test.mishipass.example",
           },
         },
       },

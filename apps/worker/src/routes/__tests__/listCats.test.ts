@@ -77,6 +77,7 @@ describe("handleListCats", () => {
       qrUrl: "https://mishipass.example.com/c/MP-MX-1234-ABCD",
       hasPhoto: false,
       photoUrl: null,
+      weight: null,
     });
 
     expect(json[1]).toEqual({
@@ -87,6 +88,7 @@ describe("handleListCats", () => {
       qrUrl: "https://mishipass.example.com/c/MP-ES-5678-EFGH",
       hasPhoto: true,
       photoUrl: "/media/cats/MP-ES-5678-EFGH/photo",
+      weight: null,
     });
   });
 
