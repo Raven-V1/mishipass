@@ -20,7 +20,7 @@ import { handleCatDetail } from "./pages/catDetail.js";
 import { handleCartillaPage, handleVetVisitDetailPage } from "./pages/cartilla.js";
 import { handleQrPage } from "./pages/qrPage.js";
 import { handleSightingInbox, handleSightingDetail } from "./pages/sightingInbox.js";
-import { getLanguageFromRequest } from "./utils/i18n.js";
+import { getLanguageFromRequest, resolveOwnerLang } from "./utils/i18n.js";
 import { handleBrandAsset } from "./utils/brandAssets.js";
 
 export interface Env {
@@ -112,37 +112,43 @@ export default {
     const detailMatch = DASHBOARD_CAT_DETAIL.exec(pathname);
     if (method === "GET" && detailMatch) {
       const ctx = await resolveSession(request, env.DB);
-      return handleCatDetail(detailMatch[1]!, env.DB, ctx, env.PUBLIC_BASE_URL, getLanguageFromRequest(request));
+      const lang = ctx.ownerId ? await resolveOwnerLang(env.DB, ctx.ownerId) : "en" as const;
+      return handleCatDetail(detailMatch[1]!, env.DB, ctx, env.PUBLIC_BASE_URL, lang);
     }
 
     const cartillaPageMatch = DASHBOARD_CAT_CARTILLA.exec(pathname);
     if (method === "GET" && cartillaPageMatch) {
       const ctx = await resolveSession(request, env.DB);
-      return handleCartillaPage(cartillaPageMatch[1]!, env.DB, ctx, getLanguageFromRequest(request));
+      const lang = ctx.ownerId ? await resolveOwnerLang(env.DB, ctx.ownerId) : "en" as const;
+      return handleCartillaPage(cartillaPageMatch[1]!, env.DB, ctx, lang);
     }
 
     const vetVisitDetailMatch = DASHBOARD_CAT_VET_VISIT_DETAIL.exec(pathname);
     if (method === "GET" && vetVisitDetailMatch) {
       const ctx = await resolveSession(request, env.DB);
-      return handleVetVisitDetailPage(vetVisitDetailMatch[1]!, vetVisitDetailMatch[2]!, env.DB, ctx, getLanguageFromRequest(request));
+      const lang = ctx.ownerId ? await resolveOwnerLang(env.DB, ctx.ownerId) : "en" as const;
+      return handleVetVisitDetailPage(vetVisitDetailMatch[1]!, vetVisitDetailMatch[2]!, env.DB, ctx, lang);
     }
 
     const qrMatch = DASHBOARD_CAT_QR.exec(pathname);
     if (method === "GET" && qrMatch) {
       const ctx = await resolveSession(request, env.DB);
-      return handleQrPage(qrMatch[1]!, env.DB, ctx, env.PUBLIC_BASE_URL, getLanguageFromRequest(request));
+      const lang = ctx.ownerId ? await resolveOwnerLang(env.DB, ctx.ownerId) : "en" as const;
+      return handleQrPage(qrMatch[1]!, env.DB, ctx, env.PUBLIC_BASE_URL, lang);
     }
 
     const sightingsPageMatch = DASHBOARD_CAT_SIGHTINGS.exec(pathname);
     if (method === "GET" && sightingsPageMatch) {
       const ctx = await resolveSession(request, env.DB);
-      return handleSightingInbox(sightingsPageMatch[1]!, env.DB, ctx, getLanguageFromRequest(request));
+      const lang = ctx.ownerId ? await resolveOwnerLang(env.DB, ctx.ownerId) : "en" as const;
+      return handleSightingInbox(sightingsPageMatch[1]!, env.DB, ctx, lang);
     }
 
     const sightingDetailMatch = DASHBOARD_CAT_SIGHTING_DETAIL.exec(pathname);
     if (method === "GET" && sightingDetailMatch) {
       const ctx = await resolveSession(request, env.DB);
-      return handleSightingDetail(sightingDetailMatch[1]!, sightingDetailMatch[2]!, env.DB, env.PHOTOS, ctx, getLanguageFromRequest(request));
+      const lang = ctx.ownerId ? await resolveOwnerLang(env.DB, ctx.ownerId) : "en" as const;
+      return handleSightingDetail(sightingDetailMatch[1]!, sightingDetailMatch[2]!, env.DB, env.PHOTOS, ctx, lang);
     }
 
     // -- Auth API --
@@ -244,7 +250,8 @@ export default {
     const missingCardMatch = DASHBOARD_CAT_MISSING_CARD.exec(pathname);
     if (method === "GET" && missingCardMatch) {
       const ctx = await resolveSession(request, env.DB);
-      return handleMissingCardPage(missingCardMatch[1]!, env.DB, ctx, env.PUBLIC_BASE_URL, getLanguageFromRequest(request));
+      const lang = ctx.ownerId ? await resolveOwnerLang(env.DB, ctx.ownerId) : "en" as const;
+      return handleMissingCardPage(missingCardMatch[1]!, env.DB, ctx, env.PUBLIC_BASE_URL, lang);
     }
 
     // -- Digital Cartilla API --
