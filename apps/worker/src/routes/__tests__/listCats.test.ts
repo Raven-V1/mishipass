@@ -78,6 +78,8 @@ describe("handleListCats", () => {
       hasPhoto: false,
       photoUrl: null,
       weight: null,
+      birthDate: null,
+      nextVaccineDate: null,
     });
 
     expect(json[1]).toEqual({
@@ -89,6 +91,8 @@ describe("handleListCats", () => {
       hasPhoto: true,
       photoUrl: "/media/cats/MP-ES-5678-EFGH/photo",
       weight: null,
+      birthDate: null,
+      nextVaccineDate: null,
     });
   });
 
