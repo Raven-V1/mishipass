@@ -171,6 +171,7 @@ describe("cats — public profile", () => {
       current_mode: "active",
       sex: null,
       birth_date: null,
+      next_vaccine_date: null,
       color_markings: null,
       breed_mix: null,
       weight: null,
