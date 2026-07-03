@@ -17,6 +17,7 @@ import {
   getCatPublicProfile,
 } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
+import { resolveSession } from "../middleware/session.js";
 import { iconStethoscope } from "../utils/icons.js";
 import { MISHIPASS_DESIGN_CSS, brandLockupHtml, escapeHtml, htmlResponse } from "../utils/html.js";
 import { getLanguageFromRequest, type LanguageCode, t } from "../utils/i18n.js";
@@ -294,7 +295,11 @@ export async function handleVetVisitFinish(
     .bind(publicId)
     .run();
 
-  return htmlResponse(renderSuccessPage(cat.name, lang));
+  // Check if the submitter has an authenticated owner session
+  const ctx = await resolveSession(request, db);
+  const hasOwnerSession = ctx.ownerId !== null;
+
+  return htmlResponse(renderSuccessPage(cat.name, lang, hasOwnerSession));
 }
 
 // ── HTML Renderers ──────────────────────────────────────────────────────────
@@ -528,8 +533,11 @@ function renderNotVetModePage(name: string, lang: LanguageCode = "en"): string {
 </html>`;
 }
 
-function renderSuccessPage(name: string, lang: LanguageCode = "en"): string {
+function renderSuccessPage(name: string, lang: LanguageCode = "en", showDashboardLink = false): string {
   const safeName = escapeHtml(name);
+  const dashLink = showDashboardLink
+    ? `<a href="/dashboard?lang=${lang}" style="display:inline-block;margin-top:16px;font-weight:800;color:var(--teal);text-decoration:none">${t(lang, "backToDashboard")}</a>`
+    : "";
   return `<!DOCTYPE html>
 <html lang="${lang}">
 <head>
@@ -554,6 +562,7 @@ function renderSuccessPage(name: string, lang: LanguageCode = "en"): string {
       <strong>Visit saved.</strong>
       <p>This QR has returned to Active Profile. The visit record is stored in the owner's private history.</p>
     </div>
+    ${dashLink}
   </section>
   </main>
 </body>

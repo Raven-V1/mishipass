@@ -105,6 +105,7 @@ export interface CatPublicView {
   current_mode: CatMode;
   sex: string | null;
   birth_date: string | null;
+  next_vaccine_date: string | null;
   color_markings: string | null;
   breed_mix: string | null;
   weight: string | null;
@@ -124,6 +125,7 @@ export interface CatInsert {
   current_mode?: CatMode;
   sex?: string | null;
   birth_date?: string | null;
+  next_vaccine_date?: string | null;
   color_markings?: string | null;
   breed_mix?: string | null;
   weight?: string | null;
