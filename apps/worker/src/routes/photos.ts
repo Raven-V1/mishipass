@@ -1,5 +1,5 @@
 import { validateId } from "@mishipass/shared-validation";
-import { getCatForOwner, getCatPublicProfile, listSightingReportsForOwner, updateCatPhoto, insertCatPhoto, listCatPhotos, setCatProfilePhoto, deleteCatPhoto, getCatPhotoR2Key } from "../db/index.js";
+import { getCatForOwner, getCatPublicProfile, listSightingReportsForOwner, updateCatPhoto, insertCatPhoto, listCatPhotos, setCatProfilePhoto, deleteCatPhoto, getCatPhotoR2Key, toggleCatPhotoPublic, getPublicCatPhotoR2Key } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
 
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -337,6 +337,78 @@ export async function handleGalleryPhotoServe(
     headers: {
       "Content-Type": object.httpMetadata?.contentType || "application/octet-stream",
       "Cache-Control": "private, max-age=3600",
+      "X-Content-Type-Options": "nosniff",
+    },
+  });
+}
+
+
+/**
+ * POST /api/cats/:publicId/photos/:photoId/visibility
+ * Toggle is_public for a gallery photo.
+ */
+export async function handleTogglePhotoPublic(
+  publicId: string,
+  photoId: number,
+  request: Request,
+  db: D1Database,
+  ctx: RequestContext,
+): Promise<Response> {
+  if (ctx.ownerId === null) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+  if (!validateId(publicId)) {
+    return new Response("Not Found", { status: 404 });
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 400 });
+  }
+
+  if (typeof body !== "object" || body === null || typeof (body as Record<string, unknown>)["isPublic"] !== "boolean") {
+    return new Response("Body must include isPublic (boolean)", { status: 400 });
+  }
+
+  const { isPublic } = body as { isPublic: boolean };
+  const updated = await toggleCatPhotoPublic(db, publicId, ctx.ownerId, photoId, isPublic);
+  if (!updated) {
+    return new Response("Not Found", { status: 404 });
+  }
+
+  return Response.json({ success: true }, { status: 200 });
+}
+
+/**
+ * GET /media/cats/:publicId/photos/:photoId/public
+ * Public gallery photo serving. No auth required but photo must be is_public = 1.
+ */
+export async function handlePublicGalleryPhotoServe(
+  publicId: string,
+  photoId: number,
+  db: D1Database,
+  photoBucket: R2Bucket,
+): Promise<Response> {
+  if (!validateId(publicId)) {
+    return new Response("Not Found", { status: 404 });
+  }
+
+  const r2Key = await getPublicCatPhotoR2Key(db, publicId, photoId);
+  if (!r2Key) {
+    return new Response("Not Found", { status: 404 });
+  }
+
+  const object = await photoBucket.get(r2Key);
+  if (!object) {
+    return new Response("Not Found", { status: 404 });
+  }
+
+  return new Response(object.body, {
+    headers: {
+      "Content-Type": object.httpMetadata?.contentType || "application/octet-stream",
+      "Cache-Control": "public, max-age=86400",
       "X-Content-Type-Options": "nosniff",
     },
   });

@@ -27,6 +27,10 @@ vi.mock("../../db/index.js", () => ({
   insertVetSession: vi.fn(),
   finishVetSession: vi.fn(),
   updateCatMode: vi.fn(),
+  listPublicCatPhotos: vi.fn().mockResolvedValue([]),
+  getCatForOwner: vi.fn(),
+  listCatsForOwner: vi.fn().mockResolvedValue([]),
+  softDeleteCat: vi.fn(),
 }));
 
 let mockGenerateIdCallCount = 0;
