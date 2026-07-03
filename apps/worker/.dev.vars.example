@@ -1,0 +1,35 @@
+# .dev.vars.example — copy to .dev.vars and fill in values for local development.
+# .dev.vars is gitignored. Never commit real values.
+#
+# Required for all local dev:
+PUBLIC_BASE_URL = "http://localhost:8787"
+SIGHTING_IP_HMAC_SECRET = "local-dev-hmac-secret-change-in-production"
+
+# Optional — TheCatAPI key (free tier at thecatapi.com)
+# THE_CAT_API_KEY = ""
+
+# ── Logto OIDC (Google / Apple login) ──────────────────────────────────────
+# All six required for social login to activate in local dev.
+# For production, set via: wrangler secret put <NAME>
+#
+# 1. Create a Logto Cloud tenant at https://cloud.logto.io
+# 2. Inside your tenant, create a "Traditional web" application
+# 3. Copy the Issuer, App ID, and App Secret from the app settings
+# 4. Add redirect URI:
+#      local:      http://localhost:8787/api/auth/logto/callback
+#      production: https://mishipass.carlosvelazquez354.workers.dev/api/auth/logto/callback
+#
+# LOGTO_ENDPOINT = "https://your-tenant-id.logto.app"
+# LOGTO_APP_ID = ""
+# LOGTO_CLIENT_SECRET = ""
+# LOGTO_REDIRECT_URI = "http://localhost:8787/api/auth/logto/callback"
+#
+# Google connector — configure in Logto dashboard > Connectors > Social
+#   Requires a Google Cloud project with OAuth 2.0 client credentials.
+#   The connector target name is set in Logto (default: "google").
+# LOGTO_GOOGLE_CONNECTOR_TARGET = "google"
+#
+# Apple connector — configure in Logto dashboard > Connectors > Social
+#   Requires Apple Developer Program account.
+#   The connector target name is set in Logto (default: "apple").
+# LOGTO_APPLE_CONNECTOR_TARGET = "apple"
