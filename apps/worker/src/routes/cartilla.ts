@@ -69,7 +69,11 @@ export async function handleCreateMedication(
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  if ("recommendation" in body || "reminder_at" in body || "next_dose" in body || "interaction_check" in body || "refill_at" in body) {
+  const MEDICATION_ALLOWED_FIELDS = new Set([
+    "medication_name", "dose", "duration", "start_date", "prescriber_name", "notes",
+  ]);
+  const hasDisallowedField = Object.keys(body).some(k => !MEDICATION_ALLOWED_FIELDS.has(k));
+  if (hasDisallowedField) {
     return Response.json({ error: "Medication Record stores documentation only" }, { status: 400 });
   }
 
