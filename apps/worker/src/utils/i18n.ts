@@ -113,6 +113,9 @@ const STRINGS: Record<LanguageCode, Record<string, string>> = {
     whatsappCard: "WhatsApp Card",
     whatsappShareMissing: "is missing.",
     weight: "Weight",
+    navDashboard: "Dashboard",
+    navLogin: "Log in",
+    navLogout: "Log out",
   },
   es: {
     activeProfile: "Perfil activo",
@@ -220,6 +223,9 @@ const STRINGS: Record<LanguageCode, Record<string, string>> = {
     whatsappCard: "Tarjeta WhatsApp",
     whatsappShareMissing: "está perdido.",
     weight: "Peso",
+    navDashboard: "Panel",
+    navLogin: "Iniciar sesion",
+    navLogout: "Cerrar sesion",
   },
   "kk-KZ": {
     activeProfile: "Белсенді профиль",
@@ -327,6 +333,9 @@ const STRINGS: Record<LanguageCode, Record<string, string>> = {
     whatsappCard: "WhatsApp картасы",
     whatsappShareMissing: "жоғалды.",
     weight: "Салмақ",
+    navDashboard: "Ие панелі",
+    navLogin: "Кіру",
+    navLogout: "Шығу",
   },
 };
 

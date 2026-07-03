@@ -9,6 +9,7 @@ import type { MedicationEntry, VaccineEntry, VetVisitEntry } from "../db/index.j
 import type { RequestContext } from "../middleware/session.js";
 import { MISHIPASS_DESIGN_CSS, brandLockupHtml, escapeHtml, htmlResponse } from "../utils/html.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
+import { renderTopNav, TOP_NAV_CSS } from "./partials/topNav.js";
 
 function redirectDashboard(): Response {
   return new Response(null, { status: 302, headers: { Location: "/dashboard" } });
@@ -45,6 +46,7 @@ export async function handleCartillaPage(
   <title>${safeName} — ${t(lang, "cartilla")}</title>
   <style>
     ${MISHIPASS_DESIGN_CSS}
+    ${TOP_NAV_CSS}
     body{padding:var(--space-3)}
     .page-shell{max-width:864px;margin:var(--space-4) auto}.cartilla-shell{padding:var(--space-4);margin-top:var(--space-3)}
     h1{font-size:clamp(2rem,6vw,3rem);line-height:1.08;margin:0 0 var(--space-1);color:var(--teal)}
@@ -62,6 +64,7 @@ export async function handleCartillaPage(
 </head>
 <body>
   <main class="page-shell">
+    ${renderTopNav(lang, { authenticated: true })}
     ${brandLockupHtml(`/?lang=${lang}`)}
   <section class="mp-card cartilla-shell">
     <div class="nav"><a class="mp-back" href="/dashboard/cats/${safeId}?lang=${lang}">&larr; ${safeName}</a></div>
@@ -110,9 +113,10 @@ export async function handleVetVisitDetailPage(
   const html = `<!DOCTYPE html>
 <html lang="${lang}"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>${t(lang, "vetVisit")} — ${safeName}</title>
-<style>${MISHIPASS_DESIGN_CSS}body{padding:var(--space-3)}.page-shell{max-width:672px;margin:var(--space-4) auto}.detail-shell{padding:var(--space-4);margin-top:var(--space-3)}.nav{font-size:0.875rem;margin-bottom:var(--space-3)}h1{color:var(--teal)}.field{margin:var(--space-2) 0}.label{font-size:0.875rem;color:var(--muted);font-weight:800}.value{white-space:pre-wrap}@media(max-width:430px){body{padding:var(--space-2)}.detail-shell{padding:var(--space-3)}}</style></head>
+<style>${MISHIPASS_DESIGN_CSS}${TOP_NAV_CSS}body{padding:var(--space-3)}.page-shell{max-width:672px;margin:var(--space-4) auto}.detail-shell{padding:var(--space-4);margin-top:var(--space-3)}.nav{font-size:0.875rem;margin-bottom:var(--space-3)}h1{color:var(--teal)}.field{margin:var(--space-2) 0}.label{font-size:0.875rem;color:var(--muted);font-weight:800}.value{white-space:pre-wrap}@media(max-width:430px){body{padding:var(--space-2)}.detail-shell{padding:var(--space-3)}}</style></head>
 <body>
   <main class="page-shell">
+    ${renderTopNav(lang, { authenticated: true })}
     ${brandLockupHtml(`/?lang=${lang}`)}
   <section class="mp-card detail-shell">
     <div class="nav"><a class="mp-back" href="/dashboard/cats/${safeId}/cartilla?lang=${lang}">&larr; ${t(lang, "cartilla")}</a></div>
