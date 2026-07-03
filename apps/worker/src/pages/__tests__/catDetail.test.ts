@@ -3,11 +3,9 @@ import { handleCatDetail } from "../catDetail.js";
 import type { RequestContext } from "../../middleware/session.js";
 
 const mockGetCatForOwner = vi.fn();
-const mockListVetVisits = vi.fn();
 
 vi.mock("../../db/index.js", () => ({
   getCatForOwner: (...args: unknown[]) => mockGetCatForOwner(...args),
-  listVetVisits: (...args: unknown[]) => mockListVetVisits(...args),
 }));
 
 const fakeDb = {} as D1Database;
@@ -34,57 +32,47 @@ function cat(overrides: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   mockGetCatForOwner.mockReset();
-  mockListVetVisits.mockReset();
 });
 
 describe("handleCatDetail", () => {
-  it("renders a readable full Vet Visit record", async () => {
+  it("does not render vet visit records (medical data lives in cartilla only)", async () => {
     mockGetCatForOwner.mockResolvedValue(cat());
-    mockListVetVisits.mockResolvedValue([
-      {
-        id: 7,
-        visit_date: "2026-07-02",
-        vet_or_clinic_name: "Dr. Ada — North Clinic",
-        notes: "Reason: Annual check\nWeight: 4.5 kg\nHealthy visit note",
-        created_at: "2026-07-02T12:00:00Z",
-      },
-    ]);
     const res = await handleCatDetail(TEST_CAT_ID, fakeDb, authed, PUBLIC_BASE_URL);
     const html = await res.text();
-    expect(html).toContain("Vet Visit Records");
-    expect(html).toContain("2026-07-02");
-    expect(html).toContain("Dr. Ada — North Clinic");
-    expect(html).toContain("Annual check");
-    expect(html).toContain("4.5 kg");
-    expect(html).toContain("Healthy visit note");
-    expect(html).toContain(`/dashboard/cats/${TEST_CAT_ID}/cartilla/vet-visits/7?lang=en`);
+    // Medical content must not appear on cat detail page
+    expect(html).not.toContain("Vet Visit Records");
+    expect(html).not.toContain("vet-entry");
+    expect(html).not.toContain("No vet visits recorded yet.");
+    // Links to cartilla should still be present
+    expect(html).toContain(`/dashboard/cats/${TEST_CAT_ID}/cartilla`);
   });
 
-  it("renders a non-empty fallback card for blank Vet Visit fields", async () => {
-    mockGetCatForOwner.mockResolvedValue(cat());
-    mockListVetVisits.mockResolvedValue([
-      { id: 8, visit_date: null, vet_or_clinic_name: "", notes: "", created_at: "2026-07-02T12:00:00Z" },
-    ]);
+  it("renders cat profile info fields when present", async () => {
+    mockGetCatForOwner.mockResolvedValue(cat({
+      sex: "female",
+      color_markings: "Calico",
+      breed_mix: "Persian",
+      weight: "4.2 kg",
+    }));
     const res = await handleCatDetail(TEST_CAT_ID, fakeDb, authed, PUBLIC_BASE_URL);
     const html = await res.text();
-    expect(html).toContain("Date not recorded");
-    expect(html).toContain("Vet visit record");
-    expect(html).toContain(`/dashboard/cats/${TEST_CAT_ID}/cartilla/vet-visits/8?lang=en`);
-    expect(html).not.toContain('<div class="vet-entry"></div>');
+    expect(html).toContain("female");
+    expect(html).toContain("Calico");
+    expect(html).toContain("Persian");
+    expect(html).toContain("4.2 kg");
   });
 
-  it("renders a clean empty state when no Vet Visit records exist", async () => {
+  it("renders navigation links including top nav", async () => {
     mockGetCatForOwner.mockResolvedValue(cat());
-    mockListVetVisits.mockResolvedValue([]);
     const res = await handleCatDetail(TEST_CAT_ID, fakeDb, authed, PUBLIC_BASE_URL);
     const html = await res.text();
-    expect(html).toContain("No vet visits recorded yet.");
-    expect(html).not.toContain('<div class="vet-entry">');
+    expect(html).toContain("mp-top-nav");
+    expect(html).toContain("/dashboard");
+    expect(html).toContain(`/c/${TEST_CAT_ID}`);
   });
 
   it("does not expose raw private fields on the owner detail page", async () => {
     mockGetCatForOwner.mockResolvedValue(cat({ photo_r2_key: `cats/${TEST_CAT_ID}/secret-key.jpg` }));
-    mockListVetVisits.mockResolvedValue([]);
     const res = await handleCatDetail(TEST_CAT_ID, fakeDb, authed, PUBLIC_BASE_URL);
     const html = await res.text();
     expect(html).not.toContain("photo_r2_key");

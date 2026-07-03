@@ -3,6 +3,7 @@ import { MISHIPASS_DESIGN_CSS, brandLockupHtml, escapeHtml, htmlResponse } from 
 import { generateQrSvg } from "../utils/qr.js";
 import type { RequestContext } from "../middleware/session.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
+import { renderTopNav, TOP_NAV_CSS } from "./partials/topNav.js";
 
 export async function handleQrPage(
   publicId: string,
@@ -33,6 +34,7 @@ export async function handleQrPage(
   <title>${t(lang, "qrCard")} — ${safeName} — MishiPass</title>
   <style>
     ${MISHIPASS_DESIGN_CSS}
+    ${TOP_NAV_CSS}
     body{padding:var(--space-3)}
     .qr-wrap{max-width:560px;margin:var(--space-4) auto}
     .nav{margin-bottom:var(--space-3);font-size:0.875rem}
@@ -56,6 +58,7 @@ export async function handleQrPage(
 </head>
 <body>
   <main class="qr-wrap">
+    ${renderTopNav(lang, { authenticated: true })}
     ${brandLockupHtml(`/?lang=${lang}`)}
     <div class="nav"><a class="mp-back" href="/dashboard/cats/${safeId}?lang=${lang}">&larr; ${safeName}</a></div>
     <div class="card">
