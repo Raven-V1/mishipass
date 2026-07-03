@@ -3,11 +3,11 @@ import { checkDurableRateLimit } from "./middleware/durableRateLimit.js";
 import { hmacSha256Hex } from "./utils/crypto.js";
 import { handleLogin, handleLogout, handleRegister } from "./routes/auth.js";
 import { handleLogtoApple, handleLogtoCallback, handleLogtoGoogle } from "./routes/logto.js";
-import { handleCreateCat, handleListCats, handlePublicProfile, handleRemoveCat } from "./routes/cats.js";
+import { handleCreateCat, handleListCats, handlePublicProfile, handleRemoveCat, handleUpdateCat } from "./routes/cats.js";
 import { handleGetContactSettings, handleUpsertContactSettings } from "./routes/contactSettings.js";
 import { handleSwitchToActive, handleSwitchToMissing } from "./routes/missingAlerts.js";
 import { handleSightingForm, handleSightingSubmit, handleListSightingsForOwner } from "./routes/sightingReports.js";
-import { handleCatPhotoUpload, handleCatPhotoServe, handleSightingPhotoServe, handleListCatPhotos, handleGalleryPhotoUpload, handleSetProfilePhoto, handleDeleteGalleryPhoto, handleGalleryPhotoServe } from "./routes/photos.js";
+import { handleCatPhotoUpload, handleCatPhotoServe, handleSightingPhotoServe, handleListCatPhotos, handleGalleryPhotoUpload, handleSetProfilePhoto, handleDeleteGalleryPhoto, handleGalleryPhotoServe, handleTogglePhotoPublic, handlePublicGalleryPhotoServe } from "./routes/photos.js";
 import { handleStartVetVisit, handleCancelVetVisit, handleVetVisitFinish } from "./routes/vetVisit.js";
 import { handleCartillaSummaryJson, handleCreateMedication, handleCreateVaccine, handleVaccineStickerServe, handleVaccineStickerUpload } from "./routes/cartilla.js";
 import { handleGetOwnerSettings, handleUpsertOwnerSettings } from "./routes/ownerSettings.js";
@@ -80,6 +80,9 @@ const CAT_PHOTOS_LIST = /^\/api\/cats\/([^/]+)\/photos$/;
 const CAT_PHOTO_PROFILE = /^\/api\/cats\/([^/]+)\/photos\/(\d+)\/profile$/;
 const CAT_PHOTO_DELETE = /^\/api\/cats\/([^/]+)\/photos\/(\d+)\/delete$/;
 const CAT_GALLERY_SERVE = /^\/media\/cats\/([^/]+)\/photos\/(\d+)$/;
+const CAT_UPDATE = /^\/api\/cats\/([^/]+)\/update$/;
+const CAT_PHOTO_TOGGLE_PUBLIC = /^\/api\/cats\/([^/]+)\/photos\/(\d+)\/visibility$/;
+const CAT_PUBLIC_GALLERY_SERVE = /^\/media\/cats\/([^/]+)\/photos\/(\d+)\/public$/;
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -378,10 +381,27 @@ export default {
       return handleDeleteGalleryPhoto(photoDeleteMatch[1]!, parseInt(photoDeleteMatch[2]!, 10), env.DB, env.PHOTOS, ctx);
     }
 
+    const photoTogglePublicMatch = CAT_PHOTO_TOGGLE_PUBLIC.exec(pathname);
+    if (method === "POST" && photoTogglePublicMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleTogglePhotoPublic(photoTogglePublicMatch[1]!, parseInt(photoTogglePublicMatch[2]!, 10), request, env.DB, ctx);
+    }
+
     const galleryServeMatch = CAT_GALLERY_SERVE.exec(pathname);
     if (method === "GET" && galleryServeMatch) {
       const ctx = await resolveSession(request, env.DB);
       return handleGalleryPhotoServe(galleryServeMatch[1]!, parseInt(galleryServeMatch[2]!, 10), env.DB, env.PHOTOS, ctx);
+    }
+
+    const publicGalleryServeMatch = CAT_PUBLIC_GALLERY_SERVE.exec(pathname);
+    if (method === "GET" && publicGalleryServeMatch) {
+      return handlePublicGalleryPhotoServe(publicGalleryServeMatch[1]!, parseInt(publicGalleryServeMatch[2]!, 10), env.DB, env.PHOTOS);
+    }
+
+    const catUpdateMatch = CAT_UPDATE.exec(pathname);
+    if (method === "POST" && catUpdateMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleUpdateCat(catUpdateMatch[1]!, request, env.DB, ctx);
     }
 
     return new Response("Not Found", { status: 404 });

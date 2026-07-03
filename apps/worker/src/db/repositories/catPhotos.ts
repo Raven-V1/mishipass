@@ -9,6 +9,7 @@ export interface CatPhotoRow {
   id: number;
   r2_key: string;
   is_profile: number;
+  is_public: number;
   created_at: string;
 }
 
@@ -30,7 +31,7 @@ export async function listCatPhotos(
 ): Promise<CatPhotoRow[]> {
   const result = await db
     .prepare(
-      `SELECT cp.id, cp.r2_key, cp.is_profile, cp.created_at
+      `SELECT cp.id, cp.r2_key, cp.is_profile, cp.is_public, cp.created_at
        FROM cat_photos cp
        WHERE cp.cat_id = (SELECT id FROM cats WHERE public_id = ? AND owner_id = ?)
        ORDER BY cp.created_at DESC`,
@@ -207,6 +208,74 @@ export async function getCatPhotoR2Key(
          AND cp.cat_id = (SELECT id FROM cats WHERE public_id = ? AND owner_id = ?)`,
     )
     .bind(photoId, publicId, ownerId)
+    .first<{ r2_key: string }>();
+  return row?.r2_key ?? null;
+}
+
+
+/**
+ * Toggle the is_public flag for a specific photo.
+ * Ownership verified via cats table join.
+ * Returns true if a row was updated, false if not found or not owned.
+ */
+export async function toggleCatPhotoPublic(
+  db: D1Database,
+  publicId: string,
+  ownerId: number,
+  photoId: number,
+  isPublic: boolean,
+): Promise<boolean> {
+  const result = await db
+    .prepare(
+      `UPDATE cat_photos
+       SET is_public = ?
+       WHERE id = ?
+         AND cat_id = (SELECT id FROM cats WHERE public_id = ? AND owner_id = ?)`,
+    )
+    .bind(isPublic ? 1 : 0, photoId, publicId, ownerId)
+    .run();
+  return result.meta.changes > 0;
+}
+
+/**
+ * List photo IDs that are public for a given cat (no ownership check).
+ * Used on the public profile page to display gallery photos.
+ */
+export async function listPublicCatPhotos(
+  db: D1Database,
+  publicId: string,
+): Promise<Array<{ id: number }>> {
+  const result = await db
+    .prepare(
+      `SELECT cp.id
+       FROM cat_photos cp
+       INNER JOIN cats c ON c.id = cp.cat_id
+       WHERE c.public_id = ? AND c.deleted_at IS NULL AND cp.is_public = 1
+       ORDER BY cp.created_at DESC`,
+    )
+    .bind(publicId)
+    .all<{ id: number }>();
+  return result.results;
+}
+
+/**
+ * Get the R2 key for a specific photo only if it is marked public.
+ * No ownership check -- used for unauthenticated public gallery serving.
+ * Returns null if the photo does not exist, belongs to a deleted cat, or is not public.
+ */
+export async function getPublicCatPhotoR2Key(
+  db: D1Database,
+  publicId: string,
+  photoId: number,
+): Promise<string | null> {
+  const row = await db
+    .prepare(
+      `SELECT cp.r2_key
+       FROM cat_photos cp
+       INNER JOIN cats c ON c.id = cp.cat_id
+       WHERE cp.id = ? AND c.public_id = ? AND c.deleted_at IS NULL AND cp.is_public = 1`,
+    )
+    .bind(photoId, publicId)
     .first<{ r2_key: string }>();
   return row?.r2_key ?? null;
 }
