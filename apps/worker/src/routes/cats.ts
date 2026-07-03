@@ -1,10 +1,12 @@
 import { generateId, validateId } from "@mishipass/shared-validation";
 import {
+  getCatForOwner,
   getCatPublicProfile,
   getContactSettingsPublic,
   getMissingAlertPublic,
   insertCat,
   listCatsForOwner,
+  listPublicCatPhotos,
   softDeleteCat,
 } from "../db/index.js";
 import type { ContactSettingsPublicView, MissingAlertPublicView } from "../db/index.js";
@@ -162,13 +164,15 @@ export async function handlePublicProfile(
   const contact = await getContactSettingsPublic(db, publicId);
   const effectiveContact = contact ?? { contact_mode: "relay" as const, public_phone: null };
 
+  const publicPhotos = await listPublicCatPhotos(db, publicId);
+
   return new Response(
     renderActiveProfile(publicId, cat.name, cat.country_code, cat.photo_r2_key, effectiveContact, {
       sex: cat.sex,
       color_markings: cat.color_markings,
       breed_mix: cat.breed_mix,
       weight: cat.weight,
-    }, lang),
+    }, publicPhotos, lang),
     {
       status: 200,
       headers: { "Content-Type": "text/html;charset=UTF-8", "X-Content-Type-Options": "nosniff" },
@@ -310,6 +314,7 @@ function renderActiveProfile(
   photoR2Key: string | null,
   contact: ContactSettingsPublicView,
   catView: { sex: string | null; color_markings: string | null; breed_mix: string | null; weight: string | null },
+  publicPhotos: Array<{ id: number }>,
   lang: LanguageCode = "en",
 ): string {
   const safeName = escapeHtml(name);
@@ -356,6 +361,8 @@ function renderActiveProfile(
     h1{font-size:clamp(2rem,6vw,3rem);line-height:1.08;margin:var(--space-3) 0 var(--space-1);color:var(--teal);overflow-wrap:anywhere}
     .photo img,.photo-placeholder{width:160px;height:160px;border-radius:8px;object-fit:cover;display:flex;align-items:center;justify-content:center;margin:var(--space-3) 0;background:#fff7f0}
     .detail{margin:var(--space-1) 0;color:var(--ink)}
+    .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:var(--space-2);margin-top:var(--space-3)}
+    .gallery img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px}
     .contact-info{display:flex;align-items:center;gap:var(--space-1);margin-top:var(--space-3);color:var(--muted)}
     @media(max-width:430px){body{padding:var(--space-2)}.profile-card{padding:var(--space-3)}.contact-btn{width:100%}}
   </style>
@@ -369,6 +376,7 @@ function renderActiveProfile(
       ${photoSection}
       ${detailLines}
       ${contactSection || `<p class="contact-info">${iconContact(16)} <span>${t(lang, "privacyOwnerControlledContact")}</span></p>`}
+      ${publicPhotos.length > 0 ? `<div class="gallery">${publicPhotos.map(p => `<img src="/media/cats/${escapeHtml(publicId)}/photos/${p.id}/public" alt="${safeName}" />`).join("")}</div>` : ""}
     </section>
   </main>
 </body>
@@ -413,4 +421,83 @@ export async function handleRemoveCat(
   }
 
   return Response.json({ status: "removed" }, { status: 200 });
+}
+
+
+// ── POST /api/cats/:publicId/update ─────────────────────────────────────────
+
+export async function handleUpdateCat(
+  publicId: string,
+  request: Request,
+  db: D1Database,
+  ctx: RequestContext,
+): Promise<Response> {
+  if (ctx.ownerId === null) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  if (!validateId(publicId)) {
+    return new Response("Not Found", { status: 404 });
+  }
+
+  const cat = await getCatForOwner(db, publicId, ctx.ownerId);
+  if (!cat) {
+    return new Response("Not Found", { status: 404 });
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 400 });
+  }
+
+  if (typeof body !== "object" || body === null) {
+    return new Response("Invalid JSON", { status: 400 });
+  }
+
+  const b = body as Record<string, unknown>;
+
+  const fields: Array<{ column: string; value: string | null }> = [];
+
+  if ("name" in b && typeof b["name"] === "string") {
+    fields.push({ column: "name", value: b["name"].slice(0, 100) });
+  }
+  if ("birth_date" in b) {
+    fields.push({ column: "birth_date", value: typeof b["birth_date"] === "string" ? b["birth_date"].slice(0, 30) : null });
+  }
+  if ("next_vaccine_date" in b) {
+    fields.push({ column: "next_vaccine_date", value: typeof b["next_vaccine_date"] === "string" ? b["next_vaccine_date"].slice(0, 30) : null });
+  }
+  if ("weight" in b) {
+    fields.push({ column: "weight", value: typeof b["weight"] === "string" ? b["weight"].slice(0, 30) : null });
+  }
+  if ("color_markings" in b) {
+    fields.push({ column: "color_markings", value: typeof b["color_markings"] === "string" ? b["color_markings"].slice(0, 200) : null });
+  }
+  if ("breed_mix" in b) {
+    fields.push({ column: "breed_mix", value: typeof b["breed_mix"] === "string" ? b["breed_mix"].slice(0, 100) : null });
+  }
+  if ("sex" in b) {
+    fields.push({ column: "sex", value: typeof b["sex"] === "string" ? b["sex"].slice(0, 20) : null });
+  }
+  if ("notes" in b) {
+    fields.push({ column: "notes", value: typeof b["notes"] === "string" ? b["notes"].slice(0, 500) : null });
+  }
+
+  if (fields.length === 0) {
+    return Response.json({ success: true }, { status: 200 });
+  }
+
+  const setClauses = fields.map(f => `${f.column} = ?`).join(", ");
+  const values = fields.map(f => f.value);
+
+  await db
+    .prepare(
+      `UPDATE cats SET ${setClauses} WHERE public_id = ? AND owner_id = ?`,
+    )
+    .bind(...values, publicId, ctx.ownerId)
+    .run();
+
+  return Response.json({ success: true }, { status: 200 });
 }
