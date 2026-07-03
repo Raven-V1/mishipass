@@ -32,10 +32,10 @@ function buildDashboardHtml(): string {
     .auth-meta{display:flex;gap:var(--space-2);align-items:center;justify-content:space-between;flex-wrap:wrap;margin:var(--space-2) 0}.remember{display:inline-flex;gap:var(--space-1);align-items:center;margin:0}.remember input{width:16px;min-height:16px}.divider{display:flex;align-items:center;gap:var(--space-2);font-weight:900;color:var(--muted)}.divider:before,.divider:after{content:"";height:1px;background:var(--line);flex:1}.social-btn{background:#fff;color:var(--ink);border:1px solid var(--line)}.visual-only{margin:0;color:var(--muted);font-size:.875rem}
     .section-head{margin:var(--space-3) 0}.section-head h2{font-size:2.25rem;color:var(--teal);margin:0}.section-head p{margin:var(--space-1) 0 0;color:var(--muted);font-weight:700}
     .tab-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-2);border-bottom:0;margin:0 0 var(--space-4);padding:0;background:transparent;border:0}
-    .tab-btn,.tab-link{display:flex;align-items:center;justify-content:flex-start;gap:var(--space-2);border-radius:8px;border:1px solid var(--line);background:rgba(255,253,249,.94);color:var(--teal);font-weight:900;font-size:1rem;line-height:1.3;min-height:96px;padding:var(--space-3);white-space:normal;text-align:left;box-shadow:0 10px 24px rgba(56,38,26,.08)}
+    .tab-btn,.tab-link{display:flex;align-items:center;justify-content:flex-start;gap:var(--space-2);border-radius:8px;border:1px solid var(--line);background:rgba(255,253,249,.94);color:var(--teal);font-weight:900;font-size:1rem;line-height:1.3;min-height:auto;padding:var(--space-2) var(--space-3);white-space:normal;text-align:left;box-shadow:0 10px 24px rgba(56,38,26,.08)}
     .tab-btn.active{background:var(--brand-coral);border-color:var(--brand-coral);color:#fff}
     .tab-btn.active .tab-visual{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.18)}
-    .tab-visual{display:flex;align-items:center;justify-content:center;flex:0 0 56px;width:56px;height:56px;border-radius:8px;background:#fff7f0;border:1px solid var(--line);color:inherit}
+    .tab-visual{display:flex;align-items:center;justify-content:center;flex:0 0 44px;width:44px;height:44px;border-radius:8px;background:#fff7f0;border:1px solid var(--line);color:inherit}
     .tab-cat-art{width:56px;height:56px;background:transparent}
     .tab-text{display:grid;gap:var(--space-1);min-width:0}
     .tab-title{display:block;overflow-wrap:anywhere}
