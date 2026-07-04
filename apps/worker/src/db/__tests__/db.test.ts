@@ -12,7 +12,6 @@
 
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { applyD1Migrations, env } from "cloudflare:test";
-import type { D1Migration } from "@cloudflare/vitest-pool-workers/config";
 import {
   deleteSession,
   findLatestVetSession,
@@ -52,7 +51,7 @@ import {
 declare module "cloudflare:test" {
   interface ProvidedEnv {
     DB: D1Database;
-    TEST_MIGRATIONS: D1Migration[];
+    TEST_MIGRATIONS: D1MigrationEntry[];
   }
 }
 
