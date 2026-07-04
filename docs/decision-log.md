@@ -651,3 +651,21 @@ Alternatives considered: Keep nested under My Cats (rejected -- per correction
 instruction from Carlos).
 
 Decided by: Carlos
+
+---
+
+## [2026-07-03] — Attribution correction: round-3 commit authorship
+
+Decision: Record that round-3 commits 0253b12 (feat(api): add edit-cat route,
+gallery visibility toggle, public gallery serve, security tests) and adda90a
+(docs: add round 3 alignment run report) were attributed to Zhanerke
+Askerbekova due to a per-commit (not per-hunk) author batching error during
+the Kiro run. The underlying logic, routes, repository functions, and tests
+in those commits are Carlos's work. Git history is left unchanged by decision;
+this note records accurate authorship.
+
+Reason: The Kiro run instructions require per-hunk author splitting
+(presentational = Zhanerke, logic = Carlos). The round-3 run incorrectly
+batched mixed logic+markup commits under a single author instead of splitting.
+
+Decided by: Carlos
