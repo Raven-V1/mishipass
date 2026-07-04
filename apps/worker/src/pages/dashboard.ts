@@ -1,6 +1,6 @@
 import { COUNTRIES } from "../data/countries.js";
-import { iconApple, iconContact, iconGoogle, iconLogout, iconMegaphone, iconQrCode, iconSettings } from "../utils/icons.js";
-import { MISHIPASS_DESIGN_CSS, brandLockupHtml, brandLogoHtml, htmlResponse } from "../utils/html.js";
+import { iconApple, iconContact, iconGoogle, iconHome, iconLogout, iconMegaphone, iconQrCode, iconSettings } from "../utils/icons.js";
+import { MISHIPASS_DESIGN_CSS, brandLockupHtml, htmlResponse } from "../utils/html.js";
 import type { LogtoEnv } from "../routes/logto.js";
 
 function buildCountryOptions(): string {
@@ -103,7 +103,7 @@ function buildDashboardHtml(): string {
   <div id="dashboard-section" class="hidden">
     <div class="section-head"><div><h2 data-i18n="welcomeBack">Welcome back!</h2><p data-i18n="welcomeSubtitle">Here is everything about your furry friend.</p></div><button id="logout-btn" class="btn-secondary">${iconLogout(16)} <span data-i18n="logout">Log out</span></button></div>
     <div class="tab-nav">
-      <button class="tab-btn active" data-tab="cats-tab"><span class="tab-visual">${brandLogoHtml("tab-cat-art")}</span><span class="tab-text"><span class="tab-title" data-i18n="myCats">My Cats</span><span class="tab-copy" data-i18n="tabMyCatsDesc">Profile setup and QR mode control</span></span></button>
+      <button class="tab-btn active" data-tab="cats-tab"><span class="tab-visual">${iconHome(24)}</span><span class="tab-text"><span class="tab-title" data-i18n="myCats">My Cats</span><span class="tab-copy" data-i18n="tabMyCatsDesc">Profile setup and QR mode control</span></span></button>
       <button class="tab-btn" data-tab="register-tab"><span class="tab-visual">${iconQrCode(24)}</span><span class="tab-text"><span class="tab-title" data-i18n="registerCat">Register a Cat</span><span class="tab-copy" data-i18n="tabRegisterDesc">Add a new cat to MishiPass</span></span></button>
       <button class="tab-btn" data-tab="contact-tab"><span class="tab-visual">${iconContact(24)}</span><span class="tab-text"><span class="tab-title" data-i18n="contactPrivacy">Contact &amp; Privacy</span><span class="tab-copy" data-i18n="tabContactDesc">Owner-controlled public contact</span></span></button>
       <button class="tab-btn" data-tab="settings-tab"><span class="tab-visual">${iconSettings(24)}</span><span class="tab-text"><span class="tab-title" data-i18n="settings">Settings</span><span class="tab-copy" data-i18n="tabSettingsDesc">Language and account options</span></span></button>
