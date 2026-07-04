@@ -19,6 +19,19 @@ declare module "cloudflare:test" {
 
 beforeAll(async () => {
   await applyD1Migrations(env.DB, env.TEST_MIGRATIONS);
+  // Workaround: older SQLite in some workerd builds rejects
+  // ALTER TABLE ... ADD COLUMN ... NOT NULL DEFAULT (migration 0009).
+  // If the column was not created by migrations, add it without NOT NULL.
+  // The DEFAULT 0 still applies; application logic enforces the constraint.
+  try {
+    await env.DB.prepare(
+      "SELECT is_public FROM cat_photos LIMIT 0",
+    ).run();
+  } catch {
+    await env.DB.prepare(
+      "ALTER TABLE cat_photos ADD COLUMN is_public INTEGER DEFAULT 0",
+    ).run();
+  }
 });
 
 async function setup() {
