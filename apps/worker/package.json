@@ -12,10 +12,10 @@
     "qrcode-generator": "^2.0.4"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.8.70",
+    "@cloudflare/vitest-pool-workers": "^0.18.0",
     "@cloudflare/workers-types": "^4.0.0",
     "typescript": "^5.0.0",
-    "vitest": "^3.2.6",
+    "vitest": "^4.1.0",
     "wrangler": "^4.59.1"
   }
 }

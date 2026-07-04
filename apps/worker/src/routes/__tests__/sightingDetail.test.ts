@@ -1,13 +1,12 @@
 import { applyD1Migrations, env } from "cloudflare:test";
 import { describe, it, expect, beforeAll } from "vitest";
-import type { D1Migration } from "@cloudflare/vitest-pool-workers/config";
 import worker from "../../index.js";
 
 declare module "cloudflare:test" {
   interface ProvidedEnv {
     DB: D1Database;
     PHOTOS: R2Bucket;
-    TEST_MIGRATIONS: D1Migration[];
+    TEST_MIGRATIONS: D1MigrationEntry[];
     PUBLIC_BASE_URL: string;
   }
 }
