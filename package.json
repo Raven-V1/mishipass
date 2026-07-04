@@ -5,8 +5,5 @@
   "workspaces": [
     "apps/*",
     "packages/shared/*"
-  ],
-  "overrides": {
-    "undici": "7.28.0"
-  }
+  ]
 }
