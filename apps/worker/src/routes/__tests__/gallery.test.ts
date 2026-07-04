@@ -1,26 +1,18 @@
 import { applyD1Migrations, env } from "cloudflare:test";
 import { describe, it, expect, beforeAll } from "vitest";
-import type { D1Migration } from "@cloudflare/vitest-pool-workers/config";
 import worker from "../../index.js";
 
 declare module "cloudflare:test" {
   interface ProvidedEnv {
     DB: D1Database;
     PHOTOS: R2Bucket;
-    TEST_MIGRATIONS: D1Migration[];
+    TEST_MIGRATIONS: D1MigrationEntry[];
     PUBLIC_BASE_URL: string;
   }
 }
 
 beforeAll(async () => {
   await applyD1Migrations(env.DB, env.TEST_MIGRATIONS);
-  // Workaround: ensure is_public column exists even if migration 0009 fails
-  // on older SQLite builds that reject NOT NULL on ALTER TABLE ADD COLUMN.
-  try {
-    await env.DB.prepare("SELECT is_public FROM cat_photos LIMIT 0").run();
-  } catch {
-    await env.DB.prepare("ALTER TABLE cat_photos ADD COLUMN is_public INTEGER DEFAULT 0").run();
-  }
 });
 
 async function setup() {
