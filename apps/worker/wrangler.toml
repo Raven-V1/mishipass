@@ -21,3 +21,8 @@ migrations_dir = "migrations"
 [[r2_buckets]]
 binding = "PHOTOS"
 bucket_name = "mishipass-photos"
+
+# Static assets served from apps/worker/public/ directory.
+# Files are served at their path (e.g. public/assets/background.jpeg -> /assets/background.jpeg).
+[assets]
+directory = "public"
