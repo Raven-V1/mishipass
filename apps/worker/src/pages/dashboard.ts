@@ -70,6 +70,7 @@ function buildDashboardHtml(): string {
     .swatch{height:64px;border-radius:8px}
     @keyframes breedShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
     #create-cat-form>button[type=submit]{margin-top:var(--space-4)}
+    .phys-details{margin:var(--space-2) 0;border:1px solid var(--line);border-radius:8px;padding:var(--space-2)}.phys-details summary{cursor:pointer;font-size:.9375rem;font-weight:900;color:var(--teal);list-style:none;padding:0;display:flex;align-items:center;gap:var(--space-1)}.phys-details summary::-webkit-details-marker{display:none}.phys-details summary::before{content:"›";display:inline-block;font-size:1.1rem;transition:transform .2s;color:var(--brand-coral)}.phys-details[open] summary::before{transform:rotate(90deg)}.phys-details .swatch-grid,.phys-details .breed-card-grid,.phys-details .selector-tools,.phys-details .breed-section-title,.phys-details .other-field,.phys-details .selector-summary,.phys-details .field{margin-top:var(--space-2)}
     .reg-form-redesign{display:flex;flex-direction:column;gap:var(--space-3)}
     .reg-columns{display:grid;grid-template-columns:1fr 1fr 2fr;gap:var(--space-3);align-items:start}
     .reg-card{background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);padding:var(--space-3)}
@@ -160,14 +161,15 @@ function buildDashboardHtml(): string {
           <section class="reg-card reg-card-physical">
             <h3 data-i18n="physicalCharacteristics">Physical Characteristics</h3>
 
-            <label data-i18n="colorMarkings">Color / Markings</label>
+            <details class="phys-details"><summary data-i18n="colorMarkings">Color / Markings</summary>
             <div id="color-swatch-grid" class="swatch-grid"></div>
             <input type="hidden" id="cat-color" />
             <div id="color-summary" class="selector-summary"></div>
             <div id="color-other-wrap" class="other-field hidden"><input type="text" id="cat-color-other" maxlength="80" placeholder="Mixed / Other" /></div>
             <div class="field"><label for="cat-markings-note" data-i18n="markingsNotes">Markings notes</label><textarea id="cat-markings-note" maxlength="200"></textarea></div>
+            </details>
 
-            <label data-i18n="breedMix">Breed / Mix</label>
+            <details class="phys-details"><summary data-i18n="breedMix">Breed / Mix</summary>
             <div class="selector-tools"><input type="search" id="breed-search" data-i18n-placeholder="searchBreed" placeholder="Search breeds" /><button type="button" id="show-more-breeds" class="btn-secondary" data-i18n="showMoreBreeds">Show more breeds</button></div>
             <div class="breed-section-title" data-i18n="featuredBreeds">Featured visual breeds</div>
             <div id="breed-card-grid" class="breed-card-grid featured-breed-grid"></div>
@@ -176,6 +178,7 @@ function buildDashboardHtml(): string {
             <input type="hidden" id="cat-breed" />
             <div id="breed-summary" class="selector-summary"></div>
             <div id="breed-other-wrap" class="other-field hidden"><input type="text" id="cat-breed-other" maxlength="100" placeholder="Mixed / Unknown / Other" /></div>
+            </details>
 
             <div class="field"><label for="cat-additional-notes" data-i18n="additionalNotes">Additional Notes</label><textarea id="cat-additional-notes" maxlength="500"></textarea></div>
           </section>
