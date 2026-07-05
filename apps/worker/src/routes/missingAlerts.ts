@@ -51,6 +51,26 @@ export async function handleSwitchToMissing(
   return Response.json({ qrUrl: `${publicBaseUrl}/c/${catId}` }, { status: 200 });
 }
 
+// ── POST /api/cats/:catId/adoption ─────────────────────────────────────────
+
+export async function handleSwitchToAdoption(
+  request: Request,
+  catId: string,
+  db: D1Database,
+  ctx: RequestContext,
+): Promise<Response> {
+  if (ctx.ownerId === null) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  const updated = await updateCatMode(db, catId, ctx.ownerId, "adoption");
+  if (!updated) {
+    return new Response("Forbidden", { status: 403 });
+  }
+
+  return Response.json({}, { status: 200 });
+}
+
 // ── POST /api/cats/:catId/active ────────────────────────────────────────────
 
 export async function handleSwitchToActive(
