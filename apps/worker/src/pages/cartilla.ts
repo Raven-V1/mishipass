@@ -10,6 +10,7 @@ import type { RequestContext } from "../middleware/session.js";
 import { MISHIPASS_DESIGN_CSS, brandLockupHtml, escapeHtml, htmlResponse } from "../utils/html.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
 import { renderTopNav, TOP_NAV_CSS } from "./partials/topNav.js";
+import { ILLUSTRATION_VET_CAT_SRC } from "../utils/designAssets.js";
 
 function redirectDashboard(): Response {
   return new Response(null, { status: 302, headers: { Location: "/dashboard" } });
@@ -37,6 +38,7 @@ export async function handleCartillaPage(
 
   const safeId = escapeHtml(publicId);
   const safeName = escapeHtml(cat.name);
+  const isEmpty = vetVisits.length === 0 && vaccines.length === 0 && medications.length === 0;
 
   const html = `<!DOCTYPE html>
 <html lang="${lang}">
@@ -48,19 +50,36 @@ export async function handleCartillaPage(
     ${MISHIPASS_DESIGN_CSS}
     ${TOP_NAV_CSS}
     body{padding:var(--space-3)}
-    .page-shell{max-width:864px;margin:var(--space-4) auto}.cartilla-shell{padding:var(--space-4);margin-top:var(--space-3)}
-    h1{font-size:clamp(2rem,6vw,3rem);line-height:1.08;margin:0 0 var(--space-1);color:var(--teal)}
-    h2{font-size:1.25rem;margin:var(--space-4) 0 var(--space-2);color:var(--teal);border-bottom:1px solid var(--line);padding-bottom:var(--space-1)}
+    .page-shell{max-width:1184px;margin:var(--space-4) auto}.cartilla-shell{padding:var(--space-4);margin-top:var(--space-3)}
+    h1{font-size:clamp(2.25rem,6vw,3.5rem);line-height:1.02;margin:0 0 var(--space-1);color:var(--teal)}
+    h2{font-size:1.5rem;margin:0 0 var(--space-2);color:var(--teal)}
+    h3{font-size:1.125rem;color:var(--teal);margin:0 0 var(--space-2)}
     .nav{font-size:0.875rem;margin-bottom:var(--space-3)}
+    .intro-copy{margin:0 0 var(--space-4);color:var(--muted);font-weight:700}
+    .split-section{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:var(--space-3);align-items:start;margin-top:var(--space-4)}
+    .panel-card,.record{border:1px solid var(--line);border-radius:8px;padding:var(--space-3);background:#fff;box-shadow:0 10px 24px rgba(56,38,26,.06)}
+    .panel-card{display:grid;gap:var(--space-2)}
+    .timeline{display:grid;gap:var(--space-2)}
+    .timeline .record{position:relative;padding-left:var(--space-3)}
+    .timeline .record:before{content:"";position:absolute;left:10px;top:22px;bottom:-22px;width:2px;background:#d9efe9}
+    .timeline .record:last-child:before{display:none}
+    .timeline .record:after{content:"";position:absolute;left:3px;top:18px;width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid #9ad7cb}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(224px,1fr));gap:var(--space-2)}
-    .record{border:1px solid var(--line);border-radius:8px;padding:var(--space-2);background:#fff}
     .notes{white-space:pre-wrap}
     label{margin-top:var(--space-2)}.field-row{display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap}
     .collapsible-form{border:1px solid var(--line);border-radius:8px;padding:var(--space-2);margin:var(--space-2) 0;background:#fff}.collapsible-form summary{font-size:1.1rem;font-weight:800;color:var(--teal);cursor:pointer;list-style:none;display:flex;align-items:center;gap:var(--space-1)}.collapsible-form summary::-webkit-details-marker{display:none}.collapsible-form summary::before{content:"+";display:inline-block;width:1.2em;transition:transform .2s;color:var(--brand-coral)}.collapsible-form[open] summary::before{content:"−"}.collapsible-form form{margin-top:var(--space-2)}
     .btn{margin-top:var(--space-2)}
     .sticker{display:block;width:160px;height:112px;object-fit:cover;margin-top:var(--space-2);border-radius:8px}
     .photo-picker{margin:var(--space-1) 0 var(--space-2)}.photo-picker-actions{display:flex;gap:var(--space-1);flex-wrap:wrap}.photo-action{flex:1 1 160px}.photo-input-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}.photo-status{margin-top:var(--space-1);overflow-wrap:anywhere}
-    @media(max-width:430px){body{padding:var(--space-2)}.page-shell{margin:var(--space-2) auto}.cartilla-shell{padding:var(--space-3)}.grid{grid-template-columns:1fr}.photo-action,.btn{width:100%;flex-basis:100%}}
+    .empty-state{text-align:center;padding:var(--space-2) 0 var(--space-4)}
+    .empty-state img{display:block;width:min(100%,420px);margin:0 auto var(--space-3)}
+    .empty-state h2{font-size:clamp(2rem,5vw,3rem);line-height:1.05;margin:0 0 var(--space-1)}
+    .empty-state p{max-width:420px;margin:0 auto;color:var(--muted);font-weight:700;font-size:1.05rem}
+    .empty-actions{display:flex;justify-content:center;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-4)}
+    .empty-actions .mp-btn{min-width:180px}
+    .well-note{display:flex;align-items:center;justify-content:center;gap:var(--space-1);margin-top:var(--space-4);padding:var(--space-2);border-radius:999px;background:#eef8f5;color:var(--teal);font-size:.875rem;font-weight:800}
+    @media(max-width:860px){.split-section{grid-template-columns:1fr}}
+    @media(max-width:430px){body{padding:var(--space-2)}.page-shell{margin:var(--space-2) auto}.cartilla-shell{padding:var(--space-3)}.grid{grid-template-columns:1fr}.photo-action,.btn,.empty-actions .mp-btn{width:100%;flex-basis:100%}}
   </style>
 </head>
 <body>
@@ -70,11 +89,21 @@ export async function handleCartillaPage(
   <section class="mp-card cartilla-shell">
     <div class="nav"><a class="mp-back" href="/dashboard/cats/${safeId}?lang=${lang}">&larr; ${safeName}</a></div>
     <h1>${t(lang, "cartilla")}</h1>
-    <p class="muted">${safeName} ${t(lang, "cartillaPrivateRecords")}</p>
+    <p class="intro-copy">${safeName} ${t(lang, "cartillaPrivateRecords")}</p>
+    ${isEmpty ? `<section class="empty-state">
+      <img src="${ILLUSTRATION_VET_CAT_SRC}" alt="" />
+      <h2>No Medical Records</h2>
+      <p>Start adding vaccines and vet visits.</p>
+      <div class="empty-actions">
+        <a class="mp-btn mp-btn-secondary" href="#vaccine-form">Add Vaccine</a>
+        <a class="mp-btn mp-btn-secondary" href="/dashboard/cats/${safeId}?lang=${lang}">Add Vet Visit</a>
+      </div>
+    </section>` : ""}
     ${renderVetVisits(safeId, vetVisits, lang)}
     ${renderVaccines(safeId, vaccines, cat.next_vaccine_date, lang)}
     ${renderMedications(medications, lang)}
     ${renderForms(safeId, lang)}
+    <div class="well-note">Keeping your cat's vaccine records up to date helps ensure a long, healthy life.</div>
   </section>
   </main>
   <script>
@@ -133,13 +162,30 @@ export async function handleVetVisitDetailPage(
 }
 
 function renderVetVisits(publicId: string, visits: VetVisitEntry[], lang: LanguageCode): string {
-  if (visits.length === 0) return `<h2>${t(lang, "vetVisit")}</h2><p class="muted">${t(lang, "noVetVisitsYet")}</p>`;
-  return `<h2>${t(lang, "vetVisit")}</h2><div class="grid">${visits.map(v => `<div class="record"><strong>${dateOrEmpty(v.visit_date, lang)}</strong><p>${v.vet_or_clinic_name ? escapeHtml(v.vet_or_clinic_name) : t(lang, "unknown")}</p><a class="btn secondary" href="/dashboard/cats/${publicId}/cartilla/vet-visits/${v.id}?lang=${lang}">${t(lang, "details")}</a></div>`).join("")}</div>`;
+  if (visits.length === 0) {
+    return `<section class="split-section"><div class="panel-card"><h2>${t(lang, "vetVisit")}</h2><p class="muted">${t(lang, "noVetVisitsYet")}</p></div><div></div></section>`;
+  }
+  return `<section class="split-section"><div class="panel-card"><h2>${t(lang, "vetVisit")}</h2><p class="muted">${t(lang, "visitSavedTitle")}</p></div><div class="timeline">${visits.map(v => `<div class="record"><strong>${dateOrEmpty(v.visit_date, lang)}</strong><p>${v.vet_or_clinic_name ? escapeHtml(v.vet_or_clinic_name) : t(lang, "unknown")}</p><a class="btn secondary" href="/dashboard/cats/${publicId}/cartilla/vet-visits/${v.id}?lang=${lang}">${t(lang, "details")}</a></div>`).join("")}</div></section>`;
 }
 
 function renderVaccines(publicId: string, vaccines: VaccineEntry[], _nextVaccineDate: string | null, lang: LanguageCode): string {
-  const list = vaccines.length === 0 ? `<p class="muted">${t(lang, "noMatches")}</p>` : `<div class="grid">${vaccines.map(v => `<div class="record"><strong>${escapeHtml(v.vaccine_name)}</strong><p class="muted">${dateOrEmpty(v.date_given, lang)}</p>${v.sticker_photo_r2_key ? `<img class="sticker" src="/media/cats/${publicId}/vaccines/${v.id}/sticker-photo" alt="Vaccine sticker photo" />` : ""}<form class="sticker-form" action="/api/cats/${publicId}/vaccines/${v.id}/sticker-photo"><div class="photo-picker"><div class="photo-picker-actions"><label class="photo-action" for="sticker-capture-${v.id}">${t(lang, "takePhoto")}</label><label class="photo-action" for="sticker-upload-${v.id}">${t(lang, "chooseExistingPhoto")}</label></div><input class="photo-input-visually-hidden" id="sticker-capture-${v.id}" type="file" name="photoCapture" accept="image/*" capture="environment" data-photo-status="sticker-status-${v.id}" /><input class="photo-input-visually-hidden" id="sticker-upload-${v.id}" type="file" name="photoUpload" accept="image/*" data-photo-status="sticker-status-${v.id}" /><div id="sticker-status-${v.id}" class="photo-status">${t(lang, "noPhotoSelected")}</div></div><button class="btn secondary" type="submit">${t(lang, "photoUpload")}</button></form></div>`).join("")}</div>`;
-  return `<h2>${t(lang, "vaccines")}</h2>${list}`;
+  const history = vaccines.length === 0
+    ? `<p class="muted">${t(lang, "noMatches")}</p>`
+    : `<div class="timeline">${vaccines.map(v => `<div class="record"><strong>${escapeHtml(v.vaccine_name)}</strong><p class="muted">${dateOrEmpty(v.date_given, lang)}</p>${v.sticker_photo_r2_key ? `<img class="sticker" src="/media/cats/${publicId}/vaccines/${v.id}/sticker-photo" alt="Vaccine sticker photo" />` : ""}<form class="sticker-form" action="/api/cats/${publicId}/vaccines/${v.id}/sticker-photo"><div class="photo-picker"><div class="photo-picker-actions"><label class="photo-action" for="sticker-capture-${v.id}">${t(lang, "takePhoto")}</label><label class="photo-action" for="sticker-upload-${v.id}">${t(lang, "chooseExistingPhoto")}</label></div><input class="photo-input-visually-hidden" id="sticker-capture-${v.id}" type="file" name="photoCapture" accept="image/*" capture="environment" data-photo-status="sticker-status-${v.id}" /><input class="photo-input-visually-hidden" id="sticker-upload-${v.id}" type="file" name="photoUpload" accept="image/*" data-photo-status="sticker-status-${v.id}" /><div id="sticker-status-${v.id}" class="photo-status">${t(lang, "noPhotoSelected")}</div></div><button class="btn secondary" type="submit">${t(lang, "photoUpload")}</button></form></div>`).join("")}</div>`;
+  return `<section class="split-section">
+    <div class="panel-card">
+      <h2>${t(lang, "vaccines")}</h2>
+      <form id="vaccine-form">
+        <label>${t(lang, "vaccineName")}<input name="vaccine_name" required maxlength="100" /></label>
+        <label>${t(lang, "dateGiven")}<input name="date_given" type="date" /></label>
+        <button class="btn mp-btn mp-btn-primary" type="submit">${t(lang, "save")}</button>
+      </form>
+    </div>
+    <div class="panel-card">
+      <h3>${t(lang, "vaccines")}</h3>
+      ${history}
+    </div>
+  </section>`;
 }
 
 function renderMedications(medications: MedicationEntry[], lang: LanguageCode): string {
@@ -148,6 +194,5 @@ function renderMedications(medications: MedicationEntry[], lang: LanguageCode): 
 }
 
 function renderForms(publicId: string, lang: LanguageCode): string {
-  return `<details class="collapsible-form"><summary>${t(lang, "addVaccine")}</summary><form id="vaccine-form"><label>${t(lang, "vaccineName")}<input name="vaccine_name" required maxlength="100" /></label><label>${t(lang, "dateGiven")}<input name="date_given" type="date" /></label><button class="btn" type="submit">${t(lang, "save")}</button></form></details>
-  <details class="collapsible-form"><summary>${t(lang, "medicationRecord")}</summary><form id="medication-form"><label>${t(lang, "medicationName")}<input name="medication_name" required maxlength="100" /></label><label>${t(lang, "doseAsRecorded")}<input name="dose" maxlength="100" /></label><label>${t(lang, "duration")}<input name="duration" maxlength="100" /></label><label>${t(lang, "startDate")}<input name="start_date" type="date" /></label><label>${t(lang, "prescriber")}<input name="prescriber_name" maxlength="100" /></label><label>${t(lang, "notes")}<textarea name="notes" maxlength="500"></textarea></label><button class="btn" type="submit">${t(lang, "save")}</button></form></details>`;
+  return `<details class="collapsible-form"><summary>${t(lang, "medicationRecord")}</summary><form id="medication-form"><label>${t(lang, "medicationName")}<input name="medication_name" required maxlength="100" /></label><label>${t(lang, "doseAsRecorded")}<input name="dose" maxlength="100" /></label><label>${t(lang, "duration")}<input name="duration" maxlength="100" /></label><label>${t(lang, "startDate")}<input name="start_date" type="date" /></label><label>${t(lang, "prescriber")}<input name="prescriber_name" maxlength="100" /></label><label>${t(lang, "notes")}<textarea name="notes" maxlength="500"></textarea></label><button class="btn" type="submit">${t(lang, "save")}</button></form></details>`;
 }

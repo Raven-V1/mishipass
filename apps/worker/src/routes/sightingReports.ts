@@ -11,6 +11,8 @@ import { hmacSha256Hex } from "../utils/crypto.js";
 import { checkMagicBytes } from "./photos.js";
 import { type LanguageCode, getLanguageFromRequest, t } from "../utils/i18n.js";
 import { MISHIPASS_DESIGN_CSS, brandLockupHtml } from "../utils/html.js";
+import { ILLUSTRATION_MISSING_EMPTY_SRC } from "../utils/designAssets.js";
+import { renderIllustratedStatePage } from "../utils/designPages.js";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -313,18 +315,14 @@ export async function handleListSightingsForOwner(
 // ── HTML renderers ──────────────────────────────────────────────────────────
 
 function renderNotAcceptingPage(lang: LanguageCode): string {
-  return `<!DOCTYPE html>
-<html lang="${lang}">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${t(lang, "reportSighting")} — MishiPass</title>
-  <style>${MISHIPASS_DESIGN_CSS}body{padding:var(--space-3)}.message-shell{max-width:560px;margin:var(--space-6) auto}.message-card{padding:var(--space-4);margin-top:var(--space-3)}@media(max-width:430px){body{padding:var(--space-2)}.message-card{padding:var(--space-3)}}</style>
-</head>
-<body>
-  <main class="message-shell">${brandLockupHtml(`/?lang=${lang}`)}<section class="mp-card message-card"><p>${t(lang, "sightingClosed")}</p></section></main>
-</body>
-</html>`;
+  return renderIllustratedStatePage({
+    lang,
+    title: t(lang, "reportSighting"),
+    subtitle: t(lang, "sightingClosed"),
+    imageSrc: ILLUSTRATION_MISSING_EMPTY_SRC,
+    ctaHref: "/",
+    ctaLabel: "Go Home",
+  });
 }
 
 function renderSightingForm(publicId: string, catName: string, lang: LanguageCode): string {
@@ -348,22 +346,26 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
   <style>
     ${MISHIPASS_DESIGN_CSS}
     body{padding:var(--space-3)}
-    .page-shell{max-width:768px;margin:var(--space-4) auto}.form-shell{padding:var(--space-4);margin-top:var(--space-3)}
-    .sighting-head{display:flex;align-items:center;gap:var(--space-2);margin:0 0 var(--space-3)}
-    .sighting-head h1{font-size:clamp(1.75rem,5vw,2.5rem);line-height:1.08;margin:0;color:var(--teal)}
-    .sighting-sub{color:var(--muted);font-weight:700;margin:0 0 var(--space-3);font-size:.9375rem}
-    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2) var(--space-3)}
+    .page-shell{max-width:1120px;margin:var(--space-4) auto}.form-shell{padding:var(--space-4);margin-top:var(--space-3)}
+    .sighting-head{display:flex;align-items:center;gap:var(--space-2);margin:0 0 var(--space-1)}
+    .sighting-head h1{font-size:clamp(2.25rem,6vw,3.5rem);line-height:1.02;margin:0;color:var(--teal)}
+    .sighting-sub{color:var(--muted);font-weight:700;margin:0 0 var(--space-4);font-size:1rem}
+    .form-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--space-3)}
     .field{display:grid;gap:var(--space-1);margin-bottom:0}
-    .field-wide{grid-column:1/-1}
     .field label{font-size:.875rem;font-weight:900;color:var(--teal)}
     .required-mark{color:var(--brand-coral);font-size:.75rem;margin-left:2px}
+    .field-card{border:1px solid var(--line);border-radius:8px;padding:var(--space-2);background:#fff;box-shadow:0 10px 24px rgba(56,38,26,.05)}
+    .field-stack{display:grid;gap:var(--space-2)}
+    .field-wide{grid-column:1/-1}
     .photo-picker{margin:0}.photo-picker-actions{display:flex;gap:var(--space-1);flex-wrap:wrap}.photo-action{flex:1 1 160px}.photo-input-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}.photo-status{margin-top:var(--space-1);overflow-wrap:anywhere;font-size:.875rem;color:var(--muted)}
-    .submit-row{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-3)}.submit-row>*{flex:1 1 180px}
+    .submit-row{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-3)}.submit-row>*{flex:1 1 220px}
     .map-section{margin-bottom:0}
     .map-section label{font-size:.875rem;font-weight:900;color:var(--teal);display:block;margin-bottom:var(--space-1)}
     .map-hint{font-size:.8125rem;color:var(--muted);margin:0 0 var(--space-1)}
-    #sighting-map{width:100%;height:280px;border-radius:8px;border:1px solid var(--line)}
+    #sighting-map{width:100%;height:280px;border-radius:8px;border:1px solid var(--line);overflow:hidden}
     .map-coords{font-size:.8125rem;color:var(--teal);font-weight:700;margin-top:var(--space-1);min-height:1.2em}
+    .placeholder-photo{display:flex;align-items:center;justify-content:center;min-height:220px;border-radius:8px;background:linear-gradient(135deg,#fff7f0,#eef8f5);border:1px dashed #e7d3ca;text-align:center;color:var(--muted);font-weight:800}
+    .placeholder-photo span{display:block}
     @media(max-width:600px){.form-grid{grid-template-columns:1fr}.field-wide{grid-column:1}}
     @media(max-width:430px){body{padding:var(--space-2)}.form-shell{padding:var(--space-3)}.photo-action,.submit-row>*{width:100%;flex-basis:100%}}
   </style>
@@ -371,6 +373,7 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
 <body>
   <main class="page-shell">
   ${brandLockupHtml(`/?lang=${lang}`)}
+  <div class="nav"><a class="mp-back" href="/c/${safeId}?lang=${lang}">&larr; ${t(lang, "backToProfile")}</a></div>
   <section class="mp-card form-shell">
     <div class="sighting-head">
       <h1>${t(lang, "reportSighting")}</h1>
@@ -380,34 +383,47 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
       <input type="hidden" name="lat" id="sighting-lat" value="" />
       <input type="hidden" name="lng" id="sighting-lng" value="" />
       <div class="form-grid">
-        <div class="field field-wide">
-          <label for="city">${t(lang, "locationText")}<span class="required-mark">${t(lang, "sightingRequired")}</span></label>
-          <input type="text" id="city" name="city" required maxlength="80" placeholder="${t(lang, "city")}" />
-        </div>
-        <div class="field">
-          <label for="area">${t(lang, "area")}</label>
-          <input type="text" id="area" name="area" maxlength="120" />
-        </div>
-        <div class="field">
-          <label for="sightedAt">${t(lang, "dateLabel")} / ${t(lang, "timeLabel")}</label>
-          <input type="datetime-local" id="sightedAt" name="sightedAt" maxlength="80" />
-        </div>
-        <div class="field">
-          <label for="healthCondition">${t(lang, "healthCondition")}</label>
-          <select id="healthCondition" name="healthCondition">${healthOptions}</select>
-        </div>
-        <div class="field field-wide map-section">
+        <div class="field-card field-stack">
+          <div class="field">
+            <label for="city">${t(lang, "locationText")}<span class="required-mark">${t(lang, "sightingRequired")}</span></label>
+            <input type="text" id="city" name="city" required maxlength="80" placeholder="${t(lang, "city")}" />
+          </div>
+          <div class="field">
+            <label for="area">${t(lang, "area")}</label>
+            <input type="text" id="area" name="area" maxlength="120" />
+          </div>
+          <div class="field map-section">
           <label>${lang === "es" ? "Marcar ubicación en el mapa" : lang === "kk-KZ" ? "Картада орынды белгілеу" : "Pin location on map"}</label>
           <p class="map-hint">${lang === "es" ? "Haz clic en el mapa para marcar donde lo viste (opcional)" : lang === "kk-KZ" ? "Мысықты көрген жерді белгілеу үшін картаны басыңыз (міндетті емес)" : "Click the map to drop a pin where you spotted the cat"}</p>
           <div id="sighting-map"></div>
           <p class="map-coords" id="map-coords-display"></p>
         </div>
-        <div class="field field-wide">
+        <div class="field">
+          <label for="healthCondition">${t(lang, "healthCondition")}</label>
+          <select id="healthCondition" name="healthCondition">${healthOptions}</select>
+        </div>
+        </div>
+        <div class="field-card field-stack">
+          <div class="field">
+            <label for="sightedAt">${t(lang, "dateLabel")} / ${t(lang, "timeLabel")}</label>
+            <input type="datetime-local" id="sightedAt" name="sightedAt" maxlength="80" />
+          </div>
+          <div class="field">
           <label for="message">${t(lang, "seenDoing")}</label>
           <textarea id="message" name="message" maxlength="1000" rows="3"></textarea>
         </div>
-        <div class="field field-wide">
+          <div class="field">
+            <label for="reporterName">${t(lang, "yourName")}</label>
+            <input type="text" id="reporterName" name="reporterName" maxlength="80" />
+          </div>
+          <div class="field">
+            <label for="reporterContact">${t(lang, "yourContact")}</label>
+            <input type="text" id="reporterContact" name="reporterContact" maxlength="120" />
+          </div>
+        </div>
+        <div class="field field-wide field-card">
           <label>${t(lang, "photoUpload")} (max 3 MB)</label>
+          <div class="placeholder-photo"><span>${t(lang, "noPhoto")}<br />Add a photo if you have one.</span></div>
           <div class="photo-picker">
             <div class="photo-picker-actions">
               <label for="photo-capture" class="photo-action">${t(lang, "takePhoto")}</label>
@@ -418,18 +434,10 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
             <div id="sighting-photo-status" class="photo-status">${t(lang, "noPhotoSelected")}</div>
           </div>
         </div>
-        <div class="field">
-          <label for="reporterName">${t(lang, "yourName")}</label>
-          <input type="text" id="reporterName" name="reporterName" maxlength="80" />
-        </div>
-        <div class="field">
-          <label for="reporterContact">${t(lang, "yourContact")}</label>
-          <input type="text" id="reporterContact" name="reporterContact" maxlength="120" />
-        </div>
       </div>
       <div class="submit-row">
-        <button class="mp-btn mp-btn-primary" type="submit">${t(lang, "submitSighting")}</button>
         <a class="mp-btn mp-btn-secondary" href="/c/${safeId}?lang=${lang}">${t(lang, "cancel")}</a>
+        <button class="mp-btn mp-btn-primary" type="submit">${t(lang, "submitSighting")}</button>
       </div>
     </form>
   </section>
@@ -464,22 +472,12 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
 
 function renderSuccessPage(publicId: string, lang: LanguageCode): string {
   const safeId = escapeHtml(publicId);
-  return `<!DOCTYPE html>
-<html lang="${lang}">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${t(lang, "sightingSubmitted")} — MishiPass</title>
-  <style>${MISHIPASS_DESIGN_CSS}body{padding:var(--space-3)}.message-shell{max-width:560px;margin:var(--space-6) auto}.message-card{padding:var(--space-4);margin-top:var(--space-3)}@media(max-width:430px){body{padding:var(--space-2)}.message-card{padding:var(--space-3)}}</style>
-</head>
-<body>
-  <main class="message-shell">
-    ${brandLockupHtml(`/?lang=${lang}`)}
-  <section class="mp-card message-card">
-    <p>${t(lang, "sightingSubmitted")}</p>
-    <p><a class="mp-btn mp-btn-primary" href="/c/${safeId}?lang=${lang}">${t(lang, "backToProfile")}</a></p>
-  </section>
-  </main>
-</body>
-</html>`;
+  return renderIllustratedStatePage({
+    lang,
+    title: t(lang, "sightingSubmitted"),
+    subtitle: "Your report has been sent to the cat's owner.",
+    imageSrc: ILLUSTRATION_MISSING_EMPTY_SRC,
+    ctaHref: `/c/${safeId}?lang=${lang}`,
+    ctaLabel: t(lang, "backToProfile"),
+  });
 }

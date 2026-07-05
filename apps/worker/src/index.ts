@@ -23,6 +23,8 @@ import { handleQrPage } from "./pages/qrPage.js";
 import { handleSightingInbox, handleSightingDetail } from "./pages/sightingInbox.js";
 import { getLanguageFromRequest, resolveOwnerLang } from "./utils/i18n.js";
 import { handleBrandAsset } from "./utils/brandAssets.js";
+import { ILLUSTRATION_NOT_FOUND_SRC } from "./utils/designAssets.js";
+import { renderIllustratedStatePage } from "./utils/designPages.js";
 
 export interface Env {
   DB: D1Database;
@@ -441,6 +443,22 @@ export default {
       return handleUpdateCat(catUpdateMatch[1]!, request, env.DB, ctx);
     }
 
-    return new Response("Not Found", { status: 404 });
+    return new Response(
+      renderIllustratedStatePage({
+        lang: getLanguageFromRequest(request),
+        title: "Cat Not Found",
+        subtitle: "We couldn't find this profile.",
+        imageSrc: ILLUSTRATION_NOT_FOUND_SRC,
+        ctaHref: "/",
+        ctaLabel: "Go Home",
+      }),
+      {
+        status: 404,
+        headers: {
+          "Content-Type": "text/html;charset=UTF-8",
+          "X-Content-Type-Options": "nosniff",
+        },
+      },
+    );
   },
 };

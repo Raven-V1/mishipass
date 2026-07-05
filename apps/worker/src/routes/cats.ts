@@ -16,6 +16,8 @@ import { type LanguageCode, t } from "../utils/i18n.js";
 import { getCountryBadgeLabel } from "../data/countries.js";
 import { iconContact, iconHome, iconMegaphone, iconShield } from "../utils/icons.js";
 import { MISHIPASS_DESIGN_CSS, brandLockupHtml } from "../utils/html.js";
+import { ILLUSTRATION_INVALID_QR_SRC } from "../utils/designAssets.js";
+import { renderIllustratedStatePage } from "../utils/designPages.js";
 
 // ── GET /api/cats ───────────────────────────────────────────────────────────
 
@@ -147,7 +149,23 @@ export async function handlePublicProfile(
   // vs a valid-but-missing ID returns 404.
   const cat = await getCatPublicProfile(db, publicId);
   if (!cat) {
-    return new Response("Not Found", { status: 404 });
+    return new Response(
+      renderIllustratedStatePage({
+        lang,
+        title: "Invalid QR Code",
+        subtitle: "This QR Code doesn't exist.",
+        imageSrc: ILLUSTRATION_INVALID_QR_SRC,
+        ctaHref: "/",
+        ctaLabel: "Return Home",
+      }),
+      {
+        status: 404,
+        headers: {
+          "Content-Type": "text/html;charset=UTF-8",
+          "X-Content-Type-Options": "nosniff",
+        },
+      },
+    );
   }
 
   if (cat.current_mode === "missing") {

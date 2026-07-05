@@ -23,6 +23,7 @@ import { MISHIPASS_DESIGN_CSS, brandLockupHtml, escapeHtml, htmlResponse } from 
 import { getLanguageFromRequest, type LanguageCode, t } from "../utils/i18n.js";
 import { getCountryBadgeLabel } from "../data/countries.js";
 import { checkMagicBytes } from "./photos.js";
+import { ILLUSTRATION_VET_CAT_SRC } from "../utils/designAssets.js";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -343,14 +344,14 @@ function renderVetForm(
     .vet-shell{max-width:1040px;margin:0 auto;padding:var(--space-3) 0 var(--space-6)}
     .vet-card{padding:var(--space-4);margin-top:var(--space-3)}
     .vet-head{display:grid;gap:var(--space-1);margin-bottom:var(--space-3)}
-    h1{display:flex;align-items:center;gap:var(--space-1);font-size:clamp(2rem,6vw,3rem);line-height:1.08;margin:0;color:var(--teal)}
+    h1{display:flex;align-items:center;gap:var(--space-1);font-size:clamp(2.25rem,6vw,3.5rem);line-height:1.02;margin:0;color:var(--teal)}
     .vet-subtitle{margin:0;color:var(--muted);font-weight:700}
     .vet-layout{display:grid;grid-template-columns:minmax(240px,304px) minmax(0,1fr);gap:var(--space-4);align-items:start}
     .vet-badge{background:#e9f5ef;color:var(--teal);margin:var(--space-2) 0}
     .profile-column{display:grid;gap:var(--space-2)}
     .photo img,.photo-placeholder{width:100%;aspect-ratio:4/3;border-radius:8px;object-fit:cover;background:#fff7f0}
     .photo-placeholder{display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--muted);border:1px dashed #d8c8bd}
-    .status-panel{padding:var(--space-3);border:1px solid var(--line);border-radius:8px;background:#fff7f0;margin:0}
+    .status-panel{padding:var(--space-3);border:1px solid var(--line);border-radius:8px;background:#fffdf9;margin:0;box-shadow:0 10px 24px rgba(56,38,26,.05)}
     .expiry{font-size:0.875rem;color:var(--muted);margin:0}
     .visit-form{display:grid;gap:var(--space-3)}
     .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2) var(--space-3)}
@@ -358,7 +359,7 @@ function renderVetForm(
     .field-wide{grid-column:1/-1}
     .section-title{font-size:1.25rem;line-height:1.2;color:var(--teal);margin:0}
     .section-note{margin:0;color:var(--muted);font-size:.875rem}
-    .form-section{display:grid;gap:var(--space-2)}
+    .form-section{display:grid;gap:var(--space-2);padding:var(--space-3);border:1px solid var(--line);border-radius:8px;background:#fff;box-shadow:0 10px 24px rgba(56,38,26,.05)}
     .submit-row{display:flex;gap:var(--space-2);flex-wrap:wrap}
     .submit-btn{flex:1 1 220px;margin-top:0;background:var(--green);border-color:var(--green)}
     .cancel-btn{flex:1 1 180px}
@@ -495,25 +496,17 @@ function renderExpiredPage(name: string, lang: LanguageCode = "en"): string {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${safeName} — ${t(lang, "vetSessionExpiredTitle")} — MishiPass</title>
-  <style>
-    ${MISHIPASS_DESIGN_CSS}
-    body{padding:var(--space-3)}
-    .message-shell{max-width:560px;margin:var(--space-6) auto}.message-card{padding:var(--space-4);margin-top:var(--space-3)}
-    h1{color:var(--teal)}
-    .expired{background:#fff7d6;color:#6b4a00;padding:var(--space-2);border-radius:8px;margin:var(--space-2) 0}
-    @media(max-width:430px){body{padding:var(--space-2)}.message-card{padding:var(--space-3)}}
-  </style>
+  <style>${MISHIPASS_DESIGN_CSS}body{padding:var(--space-3)}.message-shell{max-width:720px;margin:var(--space-6) auto}.message-card{padding:var(--space-4);margin-top:var(--space-3);text-align:center}.message-art{height:220px;border-radius:8px;background:url("${ILLUSTRATION_VET_CAT_SRC}") center/contain no-repeat;margin-bottom:var(--space-3)}.message-card h1{margin:0 0 var(--space-1);color:var(--teal)}.message-card p{max-width:420px;margin:0 auto;color:var(--muted);font-weight:700}.expired-copy{margin-top:var(--space-2);font-size:.9375rem;color:#7c4a03;font-weight:800}@media(max-width:430px){body{padding:var(--space-2)}.message-card{padding:var(--space-3)}}}</style>
 </head>
 <body>
   <main class="message-shell">
     ${brandLockupHtml(`/?lang=${lang}`)}
-  <section class="mp-card message-card">
-    <h1>${safeName}</h1>
-    <div class="expired">
-      <strong>${t(lang, "vetSessionExpiredStr")}</strong>
+    <section class="mp-card message-card">
+      <div class="message-art" aria-hidden="true"></div>
+      <h1>${safeName}</h1>
       <p>${t(lang, "vetSessionExpiredBody")}</p>
-    </div>
-  </section>
+      <div class="expired-copy">${t(lang, "vetSessionExpiredStr")}</div>
+    </section>
   </main>
 </body>
 </html>`;
@@ -527,21 +520,16 @@ function renderNotVetModePage(name: string, lang: LanguageCode = "en"): string {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${safeName} — MishiPass</title>
-  <style>
-    ${MISHIPASS_DESIGN_CSS}
-    body{padding:var(--space-3)}
-    .message-shell{max-width:560px;margin:var(--space-6) auto}.message-card{padding:var(--space-4);margin-top:var(--space-3)}
-    h1{color:var(--teal)}
-    @media(max-width:430px){body{padding:var(--space-2)}.message-card{padding:var(--space-3)}}
-  </style>
+  <style>${MISHIPASS_DESIGN_CSS}body{padding:var(--space-3)}.message-shell{max-width:720px;margin:var(--space-6) auto}.message-card{padding:var(--space-4);margin-top:var(--space-3);text-align:center}.message-art{height:220px;border-radius:8px;background:url("${ILLUSTRATION_VET_CAT_SRC}") center/contain no-repeat;margin-bottom:var(--space-3)}.message-card h1{margin:0 0 var(--space-1);color:var(--teal)}.message-card p{max-width:420px;margin:0 auto;color:var(--muted);font-weight:700}@media(max-width:430px){body{padding:var(--space-2)}.message-card{padding:var(--space-3)}}}</style>
 </head>
 <body>
   <main class="message-shell">
     ${brandLockupHtml(`/?lang=${lang}`)}
-  <section class="mp-card message-card">
-    <h1>${safeName}</h1>
-    <p>${t(lang, "vetNotActiveBody")}</p>
-  </section>
+    <section class="mp-card message-card">
+      <div class="message-art" aria-hidden="true"></div>
+      <h1>${safeName}</h1>
+      <p>${t(lang, "vetNotActiveBody")}</p>
+    </section>
   </main>
 </body>
 </html>`;
@@ -549,35 +537,25 @@ function renderNotVetModePage(name: string, lang: LanguageCode = "en"): string {
 
 function renderSuccessPage(name: string, lang: LanguageCode = "en", showDashboardLink = false): string {
   const safeName = escapeHtml(name);
-  const dashLink = showDashboardLink
-    ? `<a href="/dashboard?lang=${lang}" style="display:inline-block;margin-top:16px;font-weight:800;color:var(--teal);text-decoration:none">${t(lang, "backToDashboard")}</a>`
-    : "";
+  const ctaHref = showDashboardLink ? `/dashboard?lang=${lang}` : "/";
+  const ctaLabel = showDashboardLink ? t(lang, "backToDashboard") : "Active Profile";
   return `<!DOCTYPE html>
 <html lang="${lang}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${t(lang, "visitSavedTitle")} — MishiPass</title>
-  <style>
-    ${MISHIPASS_DESIGN_CSS}
-    body{padding:var(--space-3)}
-    .message-shell{max-width:560px;margin:var(--space-6) auto}.message-card{padding:var(--space-4);margin-top:var(--space-3)}
-    h1{color:var(--teal)}
-    .success{background:#e9f5ef;color:var(--teal);padding:var(--space-2);border-radius:8px;margin:var(--space-2) 0}
-    @media(max-width:430px){body{padding:var(--space-2)}.message-card{padding:var(--space-3)}}
-  </style>
+  <style>${MISHIPASS_DESIGN_CSS}body{padding:var(--space-3)}.message-shell{max-width:720px;margin:var(--space-6) auto}.message-card{padding:var(--space-4);margin-top:var(--space-3);text-align:center}.message-art{height:220px;border-radius:8px;background:url("${ILLUSTRATION_VET_CAT_SRC}") center/contain no-repeat;margin-bottom:var(--space-3)}.message-card h1{margin:0 0 var(--space-1);color:var(--teal)}.message-card p{max-width:460px;margin:0 auto;color:var(--muted);font-weight:700}.message-cta{margin-top:var(--space-4);background:var(--brand-orange);border-color:var(--brand-orange)}@media(max-width:430px){body{padding:var(--space-2)}.message-card{padding:var(--space-3)}}}</style>
 </head>
 <body>
   <main class="message-shell">
     ${brandLockupHtml(`/?lang=${lang}`)}
-  <section class="mp-card message-card">
-    <h1>${safeName}</h1>
-    <div class="success">
-      <strong>${t(lang, "visitSaved")}</strong>
-      <p>${t(lang, "visitSavedBody")}</p>
-    </div>
-    ${dashLink}
-  </section>
+    <section class="mp-card message-card">
+      <div class="message-art" aria-hidden="true"></div>
+      <h1>${t(lang, "visitSaved")}</h1>
+      <p>${safeName} - ${t(lang, "thankYouForHelping")}</p>
+      <a class="mp-btn mp-btn-primary message-cta" href="${ctaHref}">${ctaLabel}</a>
+    </section>
   </main>
 </body>
 </html>`;

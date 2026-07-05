@@ -4,7 +4,8 @@ import { generateQrSvg } from "../utils/qr.js";
 import type { RequestContext } from "../middleware/session.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
 import { renderTopNav, TOP_NAV_CSS } from "./partials/topNav.js";
-import { iconQrCode } from "../utils/icons.js";
+import { iconContact, iconQrCode } from "../utils/icons.js";
+import { MISHIPASS_LOGO_SRC } from "../utils/brandAssets.js";
 
 export async function handleQrPage(
   publicId: string,
@@ -38,53 +39,52 @@ export async function handleQrPage(
     ${MISHIPASS_DESIGN_CSS}
     ${TOP_NAV_CSS}
     body{padding:var(--space-3)}
-    .qr-shell{max-width:960px;margin:0 auto;padding:var(--space-3) 0 var(--space-6)}
-    .qr-hero{display:flex;align-items:center;gap:var(--space-2);margin:var(--space-3) 0 var(--space-1)}
-    .qr-hero h1{font-size:clamp(1.75rem,5vw,2.5rem);color:var(--teal);margin:0}
-    .qr-hero-sub{color:var(--muted);margin:0 0 var(--space-4);font-weight:700}
-    .qr-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin-bottom:var(--space-3)}
-    .qr-section-title{font-size:1rem;font-weight:900;color:var(--teal);margin:0 0 var(--space-2);display:flex;align-items:center;gap:var(--space-1)}
-    .qr-code-box{text-align:center;padding:var(--space-4)}
-    .qr-code-box svg{display:block;margin:0 auto var(--space-2);width:200px;height:200px}
-    .qr-scan-hint{font-size:.8125rem;color:var(--muted);font-weight:700;margin:0}
-    .qr-actions{display:flex;gap:var(--space-2);justify-content:center;flex-wrap:wrap;margin-top:var(--space-3)}
-    .qr-actions button,.qr-actions a{flex:1 1 148px;max-width:200px;min-height:44px}
-    .preview-card{padding:var(--space-3)}
-    .preview-field{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-1) 0;border-bottom:1px solid var(--line);font-size:.9375rem}
-    .preview-field:last-child{border-bottom:0}
-    .preview-label{flex:0 0 120px;font-weight:900;color:var(--teal);font-size:.875rem}
-    .preview-value{color:var(--ink);overflow-wrap:anywhere}
-    .preview-no-photo{display:flex;flex-direction:column;align-items:center;justify-content:center;height:120px;border:1px dashed var(--line);border-radius:8px;color:var(--muted);font-weight:700;font-size:.875rem;gap:var(--space-1);margin-bottom:var(--space-2)}
-    .print-section{padding:var(--space-4);text-align:center;margin-top:0}
-    .print-header{font-weight:900;font-size:1rem;color:var(--teal);margin:0 0 var(--space-1)}
-    .print-sub{font-size:.8125rem;color:var(--muted);margin:0 0 var(--space-3)}
-    .card-pair{display:flex;gap:var(--space-3);justify-content:center;flex-wrap:wrap;margin-bottom:var(--space-3)}
-    .printable-card{border:2px dashed var(--brand-coral);border-radius:12px;padding:var(--space-3);width:256px;background:#fff;text-align:center}
-    .card-label{font-size:.6875rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 var(--space-2)}
-    .front-card .card-qr{margin:0 auto var(--space-1);width:120px;height:120px}
-    .front-card .card-qr svg{width:120px;height:120px}
-    .front-card .card-name{font-size:1.125rem;font-weight:900;color:var(--teal);margin:var(--space-1) 0 var(--space-1)}
-    .front-card .reward-pill{display:inline-flex;align-items:center;gap:4px;background:#fff0e9;color:var(--brand-coral);border:1px solid var(--brand-coral);border-radius:999px;padding:.18rem .72rem;font-size:.8125rem;font-weight:900;margin-bottom:var(--space-1)}
-    .front-card .contact-note{font-size:.6875rem;color:var(--muted);margin:0}
-    .back-card .back-headline{font-size:1rem;font-weight:900;color:var(--teal);line-height:1.28;margin:var(--space-2) 0 var(--space-2)}
-    .back-card .back-headline span{color:var(--brand-coral)}
-    .back-card ul{list-style:none;padding:0;margin:0 0 var(--space-2);text-align:left;display:grid;gap:4px}
-    .back-card ul li{font-size:.75rem;color:var(--muted);font-weight:700;padding-left:1.25em;position:relative}
-    .back-card ul li:before{content:"·";position:absolute;left:0;color:var(--brand-coral)}
-    .back-card .brand-mark{font-size:1rem;font-weight:900;color:var(--brand-coral);margin:0}
-    .scissors{font-size:1rem;color:var(--muted);line-height:1;align-self:center}
-    .tip-note{font-size:.8125rem;color:var(--muted);font-weight:700;margin:0}
-    .back-link{display:block;margin-bottom:var(--space-3);font-size:.875rem}
+    .qr-shell{max-width:1140px;margin:0 auto;padding:var(--space-3) 0 var(--space-6)}
+    .back-link{display:inline-flex;margin:var(--space-2) 0;font-size:.875rem;font-weight:800}
+    .qr-hero{display:flex;align-items:flex-start;gap:var(--space-2);margin:var(--space-2) 0 var(--space-4)}
+    .qr-hero h1{font-size:clamp(2.25rem,6vw,3.5rem);line-height:1.02;color:var(--teal);margin:0 0 var(--space-1)}
+    .qr-hero-sub{color:var(--muted);margin:0;font-weight:700;font-size:1rem}
+    .print-section{padding:var(--space-4)}
+    .print-header{font-weight:900;font-size:1.25rem;color:var(--teal);margin:0 0 var(--space-1);display:flex;align-items:center;justify-content:center;gap:var(--space-1)}
+    .print-sub{font-size:.9375rem;color:var(--muted);margin:0 0 var(--space-4);text-align:center;font-weight:700}
+    .card-pair{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:var(--space-3);align-items:center;margin-bottom:var(--space-4)}
+    .printable-card{position:relative;border:2px dashed #f0b39f;border-radius:22px;padding:var(--space-3);min-height:380px;background:rgba(255,255,255,.94);text-align:center;box-shadow:0 14px 40px rgba(56,38,26,.08)}
+    .printable-card:before{content:"";position:absolute;inset:18px;border-radius:18px;background:linear-gradient(160deg,rgba(255,240,233,.65),rgba(232,250,247,.45));z-index:0}
+    .printable-card>*{position:relative;z-index:1}
+    .card-label{display:inline-flex;align-items:center;justify-content:center;min-height:28px;padding:0 .9rem;border-radius:999px;background:#fff0e9;color:var(--brand-coral);font-size:.6875rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin:0 0 var(--space-2)}
+    .front-top{display:grid;grid-template-columns:minmax(0,1fr) 148px;gap:var(--space-2);align-items:center;margin-bottom:var(--space-2)}
+    .front-cat{display:flex;align-items:center;justify-content:center;min-height:164px;border-radius:18px;background:rgba(255,255,255,.78)}
+    .front-cat img{width:100%;max-width:220px;object-fit:contain}
+    .card-qr{margin:0 auto;border-radius:18px;padding:12px;background:#fff;border:2px solid #f0b39f;box-shadow:0 8px 24px rgba(56,38,26,.10)}
+    .card-qr svg{display:block;width:124px;height:124px}
+    .card-name{font-size:1.65rem;font-weight:900;color:var(--teal);margin:var(--space-2) 0 .35rem}
+    .reward-pill{display:inline-flex;align-items:center;gap:6px;background:#fff0e9;color:var(--brand-coral);border-radius:999px;padding:.42rem .9rem;font-size:.875rem;font-weight:900}
+    .front-copy{margin:var(--space-2) 0;font-weight:800;color:var(--ink)}
+    .contact-strip{display:inline-flex;align-items:center;gap:8px;justify-content:center;width:100%;min-height:44px;border-radius:999px;background:#eef8f5;color:var(--teal);font-size:.875rem;font-weight:800;padding:0 var(--space-2)}
+    .back-card{display:flex;flex-direction:column;justify-content:center}
+    .back-headline{font-size:2rem;font-weight:900;color:var(--ink);line-height:1.08;margin:var(--space-2) 0}
+    .back-headline span{color:var(--brand-coral)}
+    .back-divider{width:72%;height:1px;background:var(--line);margin:0 auto var(--space-3)}
+    .back-list{list-style:none;padding:0;margin:0 auto var(--space-3);width:min(100%,260px);display:grid;gap:var(--space-2);text-align:left}
+    .back-list li{display:flex;align-items:flex-start;gap:10px;font-size:.95rem;color:var(--ink);font-weight:700}
+    .back-list li svg{color:var(--teal);margin-top:2px}
+    .brand-mark{font-size:1.8rem;font-weight:900;color:var(--brand-coral);margin:.5rem 0 0}
+    .brand-mark span{color:var(--brand-mint)}
+    .scissors{font-size:1.3rem;color:var(--muted);line-height:1;align-self:center}
+    .qr-actions{display:flex;gap:var(--space-2);justify-content:center;flex-wrap:wrap}
+    .qr-actions button,.qr-actions a{flex:1 1 240px;max-width:280px;min-height:52px}
+    .print-card-btn{background:var(--brand-orange);border-color:var(--brand-orange);color:#fff}
+    .tip-note{font-size:.875rem;color:var(--muted);font-weight:700;margin:var(--space-2) 0 0;text-align:center}
     @media print {
       .no-print{display:none!important}
       body{margin:0;padding:0;background:white}
       .qr-shell{max-width:none;padding:0}
-      .card-pair{display:flex;justify-content:center;gap:16px;padding:8mm}
-      .printable-card{border:1.5px dashed #d8c8bd;border-radius:8px;padding:6mm;width:72mm}
-      .front-card .card-qr,.front-card .card-qr svg{width:48mm;height:48mm}
+      .card-pair{display:grid;grid-template-columns:1fr 8mm 1fr;gap:8mm;padding:8mm}
+      .printable-card{border:1.5px dashed #d8c8bd;border-radius:8px;padding:6mm;min-height:0}
+      .front-card .card-qr svg{width:40mm;height:40mm}
     }
-    @media(max-width:700px){.qr-grid{grid-template-columns:1fr}.card-pair{flex-direction:column;align-items:center}.qr-actions button,.qr-actions a{max-width:none}}
-    @media(max-width:430px){body{padding:var(--space-2)}.qr-actions button,.qr-actions a{flex-basis:100%}}
+    @media(max-width:860px){.card-pair{grid-template-columns:1fr}.scissors{display:none}.printable-card{min-height:0}}
+    @media(max-width:560px){body{padding:var(--space-2)}.print-section{padding:var(--space-3)}.front-top{grid-template-columns:1fr}.qr-actions button,.qr-actions a{flex-basis:100%;max-width:none}.back-headline{font-size:1.65rem}}
   </style>
 </head>
 <body>
@@ -97,35 +97,10 @@ export async function handleQrPage(
 
     <div class="qr-hero no-print">
       <div>${iconQrCode(32)}</div>
-      <h1>${t(lang, "qrCard")}</h1>
-    </div>
-    <p class="qr-hero-sub no-print">${t(lang, "printDoubleSided")} — ${t(lang, "cutInstruction")}</p>
-
-    <div class="qr-grid no-print">
-      <section class="mp-card qr-code-box">
-        ${qrSvg}
-        <p class="qr-scan-hint">${t(lang, "scanToView")}</p>
-        <div class="qr-actions">
-          <button class="mp-btn mp-btn-secondary" onclick="window.print()">${t(lang, "printQr")}</button>
-          <button class="mp-btn mp-btn-secondary" id="copy-link-btn" onclick="copyPublicLink()">${t(lang, "copyLink")}</button>
-        </div>
-      </section>
-
-      <section class="mp-card preview-card">
-        <p class="qr-section-title">${t(lang, "viewPublicProfile")}</p>
-        ${cat.photo_r2_key
-          ? `<img src="/media/cats/${safeId}/photo" alt="${safeName}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:var(--space-2)" />`
-          : `<div class="preview-no-photo"><span>${t(lang, "noPhoto")}</span></div>`
-        }
-        <div class="preview-field"><span class="preview-label">${t(lang, "name")}</span><span class="preview-value">${safeName}</span></div>
-        <div class="preview-field"><span class="preview-label">${t(lang, "country")}</span><span class="preview-value">${escapeHtml(cat.country_code ?? "")}</span></div>
-        ${cat.breed_mix ? `<div class="preview-field"><span class="preview-label">${t(lang, "breedMix")}</span><span class="preview-value">${escapeHtml(cat.breed_mix)}</span></div>` : ""}
-        ${cat.sex ? `<div class="preview-field"><span class="preview-label">${t(lang, "sex")}</span><span class="preview-value">${escapeHtml(cat.sex)}</span></div>` : ""}
-        ${cat.current_mode ? `<div class="preview-field"><span class="preview-label">${t(lang, "mode")}</span><span class="preview-value mode-badge mode-${escapeHtml(cat.current_mode)}">${escapeHtml(cat.current_mode)}</span></div>` : ""}
-        <div style="margin-top:var(--space-2)">
-          <a class="mp-btn mp-btn-secondary" href="/c/${safeId}?lang=${lang}" target="_blank">${t(lang, "viewPublicProfile")}</a>
-        </div>
-      </section>
+      <div>
+        <h1>${t(lang, "qrCard")}</h1>
+        <p class="qr-hero-sub">${t(lang, "printDoubleSided")} - ${t(lang, "cutInstruction")}</p>
+      </div>
     </div>
 
     <section class="mp-card print-section">
@@ -134,27 +109,34 @@ export async function handleQrPage(
       <div class="card-pair">
         <div class="printable-card front-card">
           <p class="card-label">FRONT</p>
-          <div class="card-qr">${qrSvg}</div>
-          <p class="card-name">${safeName}</p>
-          <span class="reward-pill">&#128062; ${t(lang, "scanToMeetMe")}</span>
-          <p class="contact-note">${t(lang, "emergencyContact")}</p>
+          <div class="front-top">
+            <div class="front-cat">${cat.photo_r2_key
+              ? `<img src="/media/cats/${safeId}/photo" alt="${safeName}" />`
+              : `<img src="${MISHIPASS_LOGO_SRC}" alt="MishiPass cat" />`}</div>
+            <div class="card-qr">${qrSvg}</div>
+          </div>
+          <span class="reward-pill">&#127873; ${t(lang, "scanToMeetMe")}</span>
+          <p class="front-copy">${t(lang, "thankYouForHelping")}</p>
+          <div class="contact-strip">${iconContact(16)} <span>${t(lang, "emergencyContact")}</span></div>
         </div>
         <span class="scissors no-print" aria-hidden="true">&#9986;</span>
         <div class="printable-card back-card">
           <p class="card-label">BACK</p>
-          <p class="back-headline">${t(lang, "ifYouFindCat")}</p>
-          <ul>
-            <li>${t(lang, "scanToView")}</li>
-            <li>${t(lang, "ownerWillBeNotified")}</li>
-            <li>${t(lang, "thankYouForHelping")}</li>
+          <p class="back-headline">If you find this cat,<br /><span>scan this QR.</span></p>
+          <div class="back-divider"></div>
+          <ul class="back-list">
+            <li>${iconContact(16)} <span>${t(lang, "scanToView")}</span></li>
+            <li>${iconContact(16)} <span>${t(lang, "ownerWillBeNotified")}</span></li>
+            <li>${iconContact(16)} <span>${t(lang, "thankYouForHelping")}</span></li>
           </ul>
-          <p class="brand-mark">MishiPass</p>
+          <p class="brand-mark">Mishi<span>Pass</span></p>
         </div>
       </div>
-      <div class="no-print" style="display:flex;gap:var(--space-2);justify-content:center;flex-wrap:wrap;margin-top:var(--space-2)">
-        <button class="mp-btn mp-btn-secondary" onclick="window.print()">${t(lang, "printCard")}</button>
+      <div class="qr-actions no-print">
+        <button class="mp-btn mp-btn-secondary" id="copy-link-btn" onclick="copyPublicLink()">${t(lang, "copyLink")}</button>
+        <button class="mp-btn print-card-btn" onclick="window.print()">${t(lang, "printCard")}</button>
       </div>
-      <p class="tip-note no-print" style="margin-top:var(--space-2)">${t(lang, "tipPrintCardstock")}</p>
+      <p class="tip-note no-print">${t(lang, "tipPrintCardstock")}</p>
     </section>
   </main>
   <script>

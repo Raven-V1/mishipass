@@ -3,6 +3,7 @@ import { MISHIPASS_DESIGN_CSS, brandLockupHtml, escapeHtml, htmlResponse } from 
 import type { RequestContext } from "../middleware/session.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
 import { renderTopNav, TOP_NAV_CSS } from "./partials/topNav.js";
+import { ILLUSTRATION_MISSING_EMPTY_SRC } from "../utils/designAssets.js";
 
 export async function handleSightingInbox(
   publicId: string,
@@ -26,7 +27,12 @@ export async function handleSightingInbox(
 
   let reportsHtml: string;
   if (reports.length === 0) {
-    reportsHtml = `<p>${t(lang, "noMatches")}</p>`;
+    reportsHtml = `<section class="empty-state">
+      <img src="${ILLUSTRATION_MISSING_EMPTY_SRC}" alt="" />
+      <h2>No Sightings Yet</h2>
+      <p>Reports will appear here when someone spots your cat.</p>
+      <a class="mp-btn mp-btn-primary empty-cta" href="/dashboard/cats/${safeId}/missing-card?lang=${lang}">Share Missing Poster</a>
+    </section>`;
   } else {
     reportsHtml = reports.map(r => {
       const safeLocation = r.location_text ? escapeHtml(r.location_text) : t(lang, "unknown");
@@ -52,15 +58,22 @@ export async function handleSightingInbox(
     ${MISHIPASS_DESIGN_CSS}
     ${TOP_NAV_CSS}
     body{padding:var(--space-3)}
-    .page-shell{max-width:704px;margin:var(--space-4) auto}.inbox-shell{padding:var(--space-4);margin-top:var(--space-3)}
+    .page-shell{max-width:920px;margin:var(--space-4) auto}.inbox-shell{padding:var(--space-4);margin-top:var(--space-3)}
     .nav{margin-bottom:var(--space-3);font-size:0.875rem}
-    h1{font-size:clamp(2rem,6vw,3rem);line-height:1.08;margin:0 0 var(--space-3);color:var(--teal)}
-    .report-card{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:8px;padding:var(--space-2);margin-bottom:var(--space-2);background:#fff;transition:border-color .15s}
-    .report-card:hover{border-color:var(--teal)}
-    .report-location{font-weight:800;margin:0 0 var(--space-1);color:var(--teal)}
-    .report-message{margin:var(--space-1) 0;color:var(--ink);white-space:pre-wrap}
-    .report-date{margin:var(--space-1) 0 0;font-size:0.875rem;color:var(--muted)}
-    .report-link{font-size:0.875rem;font-weight:800;color:var(--teal)}
+    h1{font-size:clamp(2.25rem,6vw,3.5rem);line-height:1.02;margin:0 0 var(--space-1);color:var(--teal)}
+    .page-sub{margin:0 0 var(--space-4);color:var(--muted);font-weight:700}
+    .report-list{display:grid;gap:var(--space-2)}
+    .report-card{display:grid;grid-template-columns:minmax(0,1fr) auto;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:8px;padding:var(--space-3);background:#fff;transition:border-color .15s,transform .15s;box-shadow:0 10px 24px rgba(56,38,26,.06)}
+    .report-card:hover{border-color:var(--teal);transform:translateY(-1px)}
+    .report-location{font-weight:900;margin:0 0 .35rem;color:var(--teal);font-size:1.1rem}
+    .report-message{margin:0;color:var(--ink);white-space:pre-wrap}
+    .report-date{margin:.4rem 0 0;font-size:0.875rem;color:var(--muted);font-weight:700}
+    .report-link{display:inline-flex;align-items:center;min-height:44px;padding:0 var(--space-2);border-radius:999px;background:#eef8f5;font-size:.875rem;font-weight:900;color:var(--teal)}
+    .empty-state{text-align:center;padding:var(--space-3) 0}
+    .empty-state img{display:block;width:min(100%,430px);margin:0 auto var(--space-3)}
+    .empty-state h2{margin:0 0 var(--space-1);font-size:clamp(2rem,5vw,3rem);line-height:1.05;color:var(--teal)}
+    .empty-state p{max-width:420px;margin:0 auto;color:var(--muted);font-weight:700;font-size:1.05rem}
+    .empty-cta{margin-top:var(--space-4);background:var(--brand-orange);border-color:var(--brand-orange)}
     @media(max-width:430px){body{padding:var(--space-2)}.inbox-shell{padding:var(--space-3)}}
   </style>
 </head>
@@ -70,8 +83,9 @@ export async function handleSightingInbox(
     ${brandLockupHtml(`/?lang=${lang}`)}
   <section class="mp-card inbox-shell">
     <div class="nav"><a class="mp-back" href="/dashboard/cats/${safeId}?lang=${lang}">&larr; ${safeName}</a></div>
-    <h1>${t(lang, "reports")}: ${safeName}</h1>
-    ${reportsHtml}
+    <h1>${t(lang, "reports")}</h1>
+    <p class="page-sub">${safeName}</p>
+    <div class="report-list">${reportsHtml}</div>
   </section>
   </main>
 </body>
