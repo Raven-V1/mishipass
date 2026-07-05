@@ -29,3 +29,5 @@ Hackathon_info/
 
 # Browser/test smoke profiles (local tooling only)
 .codex-smoke/
+.tmp-*.png
+.tmp-edge-profile/

@@ -411,12 +411,12 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
             <input type="text" id="city" name="city" required maxlength="80" placeholder="${t(lang, "locationText")}" />
           </div>
           <div class="field map-section">
-          <label>${lang === "es" ? "Marcar ubicación en el mapa" : lang === "kk-KZ" ? "Картада орынды белгілеу" : "Pin location on map"}</label>
-          <p class="map-hint">${lang === "es" ? "Haz clic en el mapa para marcar donde lo viste (opcional)" : lang === "kk-KZ" ? "Мысықты көрген жерді белгілеу үшін картаны басыңыз (міндетті емес)" : "Click the map to drop a pin where you spotted the cat"}</p>
-          <div id="sighting-map" role="application" aria-label="${lang === "es" ? "Selector de ubicación aproximada" : lang === "kk-KZ" ? "Шамамен орналасу орнын таңдау" : "Approximate location picker"}">
+          <label>${lang === "es" ? "Ubicación aproximada" : lang === "kk-KZ" ? "Шамамен орналасуы" : "Approximate location"}</label>
+          <p class="map-hint">${lang === "es" ? "El mapa es solo una referencia visual. Usa \"Usar mi ubicación\" para adjuntar coordenadas reales si lo deseas." : lang === "kk-KZ" ? "Карта тек көрнекі анықтама. Нақты координаттарды қосқыңыз келсе, \"Менің орнымды қолдану\" түймесін пайдаланыңыз." : "The map is a visual reference only. Use \"Use my location\" if you want to attach real coordinates."}</p>
+          <div id="sighting-map" role="img" aria-label="${lang === "es" ? "Referencia visual del área aproximada" : lang === "kk-KZ" ? "Шамамен аймақтың көрнекі анықтамасы" : "Approximate area visual reference"}">
             <div class="map-pin" id="sighting-map-pin"></div>
             <div class="map-overlay">
-              <div class="map-caption">${lang === "es" ? "Marca un punto aproximado. No necesitas una dirección exacta." : lang === "kk-KZ" ? "Шамамен нүктені белгілеңіз. Нақты мекенжай қажет емес." : "Mark an approximate point. An exact address is not required."}</div>
+              <div class="map-caption">${lang === "es" ? "Comparte una dirección o zona en el campo de ubicación. Las coordenadas solo se añaden si aceptas la geolocalización." : lang === "kk-KZ" ? "Орналасу өрісінде мекенжайды не ауданды жазыңыз. Координаттар тек геолокацияға рұқсат бергенде қосылады." : "Share an address or area in the location field. Coordinates are added only if you allow geolocation."}</div>
               <div class="map-area-label">${lang === "es" ? "Área aproximada" : lang === "kk-KZ" ? "Шамамен аймақ" : "Approximate area"}</div>
             </div>
           </div>
@@ -509,30 +509,17 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
       lngInput.value=lng.toFixed(6);
       if(coordsDisplay)coordsDisplay.textContent=latInput.value+", "+lngInput.value;
     }
-    function placePinFromRatio(xRatio,yRatio){
-      if(!map||!pin)return;
-      var clampedX=Math.max(0,Math.min(1,xRatio));
-      var clampedY=Math.max(0,Math.min(1,yRatio));
-      pin.style.left=(clampedX*100)+"%";
-      pin.style.top=(clampedY*100)+"%";
+    function showCenteredPin(){
+      if(!pin)return;
+      pin.style.left="50%";
+      pin.style.top="50%";
       pin.style.display="block";
-      var lat=(90-(clampedY*180));
-      var lng=((clampedX*360)-180);
-      updateCoords(lat,lng);
     }
     function clearPin(){
       latInput.value="";
       lngInput.value="";
       if(coordsDisplay)coordsDisplay.textContent="";
       if(pin)pin.style.display="none";
-    }
-    if(map){
-      map.addEventListener("click",function(e){
-        var rect=map.getBoundingClientRect();
-        var x=(e.clientX-rect.left)/rect.width;
-        var y=(e.clientY-rect.top)/rect.height;
-        placePinFromRatio(x,y);
-      });
     }
     if(useLocationBtn){
       useLocationBtn.addEventListener("click",function(){
@@ -543,9 +530,8 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
         navigator.geolocation.getCurrentPosition(function(pos){
           var lat=pos.coords.latitude;
           var lng=pos.coords.longitude;
-          var x=(lng+180)/360;
-          var y=(90-lat)/180;
-          placePinFromRatio(x,y);
+          updateCoords(lat,lng);
+          showCenteredPin();
         },function(){
           if(coordsDisplay)coordsDisplay.textContent=${JSON.stringify(lang === "es" ? "No se pudo obtener tu ubicación." : lang === "kk-KZ" ? "Орныңызды алу мүмкін болмады." : "Could not get your location.")};
         });
