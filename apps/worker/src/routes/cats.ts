@@ -85,6 +85,8 @@ export async function handleCreateCat(
   const breedMix = typeof b["breedMix"] === "string" ? b["breedMix"].slice(0, 100) : null;
   const weight = typeof b["weight"] === "string" ? b["weight"].slice(0, 30) : null;
   const notes = typeof b["notes"] === "string" ? b["notes"].slice(0, 500) : null;
+  const microchipNumber = typeof b["microchipNumber"] === "string" ? b["microchipNumber"].slice(0, 50) : null;
+  const microchipDate = typeof b["microchipDate"] === "string" ? b["microchipDate"].slice(0, 30) : null;
 
   let publicId: string;
   try {
@@ -110,6 +112,8 @@ export async function handleCreateCat(
         breed_mix: breedMix,
         weight,
         notes,
+        microchip_number: microchipNumber,
+        microchip_date: microchipDate,
       });
       const qrUrl = `${publicBaseUrl}/c/${publicId}`;
       return Response.json({ publicId, qrUrl }, { status: 201 });
@@ -254,6 +258,7 @@ function renderMissingProfile(
     [t(lang, "colorMarkings"), cat.color_markings ? escapeHtml(cat.color_markings) : t(lang, "unknown")],
     [t(lang, "age"), cat.birth_date ? escapeHtml(cat.birth_date) : t(lang, "unknown")],
     [t(lang, "sex"), cat.sex ? escapeHtml(cat.sex) : t(lang, "unknown")],
+    ...(cat.microchip_number ? [[t(lang, "microchipNumber"), escapeHtml(cat.microchip_number)]] : []),
     [t(lang, "contact"), contactValue],
   ].map(([label, value]) => `<div class="data-row"><dt>${label}</dt><dd>${value}</dd></div>`).join("");
 
@@ -498,6 +503,12 @@ export async function handleUpdateCat(
   }
   if ("notes" in b) {
     fields.push({ column: "notes", value: typeof b["notes"] === "string" ? b["notes"].slice(0, 500) : null });
+  }
+  if ("microchip_number" in b) {
+    fields.push({ column: "microchip_number", value: typeof b["microchip_number"] === "string" ? b["microchip_number"].slice(0, 50) : null });
+  }
+  if ("microchip_date" in b) {
+    fields.push({ column: "microchip_date", value: typeof b["microchip_date"] === "string" ? b["microchip_date"].slice(0, 30) : null });
   }
 
   if (fields.length === 0) {
