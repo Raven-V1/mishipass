@@ -515,7 +515,7 @@ function renderAdoptionProfile(
         <p class="adopt-cta">${t(lang, "interestedInAdopting")}</p>
         ${contactSection}
         <div class="adopt-request-section" id="adopt-request-section">
-          <button class="mp-btn mp-btn-secondary" id="adopt-request-btn" onclick="submitAdoptionRequest()">${t(lang, "requestToAdopt")}</button>
+          <button class="mp-btn mp-btn-secondary" id="adopt-request-btn" type="button">${t(lang, "requestToAdopt")}</button>
           <p class="adopt-request-status hidden" id="adopt-request-status"></p>
         </div>
         <p class="privacy-note">${iconShield(16)} <span>${t(lang, "privacyNoPrivateDataShown")}</span></p>
@@ -523,20 +523,49 @@ function renderAdoptionProfile(
     </section>
   </main>
   <script>
+  function setAdoptionStatus(message,isError){
+    var status=document.getElementById("adopt-request-status");
+    if(!status)return;
+    status.classList.remove("hidden");
+    status.textContent=message;
+    status.style.color=isError?"#b42318":"";
+  }
   function submitAdoptionRequest(){
     var btn=document.getElementById("adopt-request-btn");
-    var status=document.getElementById("adopt-request-status");
+    if(!btn)return;
     btn.disabled=true;
+    setAdoptionStatus(${JSON.stringify(lang === "es" ? "Enviando solicitud..." : lang === "kk-KZ" ? "Өтініш жіберілуде..." : "Sending request...")},false);
     fetch("/api/cats/${escapeHtml(publicId)}/request-transfer",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({})})
       .then(function(r){
-        status.classList.remove("hidden");
-        if(r.status===401){status.textContent="Please log in to your MishiPass account to request adoption.";btn.style.display="none";}
-        else if(r.status===400||r.status===409){r.text().then(function(t){status.textContent=t});}
-        else if(r.ok){btn.style.display="none";status.textContent=${JSON.stringify(t(lang, "requestSent"))};}
-        else{btn.disabled=false;status.textContent="Something went wrong. Please try again.";}
+        if(r.status===401){
+          btn.disabled=false;
+          setAdoptionStatus(${JSON.stringify(lang === "es" ? "Inicia sesión en tu cuenta de MishiPass para solicitar la adopción." : lang === "kk-KZ" ? "Асырап алуға өтініш беру үшін MishiPass тіркелгіңізге кіріңіз." : "Log in to your MishiPass account to request adoption.")},true);
+          return null;
+        }
+        return r.text().then(function(text){return{text:text,response:r}});
       })
-      .catch(function(){btn.disabled=false;status&&(status.textContent="Network error.");});
+      .then(function(result){
+        if(!result)return;
+        var r=result.response;
+        var text=result.text||"";
+        if(r.ok){
+          btn.style.display="none";
+          setAdoptionStatus(${JSON.stringify(t(lang, "requestSent"))},false);
+        }else if(r.status===400||r.status===403||r.status===404||r.status===409){
+          btn.disabled=false;
+          setAdoptionStatus(text||${JSON.stringify(lang === "es" ? "No se pudo enviar la solicitud." : lang === "kk-KZ" ? "Өтініш жіберілмеді." : "The request could not be submitted.")},true);
+        }else{
+          btn.disabled=false;
+          setAdoptionStatus(${JSON.stringify(lang === "es" ? "Algo salió mal. Intenta de nuevo." : lang === "kk-KZ" ? "Қате болды. Қайта көріңіз." : "Something went wrong. Please try again.")},true);
+        }
+      })
+      .catch(function(){
+        btn.disabled=false;
+        setAdoptionStatus(${JSON.stringify(lang === "es" ? "Error de red." : lang === "kk-KZ" ? "Желі қатесі." : "Network error.")},true);
+      });
   }
+  var adoptRequestBtn=document.getElementById("adopt-request-btn");
+  if(adoptRequestBtn)adoptRequestBtn.addEventListener("click",submitAdoptionRequest);
   </script>
 </body>
 </html>`;

@@ -362,7 +362,23 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
     .map-section{margin-bottom:0}
     .map-section label{font-size:.875rem;font-weight:900;color:var(--teal);display:block;margin-bottom:var(--space-1)}
     .map-hint{font-size:.8125rem;color:var(--muted);margin:0 0 var(--space-1)}
-    #sighting-map{width:100%;height:280px;border-radius:8px;border:1px solid var(--line);overflow:hidden}
+    #sighting-map{position:relative;width:100%;height:280px;border-radius:8px;border:1px solid var(--line);overflow:hidden;background:
+      radial-gradient(circle at 20% 22%, rgba(255,255,255,.9) 0 10%, transparent 11%),
+      radial-gradient(circle at 78% 68%, rgba(255,255,255,.7) 0 8%, transparent 9%),
+      linear-gradient(0deg, rgba(255,255,255,.18) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.18) 1px, transparent 1px),
+      linear-gradient(135deg,#d8efe8 0%,#eaf7f3 38%,#f8efe6 100%);
+      background-size:auto,auto,48px 48px,48px 48px,100% 100%;
+      cursor:crosshair}
+    #sighting-map::before{content:"";position:absolute;inset:14px;border-radius:8px;border:1px dashed rgba(36,119,110,.24);pointer-events:none}
+    .map-pin{position:absolute;width:18px;height:18px;border-radius:50% 50% 50% 0;background:var(--brand-coral);border:2px solid #fff;box-shadow:0 8px 18px rgba(0,0,0,.18);transform:translate(-50%,-100%) rotate(-45deg);display:none;pointer-events:none}
+    .map-pin::after{content:"";position:absolute;inset:4px;border-radius:50%;background:#fff}
+    .map-overlay{position:absolute;left:14px;right:14px;bottom:14px;display:flex;align-items:flex-end;justify-content:space-between;gap:var(--space-2);pointer-events:none}
+    .map-caption,.map-area-label{background:rgba(255,253,249,.94);border:1px solid rgba(56,38,26,.1);border-radius:8px;padding:.55rem .7rem;box-shadow:0 10px 24px rgba(56,38,26,.08)}
+    .map-caption{max-width:280px;font-size:.8125rem;font-weight:800;color:var(--teal)}
+    .map-area-label{font-size:.75rem;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:0}
+    .map-toolbar{display:flex;gap:var(--space-1);flex-wrap:wrap;margin-top:var(--space-1)}
+    .map-toolbar button{flex:1 1 160px}
     .map-coords{font-size:.8125rem;color:var(--teal);font-weight:700;margin-top:var(--space-1);min-height:1.2em}
     .placeholder-photo{display:flex;align-items:center;justify-content:center;min-height:220px;border-radius:8px;background:linear-gradient(135deg,#fff7f0,#eef8f5);border:1px dashed #e7d3ca;text-align:center;color:var(--muted);font-weight:800}
     .placeholder-photo span{display:block}
@@ -395,7 +411,17 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
           <div class="field map-section">
           <label>${lang === "es" ? "Marcar ubicación en el mapa" : lang === "kk-KZ" ? "Картада орынды белгілеу" : "Pin location on map"}</label>
           <p class="map-hint">${lang === "es" ? "Haz clic en el mapa para marcar donde lo viste (opcional)" : lang === "kk-KZ" ? "Мысықты көрген жерді белгілеу үшін картаны басыңыз (міндетті емес)" : "Click the map to drop a pin where you spotted the cat"}</p>
-          <div id="sighting-map"></div>
+          <div id="sighting-map" role="application" aria-label="${lang === "es" ? "Selector de ubicación aproximada" : lang === "kk-KZ" ? "Шамамен орналасу орнын таңдау" : "Approximate location picker"}">
+            <div class="map-pin" id="sighting-map-pin"></div>
+            <div class="map-overlay">
+              <div class="map-caption">${lang === "es" ? "Marca un punto aproximado. No necesitas una dirección exacta." : lang === "kk-KZ" ? "Шамамен нүктені белгілеңіз. Нақты мекенжай қажет емес." : "Mark an approximate point. An exact address is not required."}</div>
+              <div class="map-area-label">${lang === "es" ? "Área aproximada" : lang === "kk-KZ" ? "Шамамен аймақ" : "Approximate area"}</div>
+            </div>
+          </div>
+          <div class="map-toolbar">
+            <button type="button" class="mp-btn mp-btn-secondary" id="map-use-location">${lang === "es" ? "Usar mi ubicación" : lang === "kk-KZ" ? "Менің орнымды қолдану" : "Use my location"}</button>
+            <button type="button" class="mp-btn mp-btn-secondary" id="map-clear-location">${lang === "es" ? "Borrar punto" : lang === "kk-KZ" ? "Нүктені өшіру" : "Clear pin"}</button>
+          </div>
           <p class="map-coords" id="map-coords-display"></p>
         </div>
         <div class="field">
@@ -442,28 +468,77 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
     </form>
   </section>
   </main>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WLEg=" crossorigin=""></script>
   <script>
   (function(){
     var latInput=document.getElementById("sighting-lat");
     var lngInput=document.getElementById("sighting-lng");
     var coordsDisplay=document.getElementById("map-coords-display");
-    var map=L.map("sighting-map").setView([20,0],2);
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap contributors",maxZoom:19}).addTo(map);
-    var marker=null;
-    map.on("click",function(e){
-      var lat=e.latlng.lat.toFixed(6),lng=e.latlng.lng.toFixed(6);
-      latInput.value=lat;lngInput.value=lng;
-      if(coordsDisplay)coordsDisplay.textContent=lat+", "+lng;
-      if(marker)marker.setLatLng(e.latlng);
-      else marker=L.marker(e.latlng).addTo(map);
-    });
-    if(navigator.geolocation){
-      navigator.geolocation.getCurrentPosition(function(pos){
-        map.setView([pos.coords.latitude,pos.coords.longitude],14);
-      },function(){});
+    var map=document.getElementById("sighting-map");
+    var pin=document.getElementById("sighting-map-pin");
+    var useLocationBtn=document.getElementById("map-use-location");
+    var clearLocationBtn=document.getElementById("map-clear-location");
+    var photoCapture=document.getElementById("photo-capture");
+    var photoUpload=document.getElementById("photo-upload");
+    var photoStatus=document.getElementById("sighting-photo-status");
+    function updateCoords(lat,lng){
+      latInput.value=lat.toFixed(6);
+      lngInput.value=lng.toFixed(6);
+      if(coordsDisplay)coordsDisplay.textContent=latInput.value+", "+lngInput.value;
     }
+    function placePinFromRatio(xRatio,yRatio){
+      if(!map||!pin)return;
+      var clampedX=Math.max(0,Math.min(1,xRatio));
+      var clampedY=Math.max(0,Math.min(1,yRatio));
+      pin.style.left=(clampedX*100)+"%";
+      pin.style.top=(clampedY*100)+"%";
+      pin.style.display="block";
+      var lat=(90-(clampedY*180));
+      var lng=((clampedX*360)-180);
+      updateCoords(lat,lng);
+    }
+    function clearPin(){
+      latInput.value="";
+      lngInput.value="";
+      if(coordsDisplay)coordsDisplay.textContent="";
+      if(pin)pin.style.display="none";
+    }
+    if(map){
+      map.addEventListener("click",function(e){
+        var rect=map.getBoundingClientRect();
+        var x=(e.clientX-rect.left)/rect.width;
+        var y=(e.clientY-rect.top)/rect.height;
+        placePinFromRatio(x,y);
+      });
+    }
+    if(useLocationBtn){
+      useLocationBtn.addEventListener("click",function(){
+        if(!navigator.geolocation){
+          if(coordsDisplay)coordsDisplay.textContent=${JSON.stringify(lang === "es" ? "La geolocalización no está disponible en este dispositivo." : lang === "kk-KZ" ? "Бұл құрылғыда геолокация қолжетімсіз." : "Geolocation is not available on this device.")};
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(function(pos){
+          var lat=pos.coords.latitude;
+          var lng=pos.coords.longitude;
+          var x=(lng+180)/360;
+          var y=(90-lat)/180;
+          placePinFromRatio(x,y);
+        },function(){
+          if(coordsDisplay)coordsDisplay.textContent=${JSON.stringify(lang === "es" ? "No se pudo obtener tu ubicación." : lang === "kk-KZ" ? "Орныңызды алу мүмкін болмады." : "Could not get your location.")};
+        });
+      });
+    }
+    if(clearLocationBtn){
+      clearLocationBtn.addEventListener("click",clearPin);
+    }
+    function bindPhotoInput(input){
+      if(!input||!photoStatus)return;
+      input.addEventListener("change",function(){
+        var file=input.files&&input.files[0];
+        photoStatus.textContent=file?file.name:${JSON.stringify(t(lang, "noPhotoSelected"))};
+      });
+    }
+    bindPhotoInput(photoCapture);
+    bindPhotoInput(photoUpload);
   })();
   </script>
 </body>
