@@ -103,7 +103,6 @@ export async function handleQrPage(
 
     <div class="qr-grid no-print">
       <section class="mp-card qr-code-box">
-        <p class="qr-section-title">${iconQrCode(18)} ${t(lang, "qrCard")}</p>
         ${qrSvg}
         <p class="qr-scan-hint">${t(lang, "scanToView")}</p>
         <div class="qr-actions">

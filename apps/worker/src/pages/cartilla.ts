@@ -55,7 +55,7 @@ export async function handleCartillaPage(
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(224px,1fr));gap:var(--space-2)}
     .record{border:1px solid var(--line);border-radius:8px;padding:var(--space-2);background:#fff}
     .notes{white-space:pre-wrap}
-    label{margin-top:var(--space-2)}
+    label{margin-top:var(--space-2)}.field-row{display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap}
     .btn{margin-top:var(--space-2)}
     .sticker{display:block;width:160px;height:112px;object-fit:cover;margin-top:var(--space-2);border-radius:8px}
     .photo-picker{margin:var(--space-1) 0 var(--space-2)}.photo-picker-actions{display:flex;gap:var(--space-1);flex-wrap:wrap}.photo-action{flex:1 1 160px}.photo-input-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}.photo-status{margin-top:var(--space-1);overflow-wrap:anywhere}
@@ -71,7 +71,7 @@ export async function handleCartillaPage(
     <h1>${t(lang, "cartilla")}</h1>
     <p class="muted">${safeName} ${t(lang, "cartillaPrivateRecords")}</p>
     ${renderVetVisits(safeId, vetVisits, lang)}
-    ${renderVaccines(safeId, vaccines, lang)}
+    ${renderVaccines(safeId, vaccines, cat.next_vaccine_date, lang)}
     ${renderMedications(medications, lang)}
     ${renderForms(safeId, lang)}
   </section>
@@ -79,6 +79,8 @@ export async function handleCartillaPage(
   <script>
     (function(){
       function postJson(url, payload){ return fetch(url,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}); }
+      var nextVaccineBtn=document.getElementById("next-vaccine-save-btn");
+      if(nextVaccineBtn){nextVaccineBtn.addEventListener("click",function(){var val=document.getElementById("next-vaccine-input").value||null;var status=document.getElementById("next-vaccine-status");nextVaccineBtn.disabled=true;status.textContent="";postJson("/api/cats/${safeId}/update",{next_vaccine_date:val}).then(function(r){nextVaccineBtn.disabled=false;status.textContent=r.ok?"✓":"Error"}).catch(function(){nextVaccineBtn.disabled=false;status.textContent="Error"})});}
       var vaccineForm=document.getElementById("vaccine-form");
       vaccineForm.addEventListener("submit",function(e){e.preventDefault();var f=e.target;postJson("/api/cats/${safeId}/vaccines",{vaccine_name:f.vaccine_name.value,date_given:f.date_given.value}).then(function(r){if(r.ok) location.reload(); else r.text().then(alert);});});
       var medForm=document.getElementById("medication-form");
@@ -136,9 +138,11 @@ function renderVetVisits(publicId: string, visits: VetVisitEntry[], lang: Langua
   return `<h2>${t(lang, "vetVisit")}</h2><div class="grid">${visits.map(v => `<div class="record"><strong>${dateOrEmpty(v.visit_date, lang)}</strong><p>${v.vet_or_clinic_name ? escapeHtml(v.vet_or_clinic_name) : t(lang, "unknown")}</p><a class="btn secondary" href="/dashboard/cats/${publicId}/cartilla/vet-visits/${v.id}?lang=${lang}">${t(lang, "details")}</a></div>`).join("")}</div>`;
 }
 
-function renderVaccines(publicId: string, vaccines: VaccineEntry[], lang: LanguageCode): string {
+function renderVaccines(publicId: string, vaccines: VaccineEntry[], nextVaccineDate: string | null, lang: LanguageCode): string {
+  const currentVal = nextVaccineDate ? escapeHtml(nextVaccineDate) : "";
+  const nextDateRow = `<div class="field field-row" style="margin-bottom:var(--space-2)"><label style="flex:0 0 auto;margin:0;font-weight:800">${t(lang, "nextVaccineDate")}</label><input type="date" id="next-vaccine-input" value="${currentVal}" style="flex:1 1 160px;max-width:200px" /><button class="btn secondary" id="next-vaccine-save-btn">${t(lang, "save")}</button><span id="next-vaccine-status" class="muted" style="font-size:.875rem"></span></div>`;
   const list = vaccines.length === 0 ? `<p class="muted">${t(lang, "noMatches")}</p>` : `<div class="grid">${vaccines.map(v => `<div class="record"><strong>${escapeHtml(v.vaccine_name)}</strong><p class="muted">${dateOrEmpty(v.date_given, lang)}</p>${v.sticker_photo_r2_key ? `<img class="sticker" src="/media/cats/${publicId}/vaccines/${v.id}/sticker-photo" alt="Vaccine sticker photo" />` : ""}<form class="sticker-form" action="/api/cats/${publicId}/vaccines/${v.id}/sticker-photo"><div class="photo-picker"><div class="photo-picker-actions"><label class="photo-action" for="sticker-capture-${v.id}">${t(lang, "takePhoto")}</label><label class="photo-action" for="sticker-upload-${v.id}">${t(lang, "chooseExistingPhoto")}</label></div><input class="photo-input-visually-hidden" id="sticker-capture-${v.id}" type="file" name="photoCapture" accept="image/*" capture="environment" data-photo-status="sticker-status-${v.id}" /><input class="photo-input-visually-hidden" id="sticker-upload-${v.id}" type="file" name="photoUpload" accept="image/*" data-photo-status="sticker-status-${v.id}" /><div id="sticker-status-${v.id}" class="photo-status">${t(lang, "noPhotoSelected")}</div></div><button class="btn secondary" type="submit">${t(lang, "photoUpload")}</button></form></div>`).join("")}</div>`;
-  return `<h2>${t(lang, "vaccines")}</h2>${list}`;
+  return `<h2>${t(lang, "vaccines")}</h2>${nextDateRow}${list}`;
 }
 
 function renderMedications(medications: MedicationEntry[], lang: LanguageCode): string {
