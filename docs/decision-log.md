@@ -78,6 +78,12 @@ Reason: Formalizes Constitution Section 7. Crockford Base32 avoids visually
 ambiguous characters on printed tags; 40 bits is infeasible to brute-force.
 Alternatives considered: Sequential/internal IDs (rejected — enumerable, leak
 internal state). Longer opaque random strings (rejected — worse to read off a
+
+## 2026-07-05 — Design-branch commit attribution
+Decision: Commits on feature/design-alignment are attributed to zhanerke06 (Design Authority) via GitHub noreply.
+Reason: Design work is Zhanerke's authorship; Carlos directed attribution to her account for this branch.
+Alternatives considered: Raven-V1 identity (prior logged standard) — overridden by Carlos for this design work; personal Gmail — rejected to avoid publishing a personal address in public commit metadata.
+Decided by: Carlos
 printed tag).
 Decided by: Project Owner
 
