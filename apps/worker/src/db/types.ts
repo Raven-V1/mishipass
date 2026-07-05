@@ -109,11 +109,14 @@ export interface CatPublicView {
   color_markings: string | null;
   breed_mix: string | null;
   weight: string | null;
+  /** Microchip number — shown on missing alert only, never on active/vet public pages. */
+  microchip_number: string | null;
 }
 
-/** Shape returned for owner-only views. Includes notes (private). */
+/** Shape returned for owner-only views. Includes notes and microchip date (private). */
 export interface CatOwnerView extends CatPublicView {
   notes: string | null;
+  microchip_date: string | null;
 }
 
 export interface CatInsert {
@@ -130,6 +133,8 @@ export interface CatInsert {
   breed_mix?: string | null;
   weight?: string | null;
   notes?: string | null;
+  microchip_number?: string | null;
+  microchip_date?: string | null;
 }
 
 // ── contact_settings ──────────────────────────────────────────────────────────
