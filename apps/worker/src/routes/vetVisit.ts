@@ -365,36 +365,36 @@ function renderVetForm(
   <section class="mp-card vet-card">
   <header class="vet-head">
     <h1>${iconStethoscope(32)} <span>${t(lang, "vetVisit")}</span></h1>
-    <p class="vet-subtitle">Keep track of every veterinary appointment for your furry friend.</p>
+    <p class="vet-subtitle">${t(lang, "vetVisitSubtitle")}</p>
   </header>
   <div class="vet-layout">
     <aside class="profile-column">
       <h2>${safeName}</h2>
       <span class="badge">${safeCountry}</span>
       ${photoSection || `<div class="photo-placeholder">${t(lang, "noPhoto")}</div>`}
-      <div class="status-panel"><span class="vet-badge">${t(lang, "vetVisitActive")}</span><p class="expiry">Session expires: ${safeExpiry} UTC</p></div>
-      <p class="note">This visit record is documentation only. No private owner records are shown on this page. The QR returns to Active Profile after submission.</p>
+      <div class="status-panel"><span class="vet-badge">${t(lang, "vetVisitActive")}</span><p class="expiry">${t(lang, "sessionExpires")} ${safeExpiry} UTC</p></div>
+      <p class="note">${t(lang, "vetDocNote")}</p>
     </aside>
 
     <form class="visit-form" method="POST" action="/api/cats/${safeId}/vet-visit/finish?lang=${lang}" enctype="multipart/form-data">
       <section class="form-section">
-        <h2 class="section-title">Add New Visit</h2>
+        <h2 class="section-title">${t(lang, "addNewVisit")}</h2>
         <div class="form-grid">
-          <div class="field"><label for="clinic_name">${t(lang, "clinicName")} (optional)</label><input type="text" id="clinic_name" name="clinic_name" maxlength="500" /></div>
-          <div class="field"><label for="vet_name">${t(lang, "vetName")} (optional)</label><input type="text" id="vet_name" name="vet_name" maxlength="500" /></div>
+          <div class="field"><label for="clinic_name">${t(lang, "clinicName")} (${t(lang, "optional")})</label><input type="text" id="clinic_name" name="clinic_name" maxlength="500" /></div>
+          <div class="field"><label for="vet_name">${t(lang, "vetName")} (${t(lang, "optional")})</label><input type="text" id="vet_name" name="vet_name" maxlength="500" /></div>
           <div class="field"><label for="visit_date">${t(lang, "visitDate")}</label><input type="date" id="visit_date" name="visit_date" /></div>
-          <div class="field"><label for="weight">${t(lang, "weight")} (optional)</label><input type="text" id="weight" name="weight" maxlength="30" placeholder="e.g. 4.5 kg" /></div>
-          <div class="field field-wide"><label for="reason">${t(lang, "reason")} (optional)</label><input type="text" id="reason" name="reason" maxlength="500" /></div>
-          <div class="field field-wide"><label for="notes">Notes (optional)</label><textarea id="notes" name="notes" maxlength="500"></textarea></div>
+          <div class="field"><label for="weight">${t(lang, "weight")} (${t(lang, "optional")})</label><input type="text" id="weight" name="weight" maxlength="30" placeholder="e.g. 4.5 kg" /></div>
+          <div class="field field-wide"><label for="reason">${t(lang, "reason")} (${t(lang, "optional")})</label><input type="text" id="reason" name="reason" maxlength="500" /></div>
+          <div class="field field-wide"><label for="notes">${t(lang, "notes")} (${t(lang, "optional")})</label><textarea id="notes" name="notes" maxlength="500"></textarea></div>
         </div>
       </section>
 
       <section class="form-section">
-        <label class="section-toggle"><input type="checkbox" id="toggle-vaccines" onchange="document.getElementById('vaccine-fields').style.display=this.checked?'grid':'none'" /> <h2 class="section-title" style="display:inline">Vaccines</h2></label>
+        <label class="section-toggle"><input type="checkbox" id="toggle-vaccines" onchange="document.getElementById('vaccine-fields').style.display=this.checked?'grid':'none'" /> <h2 class="section-title" style="display:inline">${t(lang, "vaccines")}</h2></label>
         <div class="form-grid toggle-section" id="vaccine-fields" style="display:none">
-          <div class="field"><label for="vaccine_name">Vaccine name (optional)</label><input type="text" id="vaccine_name" name="vaccine_name" maxlength="100" /></div>
-          <div class="field"><label for="vaccine_date">Date given (optional)</label><input type="date" id="vaccine_date" name="vaccine_date" /></div>
-          <div class="field field-wide"><label>Upload documents</label>
+          <div class="field"><label for="vaccine_name">${t(lang, "vaccineName")} (${t(lang, "optional")})</label><input type="text" id="vaccine_name" name="vaccine_name" maxlength="100" /></div>
+          <div class="field"><label for="vaccine_date">${t(lang, "dateGiven")} (${t(lang, "optional")})</label><input type="date" id="vaccine_date" name="vaccine_date" /></div>
+          <div class="field field-wide"><label>${t(lang, "uploadDocuments")}</label>
             <div class="photo-picker">
               <div class="photo-picker-actions">
                 <label class="photo-action" for="vaccine_sticker_photo_capture">${t(lang, "takePhoto")}</label>
@@ -410,20 +410,20 @@ function renderVetForm(
 
       <section class="form-section">
         <label class="section-toggle"><input type="checkbox" id="toggle-medications" onchange="document.getElementById('medication-fields').style.display=this.checked?'grid':'none'" /> <h2 class="section-title" style="display:inline">${t(lang, "medicationRecord")}</h2></label>
-        <p class="section-note">Documentation only. Do not use this section for treatment advice.</p>
+        <p class="section-note">${t(lang, "medicationDocNote")}</p>
         <div class="form-grid toggle-section" id="medication-fields" style="display:none">
-          <div class="field"><label for="medication_name">Medication name (optional)</label><input type="text" id="medication_name" name="medication_name" maxlength="100" /></div>
-          <div class="field"><label for="medication_dose">Dose as recorded (optional)</label><input type="text" id="medication_dose" name="medication_dose" maxlength="100" /></div>
-          <div class="field"><label for="medication_duration">Duration (optional)</label><input type="text" id="medication_duration" name="medication_duration" maxlength="100" /></div>
-          <div class="field"><label for="medication_start_date">Start date (optional)</label><input type="date" id="medication_start_date" name="medication_start_date" /></div>
-          <div class="field"><label for="medication_prescriber">Prescriber (optional)</label><input type="text" id="medication_prescriber" name="medication_prescriber" maxlength="100" /></div>
-          <div class="field field-wide"><label for="medication_notes">Medication notes (optional)</label><textarea id="medication_notes" name="medication_notes" maxlength="500"></textarea></div>
+          <div class="field"><label for="medication_name">${t(lang, "medicationName")} (${t(lang, "optional")})</label><input type="text" id="medication_name" name="medication_name" maxlength="100" /></div>
+          <div class="field"><label for="medication_dose">${t(lang, "doseAsRecorded")} (${t(lang, "optional")})</label><input type="text" id="medication_dose" name="medication_dose" maxlength="100" /></div>
+          <div class="field"><label for="medication_duration">${t(lang, "duration")} (${t(lang, "optional")})</label><input type="text" id="medication_duration" name="medication_duration" maxlength="100" /></div>
+          <div class="field"><label for="medication_start_date">${t(lang, "startDate")} (${t(lang, "optional")})</label><input type="date" id="medication_start_date" name="medication_start_date" /></div>
+          <div class="field"><label for="medication_prescriber">${t(lang, "prescriber")} (${t(lang, "optional")})</label><input type="text" id="medication_prescriber" name="medication_prescriber" maxlength="100" /></div>
+          <div class="field field-wide"><label for="medication_notes">${t(lang, "medicationNotes")} (${t(lang, "optional")})</label><textarea id="medication_notes" name="medication_notes" maxlength="500"></textarea></div>
         </div>
       </section>
 
       <div class="submit-row">
         <button type="submit" class="submit-btn">${t(lang, "saveFinishVisit")}</button>
-        <a class="mp-btn mp-btn-secondary cancel-btn" href="/c/${safeId}?lang=${lang}">Cancel</a>
+        <a class="mp-btn mp-btn-secondary cancel-btn" href="/c/${safeId}?lang=${lang}">${t(lang, "cancel")}</a>
       </div>
     </form>
   </div>
@@ -480,7 +480,7 @@ function renderExpiredPage(name: string, lang: LanguageCode = "en"): string {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${safeName} — Session Expired — MishiPass</title>
+  <title>${safeName} — ${t(lang, "vetSessionExpiredTitle")} — MishiPass</title>
   <style>
     ${MISHIPASS_DESIGN_CSS}
     body{padding:var(--space-3)}
@@ -496,8 +496,8 @@ function renderExpiredPage(name: string, lang: LanguageCode = "en"): string {
   <section class="mp-card message-card">
     <h1>${safeName}</h1>
     <div class="expired">
-      <strong>Vet Visit session has expired or been completed.</strong>
-      <p>The owner can start a new Vet Visit from their dashboard if needed.</p>
+      <strong>${t(lang, "vetSessionExpiredStr")}</strong>
+      <p>${t(lang, "vetSessionExpiredBody")}</p>
     </div>
   </section>
   </main>
@@ -526,7 +526,7 @@ function renderNotVetModePage(name: string, lang: LanguageCode = "en"): string {
     ${brandLockupHtml(`/?lang=${lang}`)}
   <section class="mp-card message-card">
     <h1>${safeName}</h1>
-    <p>This cat is not currently in Vet Visit mode. The visit cannot be submitted.</p>
+    <p>${t(lang, "vetNotActiveBody")}</p>
   </section>
   </main>
 </body>
@@ -543,7 +543,7 @@ function renderSuccessPage(name: string, lang: LanguageCode = "en", showDashboar
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Visit Saved — MishiPass</title>
+  <title>${t(lang, "visitSavedTitle")} — MishiPass</title>
   <style>
     ${MISHIPASS_DESIGN_CSS}
     body{padding:var(--space-3)}
@@ -559,8 +559,8 @@ function renderSuccessPage(name: string, lang: LanguageCode = "en", showDashboar
   <section class="mp-card message-card">
     <h1>${safeName}</h1>
     <div class="success">
-      <strong>Visit saved.</strong>
-      <p>This QR has returned to Active Profile. The visit record is stored in the owner's private history.</p>
+      <strong>${t(lang, "visitSaved")}</strong>
+      <p>${t(lang, "visitSavedBody")}</p>
     </div>
     ${dashLink}
   </section>
