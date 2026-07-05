@@ -26,76 +26,242 @@ export async function handleCatDetail(
   const safeCountry = escapeHtml(getCountryBadgeLabel(cat.country_code));
   const safeMode = escapeHtml(cat.current_mode);
 
-  // Build cat info fields
-  let infoHtml = "";
-  if (cat.sex) infoHtml += `<p class="info">${t(lang, "sex")}: ${escapeHtml(cat.sex)}</p>`;
-  if (cat.color_markings) infoHtml += `<p class="info">${t(lang, "colorMarkings")}: ${escapeHtml(cat.color_markings)}</p>`;
-  if (cat.breed_mix) infoHtml += `<p class="info">${t(lang, "breedMix")}: ${escapeHtml(cat.breed_mix)}</p>`;
-  if (cat.weight) infoHtml += `<p class="info">${t(lang, "weight")}: ${escapeHtml(cat.weight)}</p>`;
-  if (cat.birth_date) infoHtml += `<p class="info">${t(lang, "birthDate")}: ${escapeHtml(cat.birth_date)}</p>`;
-  if (cat.notes) infoHtml += `<p class="info">${t(lang, "notes")}: ${escapeHtml(cat.notes)}</p>`;
-
-  // Photo
-  const photoHtml = cat.photo_r2_key
-    ? `<div class="photo"><img src="/media/cats/${safeId}/photo" alt="${safeName}" /></div>`
-    : "";
-
-  // Links -- sightings only if missing
-  let linksHtml = `
-    <a href="/c/${safeId}?lang=${lang}" class="secondary">${t(lang, "viewPublicProfile")}</a>
-    <a href="/dashboard/cats/${safeId}/qr?lang=${lang}" class="secondary">${t(lang, "qrCard")}</a>
-    <a href="/dashboard/cats/${safeId}/cartilla?lang=${lang}" class="secondary">${t(lang, "cartilla")}</a>`;
-  if (cat.current_mode === "missing") {
-    linksHtml += `\n    <a href="/dashboard/cats/${safeId}/sightings?lang=${lang}" class="secondary">${t(lang, "reports")}</a>`;
-  }
-
   const html = `<!DOCTYPE html>
 <html lang="${lang}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${safeName} — MishiPass Dashboard</title>
+  <title>${safeName} — MishiPass</title>
   <style>
     ${MISHIPASS_DESIGN_CSS}
     ${TOP_NAV_CSS}
     body{padding:var(--space-3)}
-    .page-shell{max-width:736px;margin:var(--space-4) auto}.detail-shell{padding:var(--space-4);margin-top:var(--space-3)}
-    h1{font-size:clamp(2rem,6vw,3rem);line-height:1.08;margin:0 0 var(--space-1);color:var(--teal)}
-    h2{font-size:1.25rem;margin:var(--space-4) 0 var(--space-2);color:var(--teal);border-bottom:1px solid var(--line);padding-bottom:var(--space-1)}
-    .meta{font-size:0.875rem;color:var(--muted);margin-bottom:var(--space-1)}
-    .nav{margin-bottom:var(--space-3);font-size:0.875rem}
-    .info{font-size:0.95rem;margin:var(--space-1) 0;color:var(--ink)}
-    .photo img{width:144px;height:144px;border-radius:8px;object-fit:cover;margin:var(--space-3) 0}
-    .links{display:flex;gap:var(--space-1);flex-wrap:wrap;margin-top:var(--space-3)}
-    .links a{background:#fff7f0;color:var(--teal);border:1px solid var(--line);text-decoration:none;border-radius:8px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:var(--space-1) var(--space-2);font-weight:800}
-    .mode-active{background:#dfd;color:#060}
-    .mode-missing{background:#fdd;color:#900}
-    .mode-vet{background:#e0f0ff;color:#036}
-    .id-line{font-size:0.8rem;color:var(--muted);margin:var(--space-1) 0;font-family:monospace}
-    .edit-section{margin-top:var(--space-4);padding-top:var(--space-3);border-top:1px solid var(--line)}
-    .field{margin-bottom:var(--space-2)}.field-row{display:flex;gap:var(--space-2);align-items:flex-end;flex-wrap:wrap}
-    .field-row input{flex:1 1 180px;max-width:240px}
-    .save-status{font-size:.875rem;color:var(--muted);margin-left:var(--space-1)}
-    .save-status.ok{color:var(--green)}.save-status.err{color:#b42318}
-    @media(max-width:430px){body{padding:var(--space-2)}.detail-shell{padding:var(--space-3)}.links a{width:100%}.field-row{flex-direction:column}.field-row input{max-width:100%}}
+    .page-shell{max-width:800px;margin:0 auto}
+    .detail-card{padding:var(--space-4);margin-top:var(--space-3)}
+    h1{font-size:clamp(1.75rem,5vw,2.5rem);margin:0 0 var(--space-1);color:var(--teal)}
+    h2{font-size:1.1rem;font-weight:900;color:var(--teal);margin:var(--space-4) 0 var(--space-2);border-bottom:1px solid var(--line);padding-bottom:var(--space-1)}
+    .meta{font-size:.875rem;color:var(--muted);margin-bottom:var(--space-1)}
+    .id-line{font-size:.75rem;color:var(--muted);font-family:monospace;margin:0 0 var(--space-2)}
+    .nav-links{display:flex;gap:var(--space-1);flex-wrap:wrap;margin:var(--space-3) 0}
+    .nav-links a{background:#fff7f0;color:var(--teal);border:1px solid var(--line);text-decoration:none;border-radius:8px;min-height:44px;display:inline-flex;align-items:center;padding:var(--space-1) var(--space-2);font-weight:800;font-size:.875rem}
+    /* Info section */
+    .info-grid{display:grid;gap:var(--space-1)}
+    .info-row{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-1) 0;border-bottom:1px solid var(--line);min-height:44px}
+    .info-row:last-child{border-bottom:0}
+    .info-label{flex:0 0 140px;font-weight:900;font-size:.875rem;color:var(--teal)}
+    .info-value{flex:1;color:var(--ink);overflow-wrap:anywhere}
+    .info-edit-input{flex:1;min-height:36px;padding:4px var(--space-1)}
+    .info-edit-select{flex:1;min-height:36px;padding:4px var(--space-1)}
+    .edit-actions{display:flex;gap:var(--space-1);margin-top:var(--space-2)}
+    .edit-status{font-size:.875rem;color:var(--muted);margin-top:var(--space-1)}
+    /* Gallery */
+    .gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:var(--space-2);margin-bottom:var(--space-2)}
+    .gallery-item{border-radius:8px;overflow:hidden;border:1px solid var(--line);background:var(--card);position:relative}
+    .gallery-item img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+    .gallery-item-placeholder{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.75rem;background:linear-gradient(135deg,#fff7f0,#e8faf7)}
+    .gallery-item-actions{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:6px}
+    .gallery-item-actions button{font-size:.7rem;min-height:30px;padding:2px 4px;border-radius:6px}
+    .gallery-item-delete{grid-column:1/-1}
+    .profile-badge{position:absolute;top:4px;left:4px;background:var(--teal);color:#fff;font-size:.65rem;font-weight:900;padding:2px 6px;border-radius:999px}
+    .public-badge{position:absolute;top:4px;right:4px;background:#fff;color:var(--teal);border:1px solid var(--line);font-size:.65rem;font-weight:900;padding:2px 6px;border-radius:999px}
+    .upload-area{border:2px dashed var(--line);border-radius:8px;padding:var(--space-3);text-align:center;margin-bottom:var(--space-2)}
+    .upload-area input[type=file]{display:none}
+    .gallery-empty{color:var(--muted);font-size:.9rem;padding:var(--space-2) 0}
+    @media(max-width:430px){body{padding:var(--space-2)}.detail-card{padding:var(--space-3)}.nav-links a{font-size:.8125rem}.info-label{flex:0 0 110px}.gallery-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}}
   </style>
 </head>
 <body>
   <main class="page-shell">
     ${renderTopNav(lang, { authenticated: true })}
     ${brandLockupHtml(`/?lang=${lang}`)}
-  <section class="mp-card detail-shell">
-    <div class="nav"><a class="mp-back" href="/dashboard?lang=${lang}">&larr; ${t(lang, "dashboard")}</a></div>
-    <h1>${safeName}</h1>
-    <p class="meta">${safeCountry} &middot; <span class="mode-badge mode-${safeMode}">${safeMode}</span></p>
-    <p class="id-line">${safeId}</p>
-    ${photoHtml}
-    ${infoHtml}
-    <div class="links">${linksHtml}
-    </div>
-    <!-- pending detail-page repurpose (F) -- cat details + gallery, Zhanerke design -->
-  </section>
+    <section class="mp-card detail-card">
+      <div><a class="mp-back" href="/dashboard?lang=${lang}">&larr; ${t(lang, "dashboard")}</a></div>
+      <h1>${safeName}</h1>
+      <p class="meta">${safeCountry} &middot; <span class="mode-badge mode-${safeMode}">${safeMode}</span></p>
+      <p class="id-line">${safeId}</p>
+
+      <div class="nav-links">
+        <a href="/c/${safeId}?lang=${lang}">${t(lang, "viewPublicProfile")}</a>
+        <a href="/dashboard/cats/${safeId}/qr?lang=${lang}">${t(lang, "qrCard")}</a>
+        <a href="/dashboard/cats/${safeId}/cartilla?lang=${lang}">${t(lang, "cartilla")}</a>
+        ${cat.current_mode === "missing" ? `<a href="/dashboard/cats/${safeId}/sightings?lang=${lang}">${t(lang, "reports")}</a>` : ""}
+      </div>
+
+      <!-- Cat Info (editable) -->
+      <h2>${t(lang, "basicInformation")}</h2>
+      <div class="info-grid" id="info-grid">
+        <div class="info-row"><span class="info-label">${t(lang, "name")}</span><span class="info-value" id="val-name">${safeName}</span><input class="info-edit-input hidden" id="inp-name" value="${safeName}" maxlength="100" /></div>
+        <div class="info-row"><span class="info-label">${t(lang, "sex")}</span><span class="info-value" id="val-sex">${escapeHtml(cat.sex ?? "")}</span><select class="info-edit-select hidden" id="inp-sex"><option value="">—</option><option value="Male"${cat.sex === "Male" ? " selected" : ""}>Male</option><option value="Female"${cat.sex === "Female" ? " selected" : ""}>Female</option></select></div>
+        <div class="info-row"><span class="info-label">${t(lang, "breedMix")}</span><span class="info-value" id="val-breed">${escapeHtml(cat.breed_mix ?? "")}</span><input class="info-edit-input hidden" id="inp-breed" value="${escapeHtml(cat.breed_mix ?? "")}" maxlength="100" /></div>
+        <div class="info-row"><span class="info-label">${t(lang, "colorMarkings")}</span><span class="info-value" id="val-color">${escapeHtml(cat.color_markings ?? "")}</span><input class="info-edit-input hidden" id="inp-color" value="${escapeHtml(cat.color_markings ?? "")}" maxlength="200" /></div>
+        <div class="info-row"><span class="info-label">${t(lang, "weight")}</span><span class="info-value" id="val-weight">${escapeHtml(cat.weight ?? "")}</span><input class="info-edit-input hidden" id="inp-weight" value="${escapeHtml(cat.weight ?? "")}" maxlength="20" /></div>
+        <div class="info-row"><span class="info-label">${t(lang, "birthDate")}</span><span class="info-value" id="val-birth">${escapeHtml(cat.birth_date ?? "")}</span><input type="date" class="info-edit-input hidden" id="inp-birth" value="${escapeHtml(cat.birth_date ?? "")}" /></div>
+        <div class="info-row" style="align-items:flex-start"><span class="info-label" style="padding-top:6px">${t(lang, "notes")}</span><span class="info-value" id="val-notes">${escapeHtml(cat.notes ?? "")}</span><textarea class="info-edit-input hidden" id="inp-notes" maxlength="1000" rows="3" style="flex:1">${escapeHtml(cat.notes ?? "")}</textarea></div>
+      </div>
+      <div class="edit-actions">
+        <button class="mp-btn mp-btn-secondary" id="edit-btn" onclick="startEdit()">${t(lang, "editInfo")}</button>
+        <button class="mp-btn mp-btn-primary hidden" id="save-btn" onclick="saveInfo()">${t(lang, "saveChanges")}</button>
+        <button class="mp-btn mp-btn-secondary hidden" id="cancel-btn" onclick="cancelEdit()">${t(lang, "cancelEdit")}</button>
+      </div>
+      <p class="edit-status hidden" id="edit-status"></p>
+
+      <!-- Photo Gallery -->
+      <h2>${t(lang, "galleryTitle")}</h2>
+      <div class="upload-area">
+        <label class="mp-btn mp-btn-secondary" for="gallery-upload-input">${t(lang, "uploadPhoto")}</label>
+        <input type="file" id="gallery-upload-input" accept="image/jpeg,image/png,image/webp" />
+        <p id="upload-status" class="muted" style="margin:var(--space-1) 0 0;font-size:.875rem"></p>
+      </div>
+      <div class="gallery-grid" id="gallery-grid"><p class="gallery-empty">${t(lang, "noPhotos")}</p></div>
+    </section>
   </main>
+
+  <script>
+  (function(){
+    var safeId=${JSON.stringify(safeId)};
+    var lang=${JSON.stringify(lang)};
+    var TR={
+      setAsProfile:${JSON.stringify(t(lang, "setAsProfile"))},
+      makePublic:${JSON.stringify(t(lang, "makePublic"))},
+      makePrivate:${JSON.stringify(t(lang, "makePrivate"))},
+      deletePhoto:${JSON.stringify(t(lang, "deletePhoto"))},
+      confirmDeletePhoto:${JSON.stringify(t(lang, "confirmDeletePhoto"))},
+      galleryLimit:${JSON.stringify(t(lang, "galleryLimit"))},
+      uploading:${JSON.stringify(t(lang, "uploading"))},
+      uploadPhoto:${JSON.stringify(t(lang, "uploadPhoto"))},
+      photoPublic:${JSON.stringify(t(lang, "photoPublic"))},
+      photoPrivate:${JSON.stringify(t(lang, "photoPrivate"))},
+      noPhotos:${JSON.stringify(t(lang, "noPhotos"))},
+      error:${JSON.stringify(t(lang, "error"))},
+      saved:${JSON.stringify(t(lang, "saved"))},
+    };
+
+    // ── Gallery ──────────────────────────────────────────────────────────────
+    function loadGallery(){
+      fetch("/api/cats/"+encodeURIComponent(safeId)+"/photos",{credentials:"same-origin"})
+        .then(function(r){return r.json()})
+        .then(function(d){renderGallery(d.photos||[])})
+        .catch(function(){});
+    }
+
+    function renderGallery(photos){
+      var grid=document.getElementById("gallery-grid");
+      if(!photos.length){grid.innerHTML='<p class="gallery-empty">'+TR.noPhotos+'</p>';return;}
+      grid.innerHTML=photos.map(function(p){
+        var imgUrl="/media/cats/"+encodeURIComponent(safeId)+"/photos/"+p.id;
+        return '<div class="gallery-item" id="gitem-'+p.id+'">'
+          +(p.isProfile?'<span class="profile-badge">Profile</span>':'')
+          +'<span class="public-badge">'+(p.isPublic?TR.photoPublic:TR.photoPrivate)+'</span>'
+          +'<img src="'+imgUrl+'" alt="cat photo" loading="lazy" />'
+          +'<div class="gallery-item-actions">'
+          +(p.isProfile?'':'<button class="mp-btn mp-btn-secondary" onclick="setProfile('+p.id+')">'+TR.setAsProfile+'</button>')
+          +'<button class="mp-btn mp-btn-secondary" onclick="togglePublic('+p.id+','+(!p.isPublic)+')">'+(p.isPublic?TR.makePrivate:TR.makePublic)+'</button>'
+          +'<button class="mp-btn btn-danger gallery-item-delete" onclick="deletePhoto('+p.id+')">'+TR.deletePhoto+'</button>'
+          +'</div></div>';
+      }).join("");
+    }
+
+    function setProfile(photoId){
+      fetch("/api/cats/"+encodeURIComponent(safeId)+"/photos/"+photoId+"/profile",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:"{}"})
+        .then(function(r){if(r.ok)loadGallery();});
+    }
+
+    function togglePublic(photoId,makePublic){
+      fetch("/api/cats/"+encodeURIComponent(safeId)+"/photos/"+photoId+"/visibility",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({isPublic:makePublic})})
+        .then(function(r){if(r.ok)loadGallery();});
+    }
+
+    function deletePhoto(photoId){
+      if(!confirm(TR.confirmDeletePhoto))return;
+      fetch("/api/cats/"+encodeURIComponent(safeId)+"/photos/"+photoId+"/delete",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:"{}"})
+        .then(function(r){if(r.ok)loadGallery();});
+    }
+
+    var uploadInput=document.getElementById("gallery-upload-input");
+    var uploadStatus=document.getElementById("upload-status");
+    uploadInput.addEventListener("change",function(){
+      if(!uploadInput.files||!uploadInput.files[0])return;
+      uploadStatus.textContent=TR.uploading;
+      var fd=new FormData();
+      fd.append("photo",uploadInput.files[0]);
+      fetch("/api/cats/"+encodeURIComponent(safeId)+"/photos",{method:"POST",credentials:"same-origin",body:fd})
+        .then(function(r){
+          if(r.ok){uploadStatus.textContent="";loadGallery();}
+          else r.json().then(function(d){uploadStatus.textContent=d.error||TR.error;});
+        })
+        .catch(function(){uploadStatus.textContent=TR.error;});
+      uploadInput.value="";
+    });
+
+    // ── Inline edit ──────────────────────────────────────────────────────────
+    var editFields=["name","sex","breed","color","weight","birth","notes"];
+    function startEdit(){
+      editFields.forEach(function(f){
+        document.getElementById("val-"+f).classList.add("hidden");
+        document.getElementById("inp-"+f).classList.remove("hidden");
+      });
+      document.getElementById("edit-btn").classList.add("hidden");
+      document.getElementById("save-btn").classList.remove("hidden");
+      document.getElementById("cancel-btn").classList.remove("hidden");
+      document.getElementById("edit-status").classList.add("hidden");
+    }
+
+    function cancelEdit(){
+      editFields.forEach(function(f){
+        document.getElementById("val-"+f).classList.remove("hidden");
+        document.getElementById("inp-"+f).classList.add("hidden");
+      });
+      document.getElementById("edit-btn").classList.remove("hidden");
+      document.getElementById("save-btn").classList.add("hidden");
+      document.getElementById("cancel-btn").classList.add("hidden");
+    }
+
+    function saveInfo(){
+      var saveBtn=document.getElementById("save-btn");
+      var status=document.getElementById("edit-status");
+      saveBtn.disabled=true;
+      var payload={
+        name:document.getElementById("inp-name").value.trim()||undefined,
+        sex:document.getElementById("inp-sex").value||null,
+        breedMix:document.getElementById("inp-breed").value.trim()||null,
+        colorMarkings:document.getElementById("inp-color").value.trim()||null,
+        weight:document.getElementById("inp-weight").value.trim()||null,
+        birthDate:document.getElementById("inp-birth").value||null,
+        notes:document.getElementById("inp-notes").value.trim()||null,
+      };
+      fetch("/api/cats/"+encodeURIComponent(safeId)+"/update",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})
+        .then(function(r){
+          saveBtn.disabled=false;
+          status.classList.remove("hidden");
+          if(r.ok){
+            status.textContent=TR.saved;
+            // Update display values
+            if(payload.name)document.getElementById("val-name").textContent=payload.name;
+            document.getElementById("val-sex").textContent=payload.sex||"";
+            document.getElementById("val-breed").textContent=payload.breedMix||"";
+            document.getElementById("val-color").textContent=payload.colorMarkings||"";
+            document.getElementById("val-weight").textContent=payload.weight||"";
+            document.getElementById("val-birth").textContent=payload.birthDate||"";
+            document.getElementById("val-notes").textContent=payload.notes||"";
+            cancelEdit();
+          } else {
+            status.textContent=TR.error;
+          }
+        })
+        .catch(function(){saveBtn.disabled=false;status.classList.remove("hidden");status.textContent=TR.error;});
+    }
+
+    // expose to onclick handlers
+    window.setProfile=setProfile;
+    window.togglePublic=togglePublic;
+    window.deletePhoto=deletePhoto;
+    window.startEdit=startEdit;
+    window.cancelEdit=cancelEdit;
+    window.saveInfo=saveInfo;
+
+    loadGallery();
+  })();
+  </script>
 </body>
 </html>`;
 

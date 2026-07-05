@@ -13,6 +13,7 @@ import { handleCartillaSummaryJson, handleCreateMedication, handleCreateVaccine,
 import { handleGetOwnerSettings, handleUpsertOwnerSettings } from "./routes/ownerSettings.js";
 import { handleCatReferenceBreeds } from "./routes/catReference.js";
 import { handleMissingCardPage } from "./routes/missingCard.js";
+import { handleRequestTransfer, handleListTransferRequests, handleAcceptTransfer, handleDeclineTransfer } from "./routes/transferRequests.js";
 import { handleRecoveryBoardOptIn, handleRecoveryBoardPage } from "./routes/recoveryBoard.js";
 import { handleHistory, handleRoot } from "./pages/root.js";
 import { handleDashboard } from "./pages/dashboard.js";
@@ -33,6 +34,8 @@ export interface Env {
   PHOTOS: R2Bucket;
   /** Optional TheCatAPI key for reference-data assist. */
   THE_CAT_API_KEY?: string;
+  /** Resend API key for transactional email. Set via wrangler secret. Graceful no-op if absent. */
+  RESEND_API_KEY?: string;
 
   // ── Logto OIDC secrets (all optional — features disabled when absent) ──────
   /** Logto tenant URL, e.g. https://your-tenant.logto.app  */
@@ -56,6 +59,10 @@ const SIGHTINGS_API_PATH = /^\/api\/cats\/([^/]+)\/sightings$/;
 const CAT_MISSING_PATH = /^\/api\/cats\/([^/]+)\/missing$/;
 const CAT_ACTIVE_PATH = /^\/api\/cats\/([^/]+)\/active$/;
 const CAT_ADOPTION_PATH = /^\/api\/cats\/([^/]+)\/adoption$/;
+const CAT_REQUEST_TRANSFER_PATH = /^\/api\/cats\/([^/]+)\/request-transfer$/;
+const TRANSFER_REQUESTS_PATH = /^\/api\/transfer-requests$/;
+const TRANSFER_ACCEPT_PATH = /^\/api\/transfer-requests\/(\d+)\/accept$/;
+const TRANSFER_DECLINE_PATH = /^\/api\/transfer-requests\/(\d+)\/decline$/;
 const CONTACT_SETTINGS_PATH = /^\/api\/cats\/([^/]+)\/contact$/;
 const CAT_PHOTO_UPLOAD = /^\/api\/cats\/([^/]+)\/photo$/;
 const CAT_PHOTO_SERVE = /^\/media\/cats\/([^/]+)\/photo$/;
@@ -211,6 +218,29 @@ export default {
     if (method === "POST" && adoptionMatch) {
       const ctx = await resolveSession(request, env.DB);
       return handleSwitchToAdoption(request, adoptionMatch[1]!, env.DB, ctx);
+    }
+
+    const requestTransferMatch = CAT_REQUEST_TRANSFER_PATH.exec(pathname);
+    if (method === "POST" && requestTransferMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleRequestTransfer(request, requestTransferMatch[1]!, env.DB, ctx, env.RESEND_API_KEY, env.PUBLIC_BASE_URL);
+    }
+
+    if (method === "GET" && TRANSFER_REQUESTS_PATH.test(pathname)) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleListTransferRequests(env.DB, ctx);
+    }
+
+    const acceptTransferMatch = TRANSFER_ACCEPT_PATH.exec(pathname);
+    if (method === "POST" && acceptTransferMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleAcceptTransfer(parseInt(acceptTransferMatch[1]!, 10), env.DB, ctx, env.RESEND_API_KEY, env.PUBLIC_BASE_URL);
+    }
+
+    const declineTransferMatch = TRANSFER_DECLINE_PATH.exec(pathname);
+    if (method === "POST" && declineTransferMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleDeclineTransfer(parseInt(declineTransferMatch[1]!, 10), env.DB, ctx, env.RESEND_API_KEY);
     }
 
     // -- Contact settings API --

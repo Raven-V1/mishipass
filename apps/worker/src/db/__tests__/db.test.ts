@@ -289,13 +289,13 @@ describe("contact_settings", () => {
 describe("owner_settings", () => {
   it("defaults to English and persists allowed language preferences", async () => {
     const ownerId = await createOwner(OWNER_A_EMAIL);
-    expect(await getOwnerSettings(env.DB, ownerId)).toEqual({ language_code: "en" });
+    expect(await getOwnerSettings(env.DB, ownerId)).toEqual({ language_code: "en", units: "metric" });
 
     await upsertOwnerSettings(env.DB, ownerId, "kk-KZ");
-    expect(await getOwnerSettings(env.DB, ownerId)).toEqual({ language_code: "kk-KZ" });
+    expect(await getOwnerSettings(env.DB, ownerId)).toEqual({ language_code: "kk-KZ", units: "metric" });
 
     await upsertOwnerSettings(env.DB, ownerId, "es");
-    expect(await getOwnerSettings(env.DB, ownerId)).toEqual({ language_code: "es" });
+    expect(await getOwnerSettings(env.DB, ownerId)).toEqual({ language_code: "es", units: "metric" });
   });
 });
 

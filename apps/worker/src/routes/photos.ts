@@ -195,6 +195,7 @@ export async function handleListCatPhotos(
   const result = photos.map(p => ({
     id: p.id,
     isProfile: p.is_profile === 1,
+    isPublic: p.is_public === 1,
     createdAt: p.created_at,
   }));
   return Response.json({ photos: result }, { status: 200 });
@@ -220,6 +221,11 @@ export async function handleGalleryPhotoUpload(
   const cat = await getCatForOwner(db, publicId, ctx.ownerId);
   if (!cat) {
     return new Response("Not Found", { status: 404 });
+  }
+
+  const existingPhotos = await listCatPhotos(db, publicId, ctx.ownerId);
+  if (existingPhotos.length >= 10) {
+    return Response.json({ error: "Gallery limit reached (10 photos max for Beta)" }, { status: 400 });
   }
 
   let formData: FormData;

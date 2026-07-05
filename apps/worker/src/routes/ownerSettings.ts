@@ -1,4 +1,4 @@
-import { getOwnerSettings, isOwnerLanguageCode, upsertOwnerSettings } from "../db/index.js";
+import { getOwnerSettings, isOwnerLanguageCode, isOwnerUnits, upsertOwnerSettings } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
 
 export async function handleGetOwnerSettings(
@@ -29,14 +29,15 @@ export async function handleUpsertOwnerSettings(
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const languageCode = typeof body === "object" && body !== null
-    ? (body as Record<string, unknown>).language_code
-    : null;
+  const raw = typeof body === "object" && body !== null ? (body as Record<string, unknown>) : {};
 
+  const languageCode = raw.language_code;
   if (typeof languageCode !== "string" || !isOwnerLanguageCode(languageCode)) {
     return Response.json({ error: "Unsupported language" }, { status: 400 });
   }
 
-  await upsertOwnerSettings(db, ctx.ownerId, languageCode);
-  return Response.json({ language_code: languageCode }, { status: 200 });
+  const units = typeof raw.units === "string" && isOwnerUnits(raw.units) ? raw.units : "metric";
+
+  await upsertOwnerSettings(db, ctx.ownerId, languageCode, units);
+  return Response.json({ language_code: languageCode, units }, { status: 200 });
 }
