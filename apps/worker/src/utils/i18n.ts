@@ -201,6 +201,10 @@ const STRINGS: Record<LanguageCode, Record<string, string>> = {
     cutInstruction: "Cut along the dotted line and attach it to your cat's collar.",
     tipPrintCardstock: "Tip: Prints best on cardstock for durability.",
     noMicrochip: "Not recorded",
+    adoptionProfile: "For Adoption",
+    adoptionSubtitle: "This cat is looking for a loving home",
+    interestedInAdopting: "Interested in adopting?",
+    contactToAdopt: "Contact to adopt",
   },
   es: {
     activeProfile: "Perfil activo",
@@ -396,6 +400,10 @@ const STRINGS: Record<LanguageCode, Record<string, string>> = {
     cutInstruction: "Corta a lo largo de la línea punteada y adjúntala al collar de tu gato.",
     tipPrintCardstock: "Consejo: Imprime en cartulina para mayor durabilidad.",
     noMicrochip: "Sin registrar",
+    adoptionProfile: "En adopción",
+    adoptionSubtitle: "Este gato busca un hogar amoroso",
+    interestedInAdopting: "¿Interesado en adoptar?",
+    contactToAdopt: "Contactar para adoptar",
   },
   "kk-KZ": {
     activeProfile: "Белсенді профиль",
@@ -591,6 +599,10 @@ const STRINGS: Record<LanguageCode, Record<string, string>> = {
     cutInstruction: "Нүктелі сызық бойынша кесіп, мысығыңыздың жағасына бекітіңіз.",
     tipPrintCardstock: "Кеңес: Төзімділік үшін картонға басып шығарыңыз.",
     noMicrochip: "Тіркелмеген",
+    adoptionProfile: "Асырап алуға",
+    adoptionSubtitle: "Бұл мысық жылы үй іздейді",
+    interestedInAdopting: "Асырап алғыңыз келе ме?",
+    contactToAdopt: "Асырап алу үшін хабарласу",
   },
 };
 
