@@ -49,8 +49,6 @@ export async function handleCatDetail(
     linksHtml += `\n    <a href="/dashboard/cats/${safeId}/sightings?lang=${lang}" class="secondary">${t(lang, "reports")}</a>`;
   }
 
-  const currentNextVaccineDate = cat.next_vaccine_date ? escapeHtml(cat.next_vaccine_date) : "";
-
   const html = `<!DOCTYPE html>
 <html lang="${lang}">
 <head>
@@ -95,41 +93,9 @@ export async function handleCatDetail(
     ${infoHtml}
     <div class="links">${linksHtml}
     </div>
-    <div class="edit-section">
-      <h2>${t(lang, "nextVaccineDate")}</h2>
-      <form id="next-vaccine-form">
-        <div class="field field-row">
-          <label for="next-vaccine-input" style="flex:0 0 auto;margin:0">${t(lang, "nextVaccineDate")}</label>
-          <input type="date" id="next-vaccine-input" name="next_vaccine_date" value="${currentNextVaccineDate}" />
-          <button type="submit" class="btn-primary">${t(lang, "save")}</button>
-          <span id="vaccine-save-status" class="save-status"></span>
-        </div>
-      </form>
-    </div>
     <!-- pending detail-page repurpose (F) -- cat details + gallery, Zhanerke design -->
   </section>
   </main>
-  <script>
-  (function(){
-    var form=document.getElementById("next-vaccine-form");
-    var status=document.getElementById("vaccine-save-status");
-    form.addEventListener("submit",function(e){
-      e.preventDefault();
-      var btn=form.querySelector("button");
-      btn.disabled=true;
-      status.textContent="";
-      status.className="save-status";
-      var val=document.getElementById("next-vaccine-input").value||null;
-      fetch("/api/cats/${safeId}/update",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({next_vaccine_date:val})})
-        .then(function(r){
-          btn.disabled=false;
-          if(r.ok){status.textContent=${JSON.stringify(t(lang, "save"))};status.className="save-status ok";}
-          else{status.textContent="Error";status.className="save-status err";}
-        })
-        .catch(function(){btn.disabled=false;status.textContent="Error";status.className="save-status err";});
-    });
-  })();
-  </script>
 </body>
 </html>`;
 
