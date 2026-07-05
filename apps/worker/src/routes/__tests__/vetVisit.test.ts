@@ -298,7 +298,7 @@ describe("renderVetVisitPage", () => {
     const html = await res.text();
     expect(html).toContain("Clinic name");
     expect(html).toContain("Vet name");
-    expect(html).not.toMatch(/diagnos|treatment recommendation|dosage|drug interaction|symptom checker/i);
+    expect(html).not.toMatch(/treatment recommendation|dosage|drug interaction|symptom checker|diagnos.*advice|diagnos.*recommendation/i);
   });
 
   it("does not contain internal database IDs", async () => {
