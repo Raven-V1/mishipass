@@ -496,10 +496,30 @@ function renderAdoptionProfile(
         ${detailRows}
         <p class="adopt-cta">${t(lang, "interestedInAdopting")}</p>
         ${contactSection}
+        <div class="adopt-request-section" id="adopt-request-section">
+          <button class="mp-btn mp-btn-secondary" id="adopt-request-btn" onclick="submitAdoptionRequest()">${t(lang, "requestToAdopt")}</button>
+          <p class="adopt-request-status hidden" id="adopt-request-status"></p>
+        </div>
         <p class="privacy-note">${iconShield(16)} <span>${t(lang, "privacyNoPrivateDataShown")}</span></p>
       </div>
     </section>
   </main>
+  <script>
+  function submitAdoptionRequest(){
+    var btn=document.getElementById("adopt-request-btn");
+    var status=document.getElementById("adopt-request-status");
+    btn.disabled=true;
+    fetch("/api/cats/${escapeHtml(publicId)}/request-transfer",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({})})
+      .then(function(r){
+        status.classList.remove("hidden");
+        if(r.status===401){status.textContent="Please log in to your MishiPass account to request adoption.";btn.style.display="none";}
+        else if(r.status===400||r.status===409){r.text().then(function(t){status.textContent=t});}
+        else if(r.ok){btn.style.display="none";status.textContent=${JSON.stringify(t(lang, "requestSent"))};}
+        else{btn.disabled=false;status.textContent="Something went wrong. Please try again.";}
+      })
+      .catch(function(){btn.disabled=false;status&&(status.textContent="Network error.");});
+  }
+  </script>
 </body>
 </html>`;
 }

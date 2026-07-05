@@ -39,3 +39,17 @@ export async function findOwnerByEmail(
     .bind(email)
     .first<{ id: number; email: string; password_hash: string }>();
 }
+
+/**
+ * Find an owner by internal id (server-side only).
+ * Used to retrieve the email address for notifications.
+ */
+export async function findOwnerById(
+  db: D1Database,
+  ownerId: number,
+): Promise<{ id: number; email: string } | null> {
+  return db
+    .prepare(`SELECT id, email FROM owners WHERE id = ?`)
+    .bind(ownerId)
+    .first<{ id: number; email: string }>();
+}

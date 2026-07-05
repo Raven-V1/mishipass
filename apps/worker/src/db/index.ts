@@ -32,10 +32,11 @@ export type {
   VetVisitEntry,
   VetVisitInsert,
 } from "./types.js";
-export type { OwnerLanguageCode, OwnerSettingsView } from "./repositories/ownerSettings.js";
+export type { OwnerLanguageCode, OwnerSettingsView, OwnerUnits } from "./repositories/ownerSettings.js";
+export { isOwnerUnits } from "./repositories/ownerSettings.js";
 
 // Owners
-export { findOwnerByEmail, insertOwner } from "./repositories/owners.js";
+export { findOwnerByEmail, findOwnerById, insertOwner } from "./repositories/owners.js";
 
 // Owner identities (OIDC/Logto)
 export {
@@ -89,6 +90,17 @@ export {
   isOwnerLanguageCode,
   upsertOwnerSettings,
 } from "./repositories/ownerSettings.js";
+
+// Transfer requests (adoption)
+export {
+  getTransferRequest,
+  getTransferRequestsForOwner,
+  hasPendingTransferRequest,
+  insertTransferRequest,
+  resolveTransferRequest,
+  transferCatOwnership,
+} from "./repositories/transferRequests.js";
+export type { TransferRequestView } from "./repositories/transferRequests.js";
 
 // Missing alerts
 export {

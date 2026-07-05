@@ -43,7 +43,7 @@ describe("owner settings routes", () => {
     });
     const res = await handleUpsertOwnerSettings(req, fakeDb, authed);
     expect(res.status).toBe(200);
-    expect(mockUpsertOwnerSettings).toHaveBeenCalledWith(fakeDb, 7, "es");
+    expect(mockUpsertOwnerSettings).toHaveBeenCalledWith(fakeDb, 7, "es", "metric");
   });
 
   it("rejects unsupported language values", async () => {
