@@ -136,7 +136,7 @@ export async function handleQrPage(
           <p class="card-label">FRONT</p>
           <div class="card-qr">${qrSvg}</div>
           <p class="card-name">${safeName}</p>
-          <span class="reward-pill">&#127873; ${t(lang, "helpBringHome")}</span>
+          <span class="reward-pill">&#128062; ${t(lang, "scanToMeetMe")}</span>
           <p class="contact-note">${t(lang, "emergencyContact")}</p>
         </div>
         <span class="scissors no-print" aria-hidden="true">&#9986;</span>

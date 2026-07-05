@@ -117,6 +117,8 @@ export async function handleSightingSubmit(
   let reporterName = "";
   let reporterContact = "";
   let healthCondition = "";
+  let lat: number | null = null;
+  let lng: number | null = null;
   let sightingPhoto: File | null = null;
 
   const contentType = request.headers.get("Content-Type") || "";
@@ -136,6 +138,9 @@ export async function handleSightingSubmit(
       reporterName = typeof b["reporterName"] === "string" ? b["reporterName"] : "";
       reporterContact = typeof b["reporterContact"] === "string" ? b["reporterContact"] : "";
       healthCondition = typeof b["healthCondition"] === "string" ? b["healthCondition"] : "";
+      const latRaw = typeof b["lat"] === "number" ? b["lat"] : parseFloat(String(b["lat"] ?? ""));
+      const lngRaw = typeof b["lng"] === "number" ? b["lng"] : parseFloat(String(b["lng"] ?? ""));
+      if (Number.isFinite(latRaw) && Number.isFinite(lngRaw)) { lat = latRaw; lng = lngRaw; }
     }
   } else if (contentType.includes("multipart/form-data")) {
     let formData: FormData;
@@ -151,6 +156,12 @@ export async function handleSightingSubmit(
     reporterName = (formData.get("reporterName") as string) || "";
     reporterContact = (formData.get("reporterContact") as string) || "";
     healthCondition = (formData.get("healthCondition") as string) || "";
+    const latStr = formData.get("lat") as string | null;
+    const lngStr = formData.get("lng") as string | null;
+    if (latStr && lngStr) {
+      const lv = parseFloat(latStr), lgv = parseFloat(lngStr);
+      if (Number.isFinite(lv) && Number.isFinite(lgv)) { lat = lv; lng = lgv; }
+    }
 
     // Optional photo
     const photoField = formData.get("photo") || formData.get("photoCapture") || formData.get("photoUpload");
@@ -172,6 +183,12 @@ export async function handleSightingSubmit(
     reporterName = (formData.get("reporterName") as string) || "";
     reporterContact = (formData.get("reporterContact") as string) || "";
     healthCondition = (formData.get("healthCondition") as string) || "";
+    const latStrU = formData.get("lat") as string | null;
+    const lngStrU = formData.get("lng") as string | null;
+    if (latStrU && lngStrU) {
+      const lv = parseFloat(latStrU), lgv = parseFloat(lngStrU);
+      if (Number.isFinite(lv) && Number.isFinite(lgv)) { lat = lv; lng = lgv; }
+    }
   }
 
   // Validation
@@ -254,6 +271,8 @@ export async function handleSightingSubmit(
     catPublicId: publicId,
     message: combinedMessage,
     location_text: locationText,
+    lat,
+    lng,
     reporter_ip_hash: reporterIpHash,
     photo_r2_key: photoR2Key,
   });
@@ -340,6 +359,11 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
     .required-mark{color:var(--brand-coral);font-size:.75rem;margin-left:2px}
     .photo-picker{margin:0}.photo-picker-actions{display:flex;gap:var(--space-1);flex-wrap:wrap}.photo-action{flex:1 1 160px}.photo-input-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}.photo-status{margin-top:var(--space-1);overflow-wrap:anywhere;font-size:.875rem;color:var(--muted)}
     .submit-row{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-3)}.submit-row>*{flex:1 1 180px}
+    .map-section{margin-bottom:0}
+    .map-section label{font-size:.875rem;font-weight:900;color:var(--teal);display:block;margin-bottom:var(--space-1)}
+    .map-hint{font-size:.8125rem;color:var(--muted);margin:0 0 var(--space-1)}
+    #sighting-map{width:100%;height:280px;border-radius:8px;border:1px solid var(--line)}
+    .map-coords{font-size:.8125rem;color:var(--teal);font-weight:700;margin-top:var(--space-1);min-height:1.2em}
     @media(max-width:600px){.form-grid{grid-template-columns:1fr}.field-wide{grid-column:1}}
     @media(max-width:430px){body{padding:var(--space-2)}.form-shell{padding:var(--space-3)}.photo-action,.submit-row>*{width:100%;flex-basis:100%}}
   </style>
@@ -353,29 +377,37 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
     </div>
     <p class="sighting-sub">${t(lang, "reportSightingOf")} <strong>${safeName}</strong></p>
     <form method="POST" action="/c/${safeId}/sighting?lang=${lang}" enctype="multipart/form-data">
+      <input type="hidden" name="lat" id="sighting-lat" value="" />
+      <input type="hidden" name="lng" id="sighting-lng" value="" />
       <div class="form-grid">
         <div class="field field-wide">
           <label for="city">${t(lang, "locationText")}<span class="required-mark">${t(lang, "sightingRequired")}</span></label>
           <input type="text" id="city" name="city" required maxlength="80" placeholder="${t(lang, "city")}" />
         </div>
         <div class="field">
-          <label for="area">${t(lang, "area")} (${t(lang, "optional")})</label>
+          <label for="area">${t(lang, "area")}</label>
           <input type="text" id="area" name="area" maxlength="120" />
         </div>
         <div class="field">
-          <label for="sightedAt">${t(lang, "dateLabel")} / ${t(lang, "timeLabel")} (${t(lang, "optional")})</label>
+          <label for="sightedAt">${t(lang, "dateLabel")} / ${t(lang, "timeLabel")}</label>
           <input type="datetime-local" id="sightedAt" name="sightedAt" maxlength="80" />
         </div>
         <div class="field">
-          <label for="healthCondition">${t(lang, "healthCondition")} (${t(lang, "optional")})</label>
+          <label for="healthCondition">${t(lang, "healthCondition")}</label>
           <select id="healthCondition" name="healthCondition">${healthOptions}</select>
         </div>
+        <div class="field field-wide map-section">
+          <label>${lang === "es" ? "Marcar ubicación en el mapa" : lang === "kk-KZ" ? "Картада орынды белгілеу" : "Pin location on map"}</label>
+          <p class="map-hint">${lang === "es" ? "Haz clic en el mapa para marcar donde lo viste (opcional)" : lang === "kk-KZ" ? "Мысықты көрген жерді белгілеу үшін картаны басыңыз (міндетті емес)" : "Click the map to drop a pin where you spotted the cat"}</p>
+          <div id="sighting-map"></div>
+          <p class="map-coords" id="map-coords-display"></p>
+        </div>
         <div class="field field-wide">
-          <label for="message">${t(lang, "seenDoing")} (${t(lang, "optional")})</label>
+          <label for="message">${t(lang, "seenDoing")}</label>
           <textarea id="message" name="message" maxlength="1000" rows="3"></textarea>
         </div>
         <div class="field field-wide">
-          <label>${t(lang, "photoUpload")} (${t(lang, "optional")}, max 3 MB)</label>
+          <label>${t(lang, "photoUpload")} (max 3 MB)</label>
           <div class="photo-picker">
             <div class="photo-picker-actions">
               <label for="photo-capture" class="photo-action">${t(lang, "takePhoto")}</label>
@@ -387,11 +419,11 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
           </div>
         </div>
         <div class="field">
-          <label for="reporterName">${t(lang, "yourName")} (${t(lang, "optional")})</label>
+          <label for="reporterName">${t(lang, "yourName")}</label>
           <input type="text" id="reporterName" name="reporterName" maxlength="80" />
         </div>
         <div class="field">
-          <label for="reporterContact">${t(lang, "yourContact")} (${t(lang, "optional")})</label>
+          <label for="reporterContact">${t(lang, "yourContact")}</label>
           <input type="text" id="reporterContact" name="reporterContact" maxlength="120" />
         </div>
       </div>
@@ -402,6 +434,30 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
     </form>
   </section>
   </main>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WLEg=" crossorigin=""></script>
+  <script>
+  (function(){
+    var latInput=document.getElementById("sighting-lat");
+    var lngInput=document.getElementById("sighting-lng");
+    var coordsDisplay=document.getElementById("map-coords-display");
+    var map=L.map("sighting-map").setView([20,0],2);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap contributors",maxZoom:19}).addTo(map);
+    var marker=null;
+    map.on("click",function(e){
+      var lat=e.latlng.lat.toFixed(6),lng=e.latlng.lng.toFixed(6);
+      latInput.value=lat;lngInput.value=lng;
+      if(coordsDisplay)coordsDisplay.textContent=lat+", "+lng;
+      if(marker)marker.setLatLng(e.latlng);
+      else marker=L.marker(e.latlng).addTo(map);
+    });
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(function(pos){
+        map.setView([pos.coords.latitude,pos.coords.longitude],14);
+      },function(){});
+    }
+  })();
+  </script>
 </body>
 </html>`;
 }

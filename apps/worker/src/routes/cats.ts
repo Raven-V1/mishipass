@@ -509,7 +509,7 @@ function renderAdoptionProfile(
     var btn=document.getElementById("adopt-request-btn");
     var status=document.getElementById("adopt-request-status");
     btn.disabled=true;
-    fetch("/api/cats/${escapeHtml(publicId)}/request-transfer",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({})})
+    fetch("/api/cats/${escapeHtml(publicId)}/request-transfer",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({})})
       .then(function(r){
         status.classList.remove("hidden");
         if(r.status===401){status.textContent="Please log in to your MishiPass account to request adoption.";btn.style.display="none";}
