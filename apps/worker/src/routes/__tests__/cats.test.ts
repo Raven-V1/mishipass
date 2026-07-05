@@ -181,7 +181,7 @@ describe("handlePublicProfile", () => {
     expect(html).toContain("expired");
   });
 
-  it("returns 200 with placeholder for unbuilt modes (travel, adoption, etc)", async () => {
+  it("returns 200 with placeholder for unbuilt modes (travel, memorial, etc)", async () => {
     mockGetCatPublicProfile.mockResolvedValue({
       public_id: "MP-MX-0000-0001",
       name: "Luna",
@@ -194,6 +194,56 @@ describe("handlePublicProfile", () => {
     const html = await res.text();
     expect(html).toContain("Luna");
     expect(html).toContain("isn't available yet");
+  });
+
+  it("returns 200 with adoption profile when mode is adoption", async () => {
+    mockGetCatPublicProfile.mockResolvedValue({
+      public_id: "MP-MX-0000-0001",
+      name: "Mochi",
+      country_code: "MX",
+      photo_r2_key: null,
+      current_mode: "adoption",
+      breed_mix: "Siamese Mix",
+      color_markings: "Cream and brown",
+      sex: "Female",
+      weight: "3.5 kg",
+      birth_date: "2021-06-01",
+      microchip_number: null,
+    });
+    mockGetContactSettingsPublic.mockResolvedValue({ contact_mode: "relay", public_phone: null });
+    const res = await handlePublicProfile("MP-MX-0000-0001", fakeDb);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
+    const html = await res.text();
+    expect(html).toContain("Mochi");
+    expect(html).toContain("For Adoption");
+    expect(html).toContain("Siamese Mix");
+    expect(html).toContain("Cream and brown");
+    expect(html).toContain("Female");
+    expect(html).not.toContain("isn't available yet");
+    expect(html).not.toContain("Missing");
+  });
+
+  it("adoption profile does not expose internal IDs or private fields", async () => {
+    mockGetCatPublicProfile.mockResolvedValue({
+      public_id: "MP-MX-0000-0004",
+      name: "Cleo",
+      country_code: "KZ",
+      photo_r2_key: null,
+      current_mode: "adoption",
+      breed_mix: null,
+      color_markings: null,
+      sex: null,
+      weight: null,
+      birth_date: null,
+      microchip_number: null,
+    });
+    mockGetContactSettingsPublic.mockResolvedValue({ contact_mode: "none", public_phone: null });
+    const res = await handlePublicProfile("MP-MX-0000-0004", fakeDb);
+    const html = await res.text();
+    expect(html).not.toContain("owner_id");
+    expect(html).not.toContain("notes");
+    expect(html).not.toContain("microchip_date");
   });
 
   it("HTML-escapes <script> in cat name (raw tag never appears unescaped)", async () => {
