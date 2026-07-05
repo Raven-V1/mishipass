@@ -174,6 +174,7 @@ describe("cats — public profile", () => {
       color_markings: null,
       breed_mix: null,
       weight: null,
+      microchip_number: null,
     });
 
     // Explicitly assert internal fields are absent.
