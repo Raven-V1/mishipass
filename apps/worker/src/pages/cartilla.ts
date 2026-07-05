@@ -15,8 +15,8 @@ function redirectDashboard(): Response {
   return new Response(null, { status: 302, headers: { Location: "/dashboard" } });
 }
 
-function dateOrEmpty(value: string | null): string {
-  return value ? escapeHtml(value) : "Not recorded";
+function dateOrEmpty(value: string | null, lang: LanguageCode): string {
+  return value ? escapeHtml(value) : t(lang, "notRecorded");
 }
 
 export async function handleCartillaPage(
@@ -69,7 +69,7 @@ export async function handleCartillaPage(
   <section class="mp-card cartilla-shell">
     <div class="nav"><a class="mp-back" href="/dashboard/cats/${safeId}?lang=${lang}">&larr; ${safeName}</a></div>
     <h1>${t(lang, "cartilla")}</h1>
-    <p class="muted">${safeName} private owner records.</p>
+    <p class="muted">${safeName} ${t(lang, "cartillaPrivateRecords")}</p>
     ${renderVetVisits(safeId, vetVisits, lang)}
     ${renderVaccines(safeId, vaccines, lang)}
     ${renderMedications(medications, lang)}
@@ -121,10 +121,10 @@ export async function handleVetVisitDetailPage(
   <section class="mp-card detail-shell">
     <div class="nav"><a class="mp-back" href="/dashboard/cats/${safeId}/cartilla?lang=${lang}">&larr; ${t(lang, "cartilla")}</a></div>
     <h1>${t(lang, "vetVisit")}</h1>
-    <div class="field"><div class="label">${t(lang, "visitDate")}</div><div class="value">${dateOrEmpty(visit.visit_date)}</div></div>
-    <div class="field"><div class="label">Vet or clinic</div><div class="value">${visit.vet_or_clinic_name ? escapeHtml(visit.vet_or_clinic_name) : "Not recorded"}</div></div>
-    <div class="field"><div class="label">Notes</div><div class="value">${visit.notes ? escapeHtml(visit.notes) : "Not recorded"}</div></div>
-    <div class="field"><div class="label">Created</div><div class="value">${escapeHtml(visit.created_at)}</div></div>
+    <div class="field"><div class="label">${t(lang, "visitDate")}</div><div class="value">${dateOrEmpty(visit.visit_date, lang)}</div></div>
+    <div class="field"><div class="label">${t(lang, "vetOrClinic")}</div><div class="value">${visit.vet_or_clinic_name ? escapeHtml(visit.vet_or_clinic_name) : t(lang, "notRecorded")}</div></div>
+    <div class="field"><div class="label">${t(lang, "notes")}</div><div class="value">${visit.notes ? escapeHtml(visit.notes) : t(lang, "notRecorded")}</div></div>
+    <div class="field"><div class="label">${t(lang, "createdLabel")}</div><div class="value">${escapeHtml(visit.created_at)}</div></div>
   </section>
   </main>
 </body></html>`;
@@ -132,21 +132,21 @@ export async function handleVetVisitDetailPage(
 }
 
 function renderVetVisits(publicId: string, visits: VetVisitEntry[], lang: LanguageCode): string {
-  if (visits.length === 0) return `<h2>${t(lang, "vetVisit")}</h2><p class="muted">No vet visits yet</p>`;
-  return `<h2>${t(lang, "vetVisit")}</h2><div class="grid">${visits.map(v => `<div class="record"><strong>${dateOrEmpty(v.visit_date)}</strong><p>${v.vet_or_clinic_name ? escapeHtml(v.vet_or_clinic_name) : t(lang, "unknown")}</p><a class="btn secondary" href="/dashboard/cats/${publicId}/cartilla/vet-visits/${v.id}?lang=${lang}">${t(lang, "details")}</a></div>`).join("")}</div>`;
+  if (visits.length === 0) return `<h2>${t(lang, "vetVisit")}</h2><p class="muted">${t(lang, "noVetVisitsYet")}</p>`;
+  return `<h2>${t(lang, "vetVisit")}</h2><div class="grid">${visits.map(v => `<div class="record"><strong>${dateOrEmpty(v.visit_date, lang)}</strong><p>${v.vet_or_clinic_name ? escapeHtml(v.vet_or_clinic_name) : t(lang, "unknown")}</p><a class="btn secondary" href="/dashboard/cats/${publicId}/cartilla/vet-visits/${v.id}?lang=${lang}">${t(lang, "details")}</a></div>`).join("")}</div>`;
 }
 
 function renderVaccines(publicId: string, vaccines: VaccineEntry[], lang: LanguageCode): string {
-  const list = vaccines.length === 0 ? `<p class="muted">${t(lang, "noMatches")}</p>` : `<div class="grid">${vaccines.map(v => `<div class="record"><strong>${escapeHtml(v.vaccine_name)}</strong><p class="muted">${dateOrEmpty(v.date_given)}</p>${v.sticker_photo_r2_key ? `<img class="sticker" src="/media/cats/${publicId}/vaccines/${v.id}/sticker-photo" alt="Vaccine sticker photo" />` : ""}<form class="sticker-form" action="/api/cats/${publicId}/vaccines/${v.id}/sticker-photo"><div class="photo-picker"><div class="photo-picker-actions"><label class="photo-action" for="sticker-capture-${v.id}">${t(lang, "takePhoto")}</label><label class="photo-action" for="sticker-upload-${v.id}">${t(lang, "chooseExistingPhoto")}</label></div><input class="photo-input-visually-hidden" id="sticker-capture-${v.id}" type="file" name="photoCapture" accept="image/*" capture="environment" data-photo-status="sticker-status-${v.id}" /><input class="photo-input-visually-hidden" id="sticker-upload-${v.id}" type="file" name="photoUpload" accept="image/*" data-photo-status="sticker-status-${v.id}" /><div id="sticker-status-${v.id}" class="photo-status">${t(lang, "noPhotoSelected")}</div></div><button class="btn secondary" type="submit">${t(lang, "photoUpload")}</button></form></div>`).join("")}</div>`;
-  return `<h2>Vaccines</h2>${list}`;
+  const list = vaccines.length === 0 ? `<p class="muted">${t(lang, "noMatches")}</p>` : `<div class="grid">${vaccines.map(v => `<div class="record"><strong>${escapeHtml(v.vaccine_name)}</strong><p class="muted">${dateOrEmpty(v.date_given, lang)}</p>${v.sticker_photo_r2_key ? `<img class="sticker" src="/media/cats/${publicId}/vaccines/${v.id}/sticker-photo" alt="Vaccine sticker photo" />` : ""}<form class="sticker-form" action="/api/cats/${publicId}/vaccines/${v.id}/sticker-photo"><div class="photo-picker"><div class="photo-picker-actions"><label class="photo-action" for="sticker-capture-${v.id}">${t(lang, "takePhoto")}</label><label class="photo-action" for="sticker-upload-${v.id}">${t(lang, "chooseExistingPhoto")}</label></div><input class="photo-input-visually-hidden" id="sticker-capture-${v.id}" type="file" name="photoCapture" accept="image/*" capture="environment" data-photo-status="sticker-status-${v.id}" /><input class="photo-input-visually-hidden" id="sticker-upload-${v.id}" type="file" name="photoUpload" accept="image/*" data-photo-status="sticker-status-${v.id}" /><div id="sticker-status-${v.id}" class="photo-status">${t(lang, "noPhotoSelected")}</div></div><button class="btn secondary" type="submit">${t(lang, "photoUpload")}</button></form></div>`).join("")}</div>`;
+  return `<h2>${t(lang, "vaccines")}</h2>${list}`;
 }
 
 function renderMedications(medications: MedicationEntry[], lang: LanguageCode): string {
   if (medications.length === 0) return `<h2>${t(lang, "medicationRecord")}</h2><p class="muted">${t(lang, "noMatches")}</p>`;
-  return `<h2>${t(lang, "medicationRecord")}</h2><div class="grid">${medications.map(m => `<div class="record"><strong>${escapeHtml(m.medication_name)}</strong><p class="muted">${dateOrEmpty(m.start_date)}</p>${m.dose ? `<p>Dose recorded: ${escapeHtml(m.dose)}</p>` : ""}${m.duration ? `<p>Duration: ${escapeHtml(m.duration)}</p>` : ""}${m.prescriber_name ? `<p>Prescriber: ${escapeHtml(m.prescriber_name)}</p>` : ""}${m.notes ? `<p class="notes">${escapeHtml(m.notes)}</p>` : ""}</div>`).join("")}</div>`;
+  return `<h2>${t(lang, "medicationRecord")}</h2><div class="grid">${medications.map(m => `<div class="record"><strong>${escapeHtml(m.medication_name)}</strong><p class="muted">${dateOrEmpty(m.start_date, lang)}</p>${m.dose ? `<p>${t(lang, "doseRecorded")}: ${escapeHtml(m.dose)}</p>` : ""}${m.duration ? `<p>${t(lang, "duration")}: ${escapeHtml(m.duration)}</p>` : ""}${m.prescriber_name ? `<p>${t(lang, "prescriber")}: ${escapeHtml(m.prescriber_name)}</p>` : ""}${m.notes ? `<p class="notes">${escapeHtml(m.notes)}</p>` : ""}</div>`).join("")}</div>`;
 }
 
 function renderForms(publicId: string, lang: LanguageCode): string {
-  return `<h2>Add Vaccine</h2><form id="vaccine-form"><label>Vaccine name<input name="vaccine_name" required maxlength="100" /></label><label>Date given<input name="date_given" type="date" /></label><button class="btn" type="submit">${t(lang, "save")}</button></form>
-  <h2>${t(lang, "medicationRecord")}</h2><form id="medication-form"><label>Medication name<input name="medication_name" required maxlength="100" /></label><label>Dose as recorded<input name="dose" maxlength="100" /></label><label>Duration<input name="duration" maxlength="100" /></label><label>Start date<input name="start_date" type="date" /></label><label>Prescriber<input name="prescriber_name" maxlength="100" /></label><label>Notes<textarea name="notes" maxlength="500"></textarea></label><button class="btn" type="submit">${t(lang, "save")}</button></form>`;
+  return `<h2>${t(lang, "addVaccine")}</h2><form id="vaccine-form"><label>${t(lang, "vaccineName")}<input name="vaccine_name" required maxlength="100" /></label><label>${t(lang, "dateGiven")}<input name="date_given" type="date" /></label><button class="btn" type="submit">${t(lang, "save")}</button></form>
+  <h2>${t(lang, "medicationRecord")}</h2><form id="medication-form"><label>${t(lang, "medicationName")}<input name="medication_name" required maxlength="100" /></label><label>${t(lang, "doseAsRecorded")}<input name="dose" maxlength="100" /></label><label>${t(lang, "duration")}<input name="duration" maxlength="100" /></label><label>${t(lang, "startDate")}<input name="start_date" type="date" /></label><label>${t(lang, "prescriber")}<input name="prescriber_name" maxlength="100" /></label><label>${t(lang, "notes")}<textarea name="notes" maxlength="500"></textarea></label><button class="btn" type="submit">${t(lang, "save")}</button></form>`;
 }
