@@ -252,11 +252,9 @@ function renderMissingProfile(
     [t(lang, "lastSeen"), safeLastSeen || t(lang, "unknown")],
     [t(lang, "breedMix"), cat.breed_mix ? escapeHtml(cat.breed_mix) : t(lang, "unknown")],
     [t(lang, "colorMarkings"), cat.color_markings ? escapeHtml(cat.color_markings) : t(lang, "unknown")],
-    ["Age", cat.birth_date ? escapeHtml(cat.birth_date) : t(lang, "unknown")],
+    [t(lang, "age"), cat.birth_date ? escapeHtml(cat.birth_date) : t(lang, "unknown")],
     [t(lang, "sex"), cat.sex ? escapeHtml(cat.sex) : t(lang, "unknown")],
-    ["Microchip ID", "Not available"],
     [t(lang, "contact"), contactValue],
-    [t(lang, "openPublicAlert"), publicId ? `<a href="/c/${safeId}?lang=${lang}">/c/${safeId}</a>` : t(lang, "unknown")],
   ].map(([label, value]) => `<div class="data-row"><dt>${label}</dt><dd>${value}</dd></div>`).join("");
 
   return `<!DOCTYPE html>
@@ -276,14 +274,15 @@ function renderMissingProfile(
     .alert-pills{display:flex;align-items:center;gap:var(--space-1);flex-wrap:wrap;margin:0 0 var(--space-2)}
     .status{background:#fff0e9;color:#b42318}
     .alert-photo{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;background:#fff7f0}
-    .photo-placeholder{min-height:252px;font-weight:800}
+    .photo-placeholder{min-height:252px;font-weight:800;display:flex;align-items:center;justify-content:center;color:var(--muted)}
     .alert-copy h2{font-size:2rem;line-height:1.08;color:var(--teal);margin:0 0 var(--space-2)}
     .data-list{display:grid;gap:var(--space-1);margin:0}
     .data-row{display:grid;grid-template-columns:minmax(120px,180px) minmax(0,1fr);gap:var(--space-2);padding:var(--space-1) 0;border-bottom:1px solid var(--line)}
     .data-row dt{font-weight:900;color:var(--teal)}
     .data-row dd{margin:0;overflow-wrap:anywhere}
-    .privacy-note{display:flex;align-items:center;gap:var(--space-1);color:var(--muted);margin:var(--space-2) 0 0}
-    @media(max-width:700px){body{padding:var(--space-2)}.alert-shell{padding:var(--space-2) 0 var(--space-4)}.alert-card{grid-template-columns:1fr;padding:var(--space-3)}.data-row{grid-template-columns:1fr;gap:0}.sighting-link .mp-btn{width:100%}}
+    .privacy-note{display:flex;align-items:center;gap:var(--space-1);color:var(--muted);margin:var(--space-2) 0 0;font-size:.8125rem}
+    .sighting-link{margin:var(--space-3) 0 0}.sighting-link .mp-btn{width:100%}
+    @media(max-width:700px){body{padding:var(--space-2)}.alert-shell{padding:var(--space-2) 0 var(--space-4)}.alert-card{grid-template-columns:1fr;padding:var(--space-3)}.data-row{grid-template-columns:1fr;gap:0}}
   </style>
 </head>
 <body>
@@ -291,7 +290,7 @@ function renderMissingProfile(
     ${brandLockupHtml(`/?lang=${lang}`)}
     <header class="alert-head">
       <h1>${iconMegaphone(32)} <span>${t(lang, "missingAlert")}</span></h1>
-      <p class="alert-subtitle">Help reunite your furry friend safely.</p>
+      <p class="alert-subtitle">${t(lang, "missingAlertSubtitle")}</p>
     </header>
     <section class="mp-card alert-card">
       <div>${photoSection}${sightingLink}</div>
@@ -299,7 +298,7 @@ function renderMissingProfile(
         <p class="alert-pills"><span class="badge">${safeCountry}</span><span class="status">${t(lang, "missing")}</span></p>
         <h2>${safeName}</h2>
         <dl class="data-list">${rows}</dl>
-        <p class="privacy-note">${iconShield(16)} <span>No private cartilla or medical data is shown.</span></p>
+        <p class="privacy-note">${iconShield(16)} <span>${t(lang, "privacyNoPrivateDataShown")}</span></p>
       </div>
     </section>
   </main>
@@ -319,33 +318,36 @@ function renderActiveProfile(
 ): string {
   const safeName = escapeHtml(name);
   const safeCountry = escapeHtml(getCountryBadgeLabel(countryCode));
+  const safeId = escapeHtml(publicId);
 
   const photoSection = photoR2Key
-    ? `<div class="photo"><img src="/media/cats/${escapeHtml(publicId)}/photo" alt="${safeName}" /></div>`
-    : `<div class="photo-placeholder" aria-label="${t(lang, "noPhoto")}"></div>`;
+    ? `<img class="profile-photo" src="/media/cats/${safeId}/photo" alt="${safeName}" />`
+    : `<div class="profile-photo photo-placeholder">${t(lang, "noPhoto")}</div>`;
 
   let contactSection = "";
   if (contact.contact_mode === "phone" && contact.public_phone) {
     const safePhone = escapeHtml(contact.public_phone);
-    contactSection = `<a class="contact-btn" href="tel:${safePhone}">${t(lang, "callOwner")}</a>`;
+    contactSection = `<a class="mp-btn mp-btn-primary contact-btn" href="tel:${safePhone}">${iconContact(16)} ${t(lang, "callOwner")}</a>`;
   } else if (contact.contact_mode === "relay") {
-    contactSection = `<p class="contact-info">${t(lang, "contactOwner")}</p>`;
+    contactSection = `<p class="contact-info">${iconContact(16)} <span>${t(lang, "contactOwner")}</span></p>`;
+  } else {
+    contactSection = `<p class="contact-info">${iconContact(16)} <span>${t(lang, "privacyOwnerControlledContact")}</span></p>`;
   }
 
-  // Expanded fields
-  let detailLines = "";
-  if (catView.sex) {
-    detailLines += `<p class="detail">${t(lang, "sex")}: ${escapeHtml(catView.sex)}</p>`;
-  }
-  if (catView.color_markings) {
-    detailLines += `<p class="detail">${t(lang, "colorMarkings")}: ${escapeHtml(catView.color_markings)}</p>`;
-  }
-  if (catView.breed_mix) {
-    detailLines += `<p class="detail">${t(lang, "breedMix")}: ${escapeHtml(catView.breed_mix)}</p>`;
-  }
-  if (catView.weight) {
-    detailLines += `<p class="detail">${t(lang, "weight")}: ${escapeHtml(catView.weight)}</p>`;
-  }
+  // Build detail rows from public fields only
+  const rows: [string, string][] = [];
+  if (catView.breed_mix) rows.push([t(lang, "breedMix"), escapeHtml(catView.breed_mix)]);
+  if (catView.color_markings) rows.push([t(lang, "colorMarkings"), escapeHtml(catView.color_markings)]);
+  if (catView.sex) rows.push([t(lang, "sex"), escapeHtml(catView.sex)]);
+  if (catView.weight) rows.push([t(lang, "weight"), escapeHtml(catView.weight)]);
+
+  const detailRows = rows.length > 0
+    ? `<dl class="profile-data">${rows.map(([label, value]) => `<div class="data-row"><dt>${label}</dt><dd>${value}</dd></div>`).join("")}</dl>`
+    : "";
+
+  const galleryHtml = publicPhotos.length > 0
+    ? `<div class="gallery">${publicPhotos.map(p => `<img src="/media/cats/${safeId}/photos/${p.id}/public" alt="${safeName}" loading="lazy" />`).join("")}</div>`
+    : "";
 
   return `<!DOCTYPE html>
 <html lang="${lang}">
@@ -356,27 +358,40 @@ function renderActiveProfile(
   <style>
     ${MISHIPASS_DESIGN_CSS}
     body{padding:var(--space-3)}
-    .profile-shell{max-width:704px;margin:var(--space-4) auto}
-    .profile-card{padding:var(--space-4)}
-    h1{font-size:clamp(2rem,6vw,3rem);line-height:1.08;margin:var(--space-3) 0 var(--space-1);color:var(--teal);overflow-wrap:anywhere}
-    .photo img,.photo-placeholder{width:160px;height:160px;border-radius:8px;object-fit:cover;display:flex;align-items:center;justify-content:center;margin:var(--space-3) 0;background:#fff7f0}
-    .detail{margin:var(--space-1) 0;color:var(--ink)}
-    .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:var(--space-2);margin-top:var(--space-3)}
+    .profile-shell{max-width:736px;margin:var(--space-4) auto}
+    .profile-card{padding:var(--space-4);display:grid;grid-template-columns:200px minmax(0,1fr);gap:var(--space-4);align-items:start}
+    .profile-photo,.photo-placeholder{width:100%;aspect-ratio:1;border-radius:12px;object-fit:cover;background:#fff7f0;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--muted)}
+    .profile-info{display:flex;flex-direction:column;gap:var(--space-2)}
+    .profile-info h1{font-size:clamp(1.75rem,5vw,2.5rem);line-height:1.08;margin:0;color:var(--teal);overflow-wrap:anywhere}
+    .profile-status{display:flex;align-items:center;gap:var(--space-1);flex-wrap:wrap}
+    .profile-data{display:grid;gap:var(--space-1);margin:var(--space-2) 0 0}
+    .data-row{display:grid;grid-template-columns:minmax(100px,140px) minmax(0,1fr);gap:var(--space-2);padding:var(--space-1) 0;border-bottom:1px solid var(--line)}
+    .data-row dt{font-weight:900;color:var(--teal);font-size:.875rem}
+    .data-row dd{margin:0;overflow-wrap:anywhere}
+    .contact-info{display:flex;align-items:center;gap:var(--space-1);margin:var(--space-2) 0 0;color:var(--muted);font-weight:700}
+    .contact-btn{margin-top:var(--space-2);gap:var(--space-1)}
+    .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:var(--space-2);margin-top:var(--space-3);grid-column:1/-1}
     .gallery img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px}
-    .contact-info{display:flex;align-items:center;gap:var(--space-1);margin-top:var(--space-3);color:var(--muted)}
-    @media(max-width:430px){body{padding:var(--space-2)}.profile-card{padding:var(--space-3)}.contact-btn{width:100%}}
+    .privacy-footer{grid-column:1/-1;display:flex;align-items:center;gap:var(--space-1);color:var(--muted);font-size:.8125rem;margin-top:var(--space-2)}
+    @media(max-width:600px){.profile-card{grid-template-columns:1fr;text-align:center}.profile-photo,.photo-placeholder{max-width:200px;margin:0 auto}.profile-status{justify-content:center}.contact-btn{width:100%}.gallery{grid-column:1}}
   </style>
 </head>
 <body>
   <main class="profile-shell">
     ${brandLockupHtml(`/?lang=${lang}`)}
     <section class="mp-card profile-card">
-      <h1>${safeName}</h1>
-      <span class="badge">${safeCountry}</span>
-      ${photoSection}
-      ${detailLines}
-      ${contactSection || `<p class="contact-info">${iconContact(16)} <span>${t(lang, "privacyOwnerControlledContact")}</span></p>`}
-      ${publicPhotos.length > 0 ? `<div class="gallery">${publicPhotos.map(p => `<img src="/media/cats/${escapeHtml(publicId)}/photos/${p.id}/public" alt="${safeName}" />`).join("")}</div>` : ""}
+      <div>${photoSection}</div>
+      <div class="profile-info">
+        <h1>${safeName}</h1>
+        <div class="profile-status">
+          <span class="badge">${safeCountry}</span>
+          <span class="badge mode-active">${t(lang, "activeProfile")}</span>
+        </div>
+        ${detailRows}
+        ${contactSection}
+      </div>
+      ${galleryHtml}
+      <p class="privacy-footer">${iconShield(16)} <span>${t(lang, "privacyNoPrivateDataShown")}</span></p>
     </section>
   </main>
 </body>
