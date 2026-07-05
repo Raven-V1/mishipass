@@ -116,6 +116,7 @@ export async function handleSightingSubmit(
   let message = "";
   let reporterName = "";
   let reporterContact = "";
+  let healthCondition = "";
   let sightingPhoto: File | null = null;
 
   const contentType = request.headers.get("Content-Type") || "";
@@ -134,6 +135,7 @@ export async function handleSightingSubmit(
       message = typeof b["message"] === "string" ? b["message"] : "";
       reporterName = typeof b["reporterName"] === "string" ? b["reporterName"] : "";
       reporterContact = typeof b["reporterContact"] === "string" ? b["reporterContact"] : "";
+      healthCondition = typeof b["healthCondition"] === "string" ? b["healthCondition"] : "";
     }
   } else if (contentType.includes("multipart/form-data")) {
     let formData: FormData;
@@ -148,6 +150,7 @@ export async function handleSightingSubmit(
     message = (formData.get("message") as string) || "";
     reporterName = (formData.get("reporterName") as string) || "";
     reporterContact = (formData.get("reporterContact") as string) || "";
+    healthCondition = (formData.get("healthCondition") as string) || "";
 
     // Optional photo
     const photoField = formData.get("photo") || formData.get("photoCapture") || formData.get("photoUpload");
@@ -168,6 +171,7 @@ export async function handleSightingSubmit(
     message = (formData.get("message") as string) || "";
     reporterName = (formData.get("reporterName") as string) || "";
     reporterContact = (formData.get("reporterContact") as string) || "";
+    healthCondition = (formData.get("healthCondition") as string) || "";
   }
 
   // Validation
@@ -203,6 +207,7 @@ export async function handleSightingSubmit(
   // Build combined message
   const parts: string[] = [];
   if (sightedAt) parts.push("Sighted at: " + sightedAt);
+  if (healthCondition) parts.push("Health condition: " + healthCondition);
   if (message) parts.push(message);
   if (reporterName) parts.push("Reporter: " + reporterName);
   if (reporterContact) parts.push("Contact: " + reporterContact);
@@ -306,6 +311,15 @@ function renderNotAcceptingPage(lang: LanguageCode): string {
 function renderSightingForm(publicId: string, catName: string, lang: LanguageCode): string {
   const safeName = escapeHtml(catName);
   const safeId = escapeHtml(publicId);
+  const healthOptions = [
+    ["", "—"],
+    ["looks_ok", lang === "es" ? "Parece bien" : lang === "kk-KZ" ? "Жақсы көрінеді" : "Looks okay"],
+    ["injured", lang === "es" ? "Lesionado/a" : lang === "kk-KZ" ? "Жарақаттанған" : "Appears injured"],
+    ["thin", lang === "es" ? "Delgado/a" : lang === "kk-KZ" ? "Арық" : "Appears thin / hungry"],
+    ["scared", lang === "es" ? "Asustado/a" : lang === "kk-KZ" ? "Қорыққан" : "Scared / hiding"],
+    ["other", lang === "es" ? "Otro" : lang === "kk-KZ" ? "Басқа" : "Other"],
+  ].map(([v, l]) => `<option value="${v}">${l}</option>`).join("");
+
   return `<!DOCTYPE html>
 <html lang="${lang}">
 <head>
@@ -315,43 +329,77 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
   <style>
     ${MISHIPASS_DESIGN_CSS}
     body{padding:var(--space-3)}
-    .page-shell{max-width:608px;margin:var(--space-4) auto}.form-shell{padding:var(--space-4);margin-top:var(--space-3)}
-    h1{font-size:clamp(2rem,6vw,3rem);line-height:1.08;margin:0 0 var(--space-3);color:var(--teal)}
-    input,textarea{margin-bottom:var(--space-2)}
-    .photo-picker{margin:var(--space-1) 0 var(--space-3)}.photo-picker-actions{display:flex;gap:var(--space-1);flex-wrap:wrap}.photo-action{flex:1 1 160px}.photo-input-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}.photo-status{margin-top:var(--space-1);overflow-wrap:anywhere}
-    @media(max-width:430px){body{padding:var(--space-2)}.form-shell{padding:var(--space-3)}.photo-action,button{width:100%;flex-basis:100%}}
+    .page-shell{max-width:768px;margin:var(--space-4) auto}.form-shell{padding:var(--space-4);margin-top:var(--space-3)}
+    .sighting-head{display:flex;align-items:center;gap:var(--space-2);margin:0 0 var(--space-3)}
+    .sighting-head h1{font-size:clamp(1.75rem,5vw,2.5rem);line-height:1.08;margin:0;color:var(--teal)}
+    .sighting-sub{color:var(--muted);font-weight:700;margin:0 0 var(--space-3);font-size:.9375rem}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2) var(--space-3)}
+    .field{display:grid;gap:var(--space-1);margin-bottom:0}
+    .field-wide{grid-column:1/-1}
+    .field label{font-size:.875rem;font-weight:900;color:var(--teal)}
+    .required-mark{color:var(--brand-coral);font-size:.75rem;margin-left:2px}
+    .photo-picker{margin:0}.photo-picker-actions{display:flex;gap:var(--space-1);flex-wrap:wrap}.photo-action{flex:1 1 160px}.photo-input-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}.photo-status{margin-top:var(--space-1);overflow-wrap:anywhere;font-size:.875rem;color:var(--muted)}
+    .submit-row{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-3)}.submit-row>*{flex:1 1 180px}
+    @media(max-width:600px){.form-grid{grid-template-columns:1fr}.field-wide{grid-column:1}}
+    @media(max-width:430px){body{padding:var(--space-2)}.form-shell{padding:var(--space-3)}.photo-action,.submit-row>*{width:100%;flex-basis:100%}}
   </style>
 </head>
 <body>
   <main class="page-shell">
   ${brandLockupHtml(`/?lang=${lang}`)}
   <section class="mp-card form-shell">
-  <h1>${t(lang, "reportSightingOf")} ${safeName}</h1>
-  <form method="POST" action="/c/${safeId}/sighting?lang=${lang}" enctype="multipart/form-data">
-    <label for="city">${t(lang, "city")} (required)</label>
-    <input type="text" id="city" name="city" required maxlength="80" />
-    <label for="area">${t(lang, "area")}</label>
-    <input type="text" id="area" name="area" maxlength="120" />
-    <label for="sightedAt">When was the cat sighted?</label>
-    <input type="text" id="sightedAt" name="sightedAt" maxlength="80" />
-    <label for="message">${t(lang, "additionalDetails")}</label>
-    <textarea id="message" name="message" maxlength="1000"></textarea>
-    <label for="reporterName">Your name (optional)</label>
-    <input type="text" id="reporterName" name="reporterName" maxlength="80" />
-    <label for="reporterContact">Your contact info (optional)</label>
-    <input type="text" id="reporterContact" name="reporterContact" maxlength="120" />
-    <label>${t(lang, "photo")} (optional, max 3 MB)</label>
-    <div class="photo-picker">
-      <div class="photo-picker-actions">
-        <label for="photo-capture" class="photo-action">${t(lang, "takePhoto")}</label>
-        <label for="photo-upload" class="photo-action">${t(lang, "chooseExistingPhoto")}</label>
-      </div>
-      <input class="photo-input-visually-hidden" type="file" id="photo-capture" name="photoCapture" accept="image/*" capture="environment" data-photo-status="sighting-photo-status" />
-      <input class="photo-input-visually-hidden" type="file" id="photo-upload" name="photoUpload" accept="image/*" data-photo-status="sighting-photo-status" />
-      <div id="sighting-photo-status" class="photo-status">${t(lang, "noPhotoSelected")}</div>
+    <div class="sighting-head">
+      <h1>${t(lang, "reportSighting")}</h1>
     </div>
-    <button class="mp-btn mp-btn-primary" type="submit">${t(lang, "submitSighting")}</button>
-  </form>
+    <p class="sighting-sub">${t(lang, "reportSightingOf")} <strong>${safeName}</strong></p>
+    <form method="POST" action="/c/${safeId}/sighting?lang=${lang}" enctype="multipart/form-data">
+      <div class="form-grid">
+        <div class="field field-wide">
+          <label for="city">${t(lang, "locationText")}<span class="required-mark">${t(lang, "sightingRequired")}</span></label>
+          <input type="text" id="city" name="city" required maxlength="80" placeholder="${t(lang, "city")}" />
+        </div>
+        <div class="field">
+          <label for="area">${t(lang, "area")} (${t(lang, "optional")})</label>
+          <input type="text" id="area" name="area" maxlength="120" />
+        </div>
+        <div class="field">
+          <label for="sightedAt">${t(lang, "dateLabel")} / ${t(lang, "timeLabel")} (${t(lang, "optional")})</label>
+          <input type="datetime-local" id="sightedAt" name="sightedAt" maxlength="80" />
+        </div>
+        <div class="field">
+          <label for="healthCondition">${t(lang, "healthCondition")} (${t(lang, "optional")})</label>
+          <select id="healthCondition" name="healthCondition">${healthOptions}</select>
+        </div>
+        <div class="field field-wide">
+          <label for="message">${t(lang, "seenDoing")} (${t(lang, "optional")})</label>
+          <textarea id="message" name="message" maxlength="1000" rows="3"></textarea>
+        </div>
+        <div class="field field-wide">
+          <label>${t(lang, "photoUpload")} (${t(lang, "optional")}, max 3 MB)</label>
+          <div class="photo-picker">
+            <div class="photo-picker-actions">
+              <label for="photo-capture" class="photo-action">${t(lang, "takePhoto")}</label>
+              <label for="photo-upload" class="photo-action">${t(lang, "chooseExistingPhoto")}</label>
+            </div>
+            <input class="photo-input-visually-hidden" type="file" id="photo-capture" name="photoCapture" accept="image/*" capture="environment" />
+            <input class="photo-input-visually-hidden" type="file" id="photo-upload" name="photoUpload" accept="image/*" />
+            <div id="sighting-photo-status" class="photo-status">${t(lang, "noPhotoSelected")}</div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="reporterName">${t(lang, "yourName")} (${t(lang, "optional")})</label>
+          <input type="text" id="reporterName" name="reporterName" maxlength="80" />
+        </div>
+        <div class="field">
+          <label for="reporterContact">${t(lang, "yourContact")} (${t(lang, "optional")})</label>
+          <input type="text" id="reporterContact" name="reporterContact" maxlength="120" />
+        </div>
+      </div>
+      <div class="submit-row">
+        <button class="mp-btn mp-btn-primary" type="submit">${t(lang, "submitSighting")}</button>
+        <a class="mp-btn mp-btn-secondary" href="/c/${safeId}?lang=${lang}">${t(lang, "cancel")}</a>
+      </div>
+    </form>
   </section>
   </main>
 </body>
