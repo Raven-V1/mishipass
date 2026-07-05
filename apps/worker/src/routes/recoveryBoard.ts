@@ -29,16 +29,22 @@ export async function handleRecoveryBoardPage(request: Request, db: D1Database):
     "https://cdn2.thecatapi.com/images/dbMTzZhE_.jpg",
   ];
   const cards = alerts.length === 0
-    ? `<p class="empty">${t(lang, "noMatches")}</p>`
+    ? `<div class="empty mp-card"><p class="empty-title">${t(lang, "noMatches")}</p><p class="empty-copy">${t(lang, "recoveryBoardSummary")}</p></div>`
     : alerts.map((a, i) => `<article class="card">
         ${a.photo_r2_key
           ? `<img src="/media/cats/${escapeHtml(a.public_id)}/photo" alt="${escapeHtml(a.name)}" loading="lazy" />`
           : `<img src="${STOCK_CAT_PHOTOS[i % STOCK_CAT_PHOTOS.length]}" alt="${t(lang, "noPhoto")}" loading="lazy" style="opacity:.7" />`}
-        <h2>${escapeHtml(a.name)}</h2>
-        <p class="badge" aria-label="${t(lang, "country")}">${escapeHtml(getCountryBadgeLabel(a.country_code))}</p>
-        ${a.city ? `<p>${t(lang, "city")}: ${escapeHtml(a.city)}</p>` : ""}
-        ${a.area ? `<p>${t(lang, "area")}: ${escapeHtml(a.area)}</p>` : ""}
-        ${a.last_seen_at ? `<p>${t(lang, "lastSeen")}: ${escapeHtml(a.last_seen_at)}</p>` : ""}
+        <div class="card-copy">
+          <div class="card-head">
+            <h2>${escapeHtml(a.name)}</h2>
+            <span class="badge" aria-label="${t(lang, "country")}">${escapeHtml(getCountryBadgeLabel(a.country_code))}</span>
+          </div>
+          <dl class="meta-list">
+            ${a.city ? `<div><dt>${t(lang, "city")}</dt><dd>${escapeHtml(a.city)}</dd></div>` : ""}
+            ${a.area ? `<div><dt>${t(lang, "area")}</dt><dd>${escapeHtml(a.area)}</dd></div>` : ""}
+            ${a.last_seen_at ? `<div><dt>${t(lang, "lastSeen")}</dt><dd>${escapeHtml(a.last_seen_at)}</dd></div>` : ""}
+          </dl>
+        </div>
         <div class="actions">
           <a href="/c/${escapeHtml(a.public_id)}?lang=${lang}">${t(lang, "openPublicAlert")}</a>
           <a href="/c/${escapeHtml(a.public_id)}/sighting?lang=${lang}">${t(lang, "reportSighting")}</a>
@@ -47,11 +53,11 @@ export async function handleRecoveryBoardPage(request: Request, db: D1Database):
   return htmlResponse(`<!DOCTYPE html>
 <html lang="${lang}"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>${t(lang, "recoveryBoard")} — MishiPass Beta 1.5</title>
-<style>${MISHIPASS_DESIGN_CSS}${TOP_NAV_CSS}body{padding:var(--space-3)}.board-shell{max-width:1184px;margin:var(--space-3) auto}.top{display:flex;justify-content:space-between;gap:var(--space-3);align-items:flex-start;flex-wrap:wrap;margin-bottom:var(--space-3)}.top>*{min-width:0}h1{font-size:clamp(2rem,6vw,3.5rem);line-height:1.08;margin:var(--space-1) 0;color:var(--teal);overflow-wrap:anywhere}.language label{display:block;font-size:.8rem;font-weight:700;margin-bottom:var(--space-1)}.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(192px,1fr));gap:var(--space-2);margin:0 0 var(--space-4);align-items:end;padding:var(--space-3)}.filters button{width:100%}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(272px,1fr));gap:var(--space-3)}.card{border:1px solid var(--line);border-radius:8px;padding:var(--space-3);background:var(--card);min-width:0;display:flex;flex-direction:column;box-shadow:var(--shadow)}.card h2{margin:var(--space-2) 0 var(--space-1);font-size:1.25rem;color:var(--teal);overflow-wrap:anywhere}.card p{margin:var(--space-1) 0;overflow-wrap:anywhere}.card img,.placeholder{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;padding:0}.placeholder{padding:var(--space-2)}.actions{display:flex;gap:var(--space-1);flex-wrap:wrap;margin-top:auto;padding-top:var(--space-3)}.actions a{font-size:.9rem;flex:1 1 144px}.empty{padding:var(--space-3);border:1px dashed var(--line);border-radius:8px;background:#fff;overflow-wrap:anywhere}@media(max-width:430px){body{padding:var(--space-2)}.grid{grid-template-columns:1fr}.filters{grid-template-columns:1fr;padding:var(--space-2)}.actions a{flex-basis:100%}}</style></head>
+<style>${MISHIPASS_DESIGN_CSS}${TOP_NAV_CSS}body{padding:var(--space-3)}.board-shell{max-width:1184px;margin:var(--space-3) auto;padding-bottom:var(--space-6)}.top{display:flex;justify-content:space-between;gap:var(--space-3);align-items:flex-start;flex-wrap:wrap;margin-bottom:var(--space-3)}.top>*{min-width:0}.heading-copy{max-width:640px}h1{font-size:clamp(2rem,6vw,3.5rem);line-height:1.04;margin:var(--space-1) 0;color:var(--teal);overflow-wrap:anywhere}.heading-copy p{margin:0;color:var(--muted);font-weight:700}.language label{display:block;font-size:.8rem;font-weight:700;margin-bottom:var(--space-1)}.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(192px,1fr));gap:var(--space-2);margin:0 0 var(--space-4);align-items:end;padding:var(--space-3)}.filters button{width:100%}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--space-3)}.card{border:1px solid var(--line);border-radius:8px;padding:var(--space-2);background:var(--card);min-width:0;display:flex;flex-direction:column;box-shadow:var(--shadow)}.card img,.placeholder{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;padding:0}.card-copy{padding:var(--space-2) var(--space-1) 0}.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-2);margin-bottom:var(--space-2)}.card h2{margin:0;font-size:1.375rem;color:var(--teal);overflow-wrap:anywhere}.meta-list{display:grid;gap:var(--space-1);margin:0}.meta-list div{display:grid;grid-template-columns:minmax(84px,112px) minmax(0,1fr);gap:var(--space-1)}.meta-list dt{font-size:.75rem;font-weight:900;color:var(--muted)}.meta-list dd{margin:0;font-weight:800;overflow-wrap:anywhere}.actions{display:flex;gap:var(--space-1);flex-wrap:wrap;margin-top:auto;padding-top:var(--space-3)}.actions a{font-size:.9rem;flex:1 1 144px}.empty{padding:var(--space-4);text-align:center}.empty-title{font-size:1.125rem;font-weight:900;color:var(--teal);margin:0 0 var(--space-1)}.empty-copy{margin:0;color:var(--muted)}@media(max-width:430px){body{padding:var(--space-2)}.grid{grid-template-columns:1fr}.filters{grid-template-columns:1fr;padding:var(--space-2)}.actions a{flex-basis:100%}.card-head,.top{display:grid}}</style></head>
 <body>
   <main class="board-shell">
     ${ownerNav}
-    <div class="top"><div>${brandLockupHtml(`/?lang=${lang}`)}<h1>${t(lang, "recoveryBoard")}</h1></div><div class="language">${languageSelectHtml(lang)}</div></div>
+    <div class="top"><div class="heading-copy">${brandLockupHtml(`/?lang=${lang}`)}<h1>${t(lang, "recoveryBoard")}</h1><p>${t(lang, "recoveryBoardSummary")}</p></div><div class="language">${languageSelectHtml(lang)}</div></div>
     <form class="mp-card filters" method="GET" action="/recovery-board">
       <input name="lang" type="hidden" value="${lang}" />
       <input name="city" placeholder="${t(lang, "city")}" value="${city ? escapeHtml(city) : ""}" />

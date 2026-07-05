@@ -241,6 +241,33 @@ describe("handleSightingSubmit", () => {
     });
   });
 
+  it("stores lat and lng as null when the report is submitted without geolocation", async () => {
+    mockValidateId.mockReturnValue(true);
+    mockGetCatPublicProfile.mockResolvedValue({
+      public_id: TEST_CAT_ID,
+      name: "Mishi",
+      country_code: "MX",
+      photo_r2_key: null,
+      current_mode: "missing",
+    });
+    mockInsertSightingReport.mockResolvedValue(undefined);
+
+    const res = await handleSightingSubmit(
+      TEST_CAT_ID,
+      formRequest({ city: "Monterrey", area: "Centro", sightedAt: "2026-07-05 14:30" }),
+      fakeDb,
+      fakePhotos,
+      "test-secret",
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockInsertSightingReport).toHaveBeenCalledWith(fakeDb, expect.objectContaining({
+      location_text: "Monterrey, Centro",
+      lat: null,
+      lng: null,
+    }));
+  });
+
   it("returns 400 for active cat", async () => {
     mockValidateId.mockReturnValue(true);
     mockGetCatPublicProfile.mockResolvedValue({

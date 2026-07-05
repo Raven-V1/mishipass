@@ -81,6 +81,12 @@ internal state). Longer opaque random strings (rejected — worse to read off a
 printed tag).
 Decided by: Project Owner
 
+## 2026-07-05 — Design-branch commit attribution
+Decision: Commits on feature/design-alignment are attributed to zhanerke06 (Design Authority) via GitHub noreply.
+Reason: Design work is Zhanerke's authorship; Carlos directed attribution to her account for this branch.
+Alternatives considered: Raven-V1 identity (prior logged standard) — overridden by Carlos for this design work; personal Gmail — rejected to avoid publishing a personal address in public commit metadata.
+Decided by: Carlos
+
 ## 2026-06-24 — IDs are canonical uppercase; strict validation
 Decision: Public IDs are canonical uppercase only. `validate_id` and `parse_id`
 reject any lowercase, whitespace-padded, or non-ASCII value. `generate_id` rejects

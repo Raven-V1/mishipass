@@ -346,7 +346,8 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
   <style>
     ${MISHIPASS_DESIGN_CSS}
     body{padding:var(--space-3)}
-    .page-shell{max-width:1120px;margin:var(--space-4) auto}.form-shell{padding:var(--space-4);margin-top:var(--space-3)}
+    .page-shell{max-width:1120px;margin:var(--space-3) auto;padding-bottom:var(--space-6)}
+    .form-shell{padding:var(--space-4);margin-top:var(--space-2)}
     .sighting-head{display:flex;align-items:center;gap:var(--space-2);margin:0 0 var(--space-1)}
     .sighting-head h1{font-size:clamp(2.25rem,6vw,3.5rem);line-height:1.02;margin:0;color:var(--teal)}
     .sighting-sub{color:var(--muted);font-weight:700;margin:0 0 var(--space-4);font-size:1rem}
@@ -357,8 +358,10 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
     .field-card{border:1px solid var(--line);border-radius:8px;padding:var(--space-2);background:#fff;box-shadow:0 10px 24px rgba(56,38,26,.05)}
     .field-stack{display:grid;gap:var(--space-2)}
     .field-wide{grid-column:1/-1}
+    .field-split{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)}
     .photo-picker{margin:0}.photo-picker-actions{display:flex;gap:var(--space-1);flex-wrap:wrap}.photo-action{flex:1 1 160px}.photo-input-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}.photo-status{margin-top:var(--space-1);overflow-wrap:anywhere;font-size:.875rem;color:var(--muted)}
     .submit-row{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-3)}.submit-row>*{flex:1 1 220px}
+    .submit-row .mp-btn-primary{background:var(--green);border-color:var(--green)}
     .map-section{margin-bottom:0}
     .map-section label{font-size:.875rem;font-weight:900;color:var(--teal);display:block;margin-bottom:var(--space-1)}
     .map-hint{font-size:.8125rem;color:var(--muted);margin:0 0 var(--space-1)}
@@ -382,7 +385,8 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
     .map-coords{font-size:.8125rem;color:var(--teal);font-weight:700;margin-top:var(--space-1);min-height:1.2em}
     .placeholder-photo{display:flex;align-items:center;justify-content:center;min-height:220px;border-radius:8px;background:linear-gradient(135deg,#fff7f0,#eef8f5);border:1px dashed #e7d3ca;text-align:center;color:var(--muted);font-weight:800}
     .placeholder-photo span{display:block}
-    @media(max-width:600px){.form-grid{grid-template-columns:1fr}.field-wide{grid-column:1}}
+    .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);margin-top:var(--space-2)}
+    @media(max-width:600px){.form-grid,.field-split,.contact-grid{grid-template-columns:1fr}.field-wide{grid-column:1}}
     @media(max-width:430px){body{padding:var(--space-2)}.form-shell{padding:var(--space-3)}.photo-action,.submit-row>*{width:100%;flex-basis:100%}}
   </style>
 </head>
@@ -394,27 +398,25 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
     <div class="sighting-head">
       <h1>${t(lang, "reportSighting")}</h1>
     </div>
-    <p class="sighting-sub">${t(lang, "reportSightingOf")} <strong>${safeName}</strong></p>
+    <p class="sighting-sub">${t(lang, "reportSightingSubtitle")}</p>
     <form method="POST" action="/c/${safeId}/sighting?lang=${lang}" enctype="multipart/form-data">
       <input type="hidden" name="lat" id="sighting-lat" value="" />
       <input type="hidden" name="lng" id="sighting-lng" value="" />
+      <input type="hidden" name="sightedAt" id="sighted-at-hidden" value="" />
+      <input type="hidden" name="message" id="message-hidden" value="" />
       <div class="form-grid">
         <div class="field-card field-stack">
           <div class="field">
             <label for="city">${t(lang, "locationText")}<span class="required-mark">${t(lang, "sightingRequired")}</span></label>
-            <input type="text" id="city" name="city" required maxlength="80" placeholder="${t(lang, "city")}" />
-          </div>
-          <div class="field">
-            <label for="area">${t(lang, "area")}</label>
-            <input type="text" id="area" name="area" maxlength="120" />
+            <input type="text" id="city" name="city" required maxlength="80" placeholder="${t(lang, "locationText")}" />
           </div>
           <div class="field map-section">
-          <label>${lang === "es" ? "Marcar ubicación en el mapa" : lang === "kk-KZ" ? "Картада орынды белгілеу" : "Pin location on map"}</label>
-          <p class="map-hint">${lang === "es" ? "Haz clic en el mapa para marcar donde lo viste (opcional)" : lang === "kk-KZ" ? "Мысықты көрген жерді белгілеу үшін картаны басыңыз (міндетті емес)" : "Click the map to drop a pin where you spotted the cat"}</p>
-          <div id="sighting-map" role="application" aria-label="${lang === "es" ? "Selector de ubicación aproximada" : lang === "kk-KZ" ? "Шамамен орналасу орнын таңдау" : "Approximate location picker"}">
+          <label>${lang === "es" ? "Ubicación aproximada" : lang === "kk-KZ" ? "Шамамен орналасуы" : "Approximate location"}</label>
+          <p class="map-hint">${lang === "es" ? "El mapa es solo una referencia visual. Usa \"Usar mi ubicación\" para adjuntar coordenadas reales si lo deseas." : lang === "kk-KZ" ? "Карта тек көрнекі анықтама. Нақты координаттарды қосқыңыз келсе, \"Менің орнымды қолдану\" түймесін пайдаланыңыз." : "The map is a visual reference only. Use \"Use my location\" if you want to attach real coordinates."}</p>
+          <div id="sighting-map" role="img" aria-label="${lang === "es" ? "Referencia visual del área aproximada" : lang === "kk-KZ" ? "Шамамен аймақтың көрнекі анықтамасы" : "Approximate area visual reference"}">
             <div class="map-pin" id="sighting-map-pin"></div>
             <div class="map-overlay">
-              <div class="map-caption">${lang === "es" ? "Marca un punto aproximado. No necesitas una dirección exacta." : lang === "kk-KZ" ? "Шамамен нүктені белгілеңіз. Нақты мекенжай қажет емес." : "Mark an approximate point. An exact address is not required."}</div>
+              <div class="map-caption">${lang === "es" ? "Comparte una dirección o zona en el campo de ubicación. Las coordenadas solo se añaden si aceptas la geolocalización." : lang === "kk-KZ" ? "Орналасу өрісінде мекенжайды не ауданды жазыңыз. Координаттар тек геолокацияға рұқсат бергенде қосылады." : "Share an address or area in the location field. Coordinates are added only if you allow geolocation."}</div>
               <div class="map-area-label">${lang === "es" ? "Área aproximada" : lang === "kk-KZ" ? "Шамамен аймақ" : "Approximate area"}</div>
             </div>
           </div>
@@ -428,28 +430,9 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
           <label for="healthCondition">${t(lang, "healthCondition")}</label>
           <select id="healthCondition" name="healthCondition">${healthOptions}</select>
         </div>
-        </div>
-        <div class="field-card field-stack">
-          <div class="field">
-            <label for="sightedAt">${t(lang, "dateLabel")} / ${t(lang, "timeLabel")}</label>
-            <input type="datetime-local" id="sightedAt" name="sightedAt" maxlength="80" />
-          </div>
-          <div class="field">
-          <label for="message">${t(lang, "seenDoing")}</label>
-          <textarea id="message" name="message" maxlength="1000" rows="3"></textarea>
-        </div>
-          <div class="field">
-            <label for="reporterName">${t(lang, "yourName")}</label>
-            <input type="text" id="reporterName" name="reporterName" maxlength="80" />
-          </div>
-          <div class="field">
-            <label for="reporterContact">${t(lang, "yourContact")}</label>
-            <input type="text" id="reporterContact" name="reporterContact" maxlength="120" />
-          </div>
-        </div>
-        <div class="field field-wide field-card">
-          <label>${t(lang, "photoUpload")} (max 3 MB)</label>
-          <div class="placeholder-photo"><span>${t(lang, "noPhoto")}<br />Add a photo if you have one.</span></div>
+        <div class="field">
+          <label>${t(lang, "uploadPhotosOptional")}</label>
+          <div class="placeholder-photo"><span>${t(lang, "noPhoto")}<br />${t(lang, "photoUpload")}</span></div>
           <div class="photo-picker">
             <div class="photo-picker-actions">
               <label for="photo-capture" class="photo-action">${t(lang, "takePhoto")}</label>
@@ -458,6 +441,41 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
             <input class="photo-input-visually-hidden" type="file" id="photo-capture" name="photoCapture" accept="image/*" capture="environment" />
             <input class="photo-input-visually-hidden" type="file" id="photo-upload" name="photoUpload" accept="image/*" />
             <div id="sighting-photo-status" class="photo-status">${t(lang, "noPhotoSelected")}</div>
+          </div>
+        </div>
+        </div>
+        <div class="field-card field-stack">
+          <div class="field-split">
+            <div class="field">
+              <label for="sighting-date">${t(lang, "dateLabel")}</label>
+              <input type="date" id="sighting-date" maxlength="30" />
+            </div>
+            <div class="field">
+              <label for="sighting-time">${t(lang, "timeLabel")}</label>
+              <input type="time" id="sighting-time" maxlength="10" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="seen-doing">${t(lang, "seenDoing")}</label>
+            <textarea id="seen-doing" maxlength="200" rows="4"></textarea>
+          </div>
+          <div class="field">
+            <label for="additional-notes">${t(lang, "additionalNotesOptional")}</label>
+            <textarea id="additional-notes" maxlength="300" rows="5"></textarea>
+          </div>
+          <div class="contact-grid">
+            <div class="field">
+              <label for="area">${t(lang, "area")}</label>
+              <input type="text" id="area" name="area" maxlength="120" />
+            </div>
+            <div class="field">
+              <label for="reporterName">${t(lang, "yourName")}</label>
+              <input type="text" id="reporterName" name="reporterName" maxlength="80" />
+            </div>
+            <div class="field field-wide">
+              <label for="reporterContact">${t(lang, "yourContact")}</label>
+              <input type="text" id="reporterContact" name="reporterContact" maxlength="120" />
+            </div>
           </div>
         </div>
       </div>
@@ -480,35 +498,28 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
     var photoCapture=document.getElementById("photo-capture");
     var photoUpload=document.getElementById("photo-upload");
     var photoStatus=document.getElementById("sighting-photo-status");
+    var dateInput=document.getElementById("sighting-date");
+    var timeInput=document.getElementById("sighting-time");
+    var sightedAtHidden=document.getElementById("sighted-at-hidden");
+    var seenDoingInput=document.getElementById("seen-doing");
+    var additionalNotesInput=document.getElementById("additional-notes");
+    var messageHidden=document.getElementById("message-hidden");
     function updateCoords(lat,lng){
       latInput.value=lat.toFixed(6);
       lngInput.value=lng.toFixed(6);
       if(coordsDisplay)coordsDisplay.textContent=latInput.value+", "+lngInput.value;
     }
-    function placePinFromRatio(xRatio,yRatio){
-      if(!map||!pin)return;
-      var clampedX=Math.max(0,Math.min(1,xRatio));
-      var clampedY=Math.max(0,Math.min(1,yRatio));
-      pin.style.left=(clampedX*100)+"%";
-      pin.style.top=(clampedY*100)+"%";
+    function showCenteredPin(){
+      if(!pin)return;
+      pin.style.left="50%";
+      pin.style.top="50%";
       pin.style.display="block";
-      var lat=(90-(clampedY*180));
-      var lng=((clampedX*360)-180);
-      updateCoords(lat,lng);
     }
     function clearPin(){
       latInput.value="";
       lngInput.value="";
       if(coordsDisplay)coordsDisplay.textContent="";
       if(pin)pin.style.display="none";
-    }
-    if(map){
-      map.addEventListener("click",function(e){
-        var rect=map.getBoundingClientRect();
-        var x=(e.clientX-rect.left)/rect.width;
-        var y=(e.clientY-rect.top)/rect.height;
-        placePinFromRatio(x,y);
-      });
     }
     if(useLocationBtn){
       useLocationBtn.addEventListener("click",function(){
@@ -519,9 +530,8 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
         navigator.geolocation.getCurrentPosition(function(pos){
           var lat=pos.coords.latitude;
           var lng=pos.coords.longitude;
-          var x=(lng+180)/360;
-          var y=(90-lat)/180;
-          placePinFromRatio(x,y);
+          updateCoords(lat,lng);
+          showCenteredPin();
         },function(){
           if(coordsDisplay)coordsDisplay.textContent=${JSON.stringify(lang === "es" ? "No se pudo obtener tu ubicación." : lang === "kk-KZ" ? "Орныңызды алу мүмкін болмады." : "Could not get your location.")};
         });
@@ -539,6 +549,18 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
     }
     bindPhotoInput(photoCapture);
     bindPhotoInput(photoUpload);
+    document.querySelector("form").addEventListener("submit",function(){
+      var datePart=dateInput&&dateInput.value?dateInput.value:"";
+      var timePart=timeInput&&timeInput.value?timeInput.value:"";
+      if(sightedAtHidden){
+        sightedAtHidden.value=datePart&&timePart?(datePart+"T"+timePart):datePart||timePart;
+      }
+      var seenText=seenDoingInput&&seenDoingInput.value?seenDoingInput.value.trim():"";
+      var notesText=additionalNotesInput&&additionalNotesInput.value?additionalNotesInput.value.trim():"";
+      if(messageHidden){
+        messageHidden.value=seenText+(notesText?(seenText?"\\n\\n":"")+"Notes: "+notesText:"");
+      }
+    });
   })();
   </script>
 </body>
