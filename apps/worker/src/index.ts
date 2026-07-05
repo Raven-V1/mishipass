@@ -5,7 +5,7 @@ import { handleLogin, handleLogout, handleRegister } from "./routes/auth.js";
 import { handleLogtoApple, handleLogtoCallback, handleLogtoGoogle } from "./routes/logto.js";
 import { handleCreateCat, handleListCats, handlePublicProfile, handleRemoveCat, handleUpdateCat } from "./routes/cats.js";
 import { handleGetContactSettings, handleUpsertContactSettings } from "./routes/contactSettings.js";
-import { handleSwitchToActive, handleSwitchToMissing } from "./routes/missingAlerts.js";
+import { handleSwitchToActive, handleSwitchToAdoption, handleSwitchToMissing } from "./routes/missingAlerts.js";
 import { handleSightingForm, handleSightingSubmit, handleListSightingsForOwner } from "./routes/sightingReports.js";
 import { handleCatPhotoUpload, handleCatPhotoServe, handleSightingPhotoServe, handleListCatPhotos, handleGalleryPhotoUpload, handleSetProfilePhoto, handleDeleteGalleryPhoto, handleGalleryPhotoServe, handleTogglePhotoPublic, handlePublicGalleryPhotoServe } from "./routes/photos.js";
 import { handleStartVetVisit, handleCancelVetVisit, handleVetVisitFinish } from "./routes/vetVisit.js";
@@ -55,6 +55,7 @@ const SIGHTING_PATH = /^\/c\/([^/]+)\/sighting$/;
 const SIGHTINGS_API_PATH = /^\/api\/cats\/([^/]+)\/sightings$/;
 const CAT_MISSING_PATH = /^\/api\/cats\/([^/]+)\/missing$/;
 const CAT_ACTIVE_PATH = /^\/api\/cats\/([^/]+)\/active$/;
+const CAT_ADOPTION_PATH = /^\/api\/cats\/([^/]+)\/adoption$/;
 const CONTACT_SETTINGS_PATH = /^\/api\/cats\/([^/]+)\/contact$/;
 const CAT_PHOTO_UPLOAD = /^\/api\/cats\/([^/]+)\/photo$/;
 const CAT_PHOTO_SERVE = /^\/media\/cats\/([^/]+)\/photo$/;
@@ -204,6 +205,12 @@ export default {
     if (method === "POST" && activeMatch) {
       const ctx = await resolveSession(request, env.DB);
       return handleSwitchToActive(request, activeMatch[1]!, env.DB, ctx);
+    }
+
+    const adoptionMatch = CAT_ADOPTION_PATH.exec(pathname);
+    if (method === "POST" && adoptionMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      return handleSwitchToAdoption(request, adoptionMatch[1]!, env.DB, ctx);
     }
 
     // -- Contact settings API --
