@@ -191,7 +191,11 @@ export async function handleVetVisitFinish(
   const clinicName = typeof body.clinic_name === "string" ? body.clinic_name.slice(0, MAX_FIELD_LENGTH) : null;
   const vetName = typeof body.vet_name === "string" ? body.vet_name.slice(0, MAX_FIELD_LENGTH) : null;
   const visitDate = typeof body.visit_date === "string" ? body.visit_date.slice(0, 30) : new Date().toISOString().split("T")[0]!;
+  const visitTime = typeof body.visit_time === "string" ? body.visit_time.slice(0, 10) : null;
   const reason = typeof body.reason === "string" ? body.reason.slice(0, MAX_FIELD_LENGTH) : null;
+  const diagnosis = typeof body.diagnosis === "string" ? body.diagnosis.slice(0, MAX_FIELD_LENGTH) : null;
+  const treatment = typeof body.treatment === "string" ? body.treatment.slice(0, MAX_FIELD_LENGTH) : null;
+  const followUpDate = typeof body.follow_up_date === "string" ? body.follow_up_date.slice(0, 30) : null;
   const weight = typeof body.weight === "string" ? body.weight.slice(0, 30) : null;
   const notes = typeof body.notes === "string" ? body.notes.slice(0, MAX_FIELD_LENGTH) : null;
 
@@ -205,10 +209,16 @@ export async function handleVetVisitFinish(
     vetOrClinicName = clinicName;
   }
 
-  // Compose notes from reason, weight, and notes
+  // Compose full visit datetime
+  const visitDateTime = visitTime ? `${visitDate} ${visitTime}` : visitDate;
+
+  // Compose notes from all documentation fields
   const noteParts: string[] = [];
   if (reason) noteParts.push(`Reason: ${reason}`);
+  if (diagnosis) noteParts.push(`Diagnosis: ${diagnosis}`);
+  if (treatment) noteParts.push(`Treatment: ${treatment}`);
   if (weight) noteParts.push(`Weight: ${weight}`);
+  if (followUpDate) noteParts.push(`Follow-up: ${followUpDate}`);
   if (notes) noteParts.push(notes);
   const composedNotes = noteParts.length > 0 ? noteParts.join("\n") : null;
 
@@ -220,7 +230,7 @@ export async function handleVetVisitFinish(
       `INSERT INTO vet_visits (cat_id, visit_date, vet_or_clinic_name, notes)
        VALUES ((SELECT id FROM cats WHERE public_id = ?), ?, ?, ?)`,
     )
-    .bind(publicId, visitDate, vetOrClinicName, composedNotes)
+    .bind(publicId, visitDateTime, vetOrClinicName, composedNotes)
     .run();
 
   const vaccineNames = collectIndexed(body, "vaccine_name");
@@ -383,8 +393,12 @@ function renderVetForm(
           <div class="field"><label for="clinic_name">${t(lang, "clinicName")} (${t(lang, "optional")})</label><input type="text" id="clinic_name" name="clinic_name" maxlength="500" /></div>
           <div class="field"><label for="vet_name">${t(lang, "vetName")} (${t(lang, "optional")})</label><input type="text" id="vet_name" name="vet_name" maxlength="500" /></div>
           <div class="field"><label for="visit_date">${t(lang, "visitDate")}</label><input type="date" id="visit_date" name="visit_date" /></div>
+          <div class="field"><label for="visit_time">${t(lang, "visitTime")} (${t(lang, "optional")})</label><input type="time" id="visit_time" name="visit_time" /></div>
           <div class="field"><label for="weight">${t(lang, "weight")} (${t(lang, "optional")})</label><input type="text" id="weight" name="weight" maxlength="30" placeholder="e.g. 4.5 kg" /></div>
+          <div class="field"><label for="follow_up_date">${t(lang, "followUpDate")} (${t(lang, "optional")})</label><input type="date" id="follow_up_date" name="follow_up_date" /></div>
           <div class="field field-wide"><label for="reason">${t(lang, "reason")} (${t(lang, "optional")})</label><input type="text" id="reason" name="reason" maxlength="500" /></div>
+          <div class="field field-wide"><label for="diagnosis">${t(lang, "diagnosis")} (${t(lang, "optional")})</label><textarea id="diagnosis" name="diagnosis" maxlength="500" rows="3"></textarea></div>
+          <div class="field field-wide"><label for="treatment">${t(lang, "treatment")} (${t(lang, "optional")})</label><textarea id="treatment" name="treatment" maxlength="500" rows="3"></textarea></div>
           <div class="field field-wide"><label for="notes">${t(lang, "notes")} (${t(lang, "optional")})</label><textarea id="notes" name="notes" maxlength="500"></textarea></div>
         </div>
       </section>

@@ -71,8 +71,10 @@ describe("handleQrPage", () => {
     });
     const res = await handleQrPage(TEST_CAT_ID, fakeDb, authed, PUBLIC_BASE_URL);
     const html = await res.text();
-    expect(html).not.toContain("<script>");
+    // The injected payload from the cat name must be escaped — raw payload must not appear
+    expect(html).not.toContain('<script>alert("xss")</script>');
     expect(html).toContain("&lt;script&gt;");
+    // Internal fields must never be serialized into the response
     expect(html).not.toContain("owner_id");
     expect(html).not.toContain("photo_r2_key");
     expect(html).not.toContain("secret-key");
