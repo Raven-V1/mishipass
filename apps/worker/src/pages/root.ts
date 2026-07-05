@@ -45,7 +45,7 @@ function buildRootHtml(request: Request, env: LogtoEnv = {}): string {
   <meta name="description" content="${t(lang, "tagline")}" />
   <style>
     ${MISHIPASS_DESIGN_CSS}
-    body{background-color:var(--cream)}
+    body{background:transparent}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
     .home-page{min-height:100vh}
     .home-header{height:96px;display:flex;align-items:center;border-bottom:1px solid rgba(234,216,208,.72);background:rgba(255,248,243,.82);backdrop-filter:blur(8px)}

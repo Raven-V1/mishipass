@@ -52,8 +52,9 @@ export const MISHIPASS_DESIGN_CSS = `
   --shadow:0 8px 32px rgba(56,38,26,.10);
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);line-height:1.5;background:var(--cream);background-image:linear-gradient(rgba(255,248,243,.76),rgba(255,248,243,.82)),url("${MISHIPASS_BACKGROUND_SRC}");background-size:cover;background-position:center top;background-attachment:fixed}
+html{scroll-behavior:smooth;min-height:100%;background:url("${MISHIPASS_BACKGROUND_SRC}") center top/cover no-repeat fixed}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);line-height:1.5;background:transparent;min-height:100vh}
+@media(max-width:768px){html{background-attachment:scroll}}
 a{color:var(--teal);text-decoration-thickness:2px;text-underline-offset:3px}
 img,svg{max-width:100%}
 .mp-page{min-height:100vh}
