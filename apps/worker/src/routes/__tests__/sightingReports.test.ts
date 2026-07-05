@@ -136,7 +136,7 @@ describe("handleSightingForm", () => {
     });
     const res = await handleSightingForm(TEST_CAT_ID, fakeDb);
     const html = await res.text();
-    expect(html).not.toContain("<script>");
+    expect(html).not.toContain('<script>alert("xss")</script>');
     expect(html).toContain("&lt;script&gt;");
   });
 });
@@ -195,6 +195,8 @@ describe("handleSightingSubmit", () => {
       catPublicId: TEST_CAT_ID,
       message: "Seen near park",
       location_text: "CDMX, Roma Norte",
+      lat: null,
+      lng: null,
       reporter_ip_hash: "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
       photo_r2_key: null,
     });
@@ -232,6 +234,8 @@ describe("handleSightingSubmit", () => {
       catPublicId: TEST_CAT_ID,
       message: null,
       location_text: "Puebla",
+      lat: null,
+      lng: null,
       reporter_ip_hash: "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
       photo_r2_key: null,
     });

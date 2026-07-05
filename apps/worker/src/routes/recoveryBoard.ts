@@ -18,10 +18,22 @@ export async function handleRecoveryBoardPage(request: Request, db: D1Database):
   const ageDays = ageRaw ? Number.parseInt(ageRaw, 10) : undefined;
   const validAge = Number.isSafeInteger(ageDays) && ageDays! > 0 && ageDays! <= 365 ? ageDays : undefined;
   const alerts = await listRecoveryBoardAlerts(db, city, validAge);
+  const STOCK_CAT_PHOTOS = [
+    "https://cdn2.thecatapi.com/images/MTY3ODIyMQ.jpg",
+    "https://cdn2.thecatapi.com/images/OOD3VXAQn.jpg",
+    "https://cdn2.thecatapi.com/images/ai6Jps4sx.jpg",
+    "https://cdn2.thecatapi.com/images/-Zfz5z2jK.jpg",
+    "https://cdn2.thecatapi.com/images/O3btzLlsO.png",
+    "https://cdn2.thecatapi.com/images/0XYvRd7oD.jpg",
+    "https://cdn2.thecatapi.com/images/3bkZAzhd1.jpg",
+    "https://cdn2.thecatapi.com/images/dbMTzZhE_.jpg",
+  ];
   const cards = alerts.length === 0
     ? `<p class="empty">${t(lang, "noMatches")}</p>`
-    : alerts.map(a => `<article class="card">
-        ${a.photo_r2_key ? `<img src="/media/cats/${escapeHtml(a.public_id)}/photo" alt="${escapeHtml(a.name)}" loading="lazy" />` : `<div class="placeholder">${t(lang, "noPhoto")}</div>`}
+    : alerts.map((a, i) => `<article class="card">
+        ${a.photo_r2_key
+          ? `<img src="/media/cats/${escapeHtml(a.public_id)}/photo" alt="${escapeHtml(a.name)}" loading="lazy" />`
+          : `<img src="${STOCK_CAT_PHOTOS[i % STOCK_CAT_PHOTOS.length]}" alt="${t(lang, "noPhoto")}" loading="lazy" style="opacity:.7" />`}
         <h2>${escapeHtml(a.name)}</h2>
         <p class="badge" aria-label="${t(lang, "country")}">${escapeHtml(getCountryBadgeLabel(a.country_code))}</p>
         ${a.city ? `<p>${t(lang, "city")}: ${escapeHtml(a.city)}</p>` : ""}

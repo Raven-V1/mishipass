@@ -224,6 +224,8 @@ export interface SightingReportRow {
   message: string | null;
   photo_r2_key: string | null;
   location_text: string | null;
+  lat: number | null;
+  lng: number | null;
   reporter_ip_hash: string | null;
   created_at: string;
 }
@@ -233,6 +235,8 @@ export interface SightingReportOwnerView {
   message: string | null;
   photo_r2_key: string | null;
   location_text: string | null;
+  lat: number | null;
+  lng: number | null;
   created_at: string;
 }
 
@@ -241,6 +245,8 @@ export interface SightingReportInsert {
   message?: string | null;
   photo_r2_key?: string | null;
   location_text?: string | null;
+  lat?: number | null;
+  lng?: number | null;
   reporter_ip_hash?: string | null;
 }
 

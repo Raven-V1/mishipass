@@ -23,10 +23,10 @@ export async function insertSightingReport(
 ): Promise<void> {
   await db
     .prepare(
-      `INSERT INTO sighting_reports (cat_id, message, photo_r2_key, location_text, reporter_ip_hash)
+      `INSERT INTO sighting_reports (cat_id, message, photo_r2_key, location_text, lat, lng, reporter_ip_hash)
        VALUES (
          (SELECT id FROM cats WHERE public_id = ?),
-         ?, ?, ?, ?
+         ?, ?, ?, ?, ?, ?
        )`,
     )
     .bind(
@@ -34,6 +34,8 @@ export async function insertSightingReport(
       data.message ?? null,
       data.photo_r2_key ?? null,
       data.location_text ?? null,
+      data.lat ?? null,
+      data.lng ?? null,
       data.reporter_ip_hash ?? null,
     )
     .run();
@@ -52,7 +54,7 @@ export async function listSightingReportsForOwner(
 ): Promise<SightingReportOwnerView[]> {
   const result = await db
     .prepare(
-      `SELECT sr.message, sr.photo_r2_key, sr.location_text, sr.created_at
+      `SELECT sr.message, sr.photo_r2_key, sr.location_text, sr.lat, sr.lng, sr.created_at
        FROM sighting_reports sr
        WHERE sr.cat_id = (SELECT id FROM cats WHERE public_id = ? AND owner_id = ?)
        ORDER BY sr.created_at DESC`,
@@ -75,7 +77,7 @@ export async function getSightingReportForOwner(
 ): Promise<SightingReportOwnerView | null> {
   return db
     .prepare(
-      `SELECT sr.message, sr.photo_r2_key, sr.location_text, sr.created_at
+      `SELECT sr.message, sr.photo_r2_key, sr.location_text, sr.lat, sr.lng, sr.created_at
        FROM sighting_reports sr
        WHERE sr.cat_id = (SELECT id FROM cats WHERE public_id = ? AND owner_id = ?)
          AND sr.created_at = ?
