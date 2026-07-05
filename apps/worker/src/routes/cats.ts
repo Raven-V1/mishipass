@@ -14,7 +14,7 @@ import type { RequestContext } from "../middleware/session.js";
 import { renderVetVisitPage } from "./vetVisit.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
 import { getCountryBadgeLabel } from "../data/countries.js";
-import { iconContact, iconMegaphone, iconShield } from "../utils/icons.js";
+import { iconContact, iconHome, iconMegaphone, iconShield } from "../utils/icons.js";
 import { MISHIPASS_DESIGN_CSS, brandLockupHtml } from "../utils/html.js";
 
 // ── GET /api/cats ───────────────────────────────────────────────────────────
@@ -156,6 +156,15 @@ export async function handlePublicProfile(
 
   if (cat.current_mode === "vet") {
     return renderVetVisitPage(publicId, cat.name, cat.country_code, cat.photo_r2_key, db, lang);
+  }
+
+  if (cat.current_mode === "adoption") {
+    const contact = await getContactSettingsPublic(db, publicId);
+    const effectiveContact = contact ?? { contact_mode: "relay" as const, public_phone: null };
+    return new Response(renderAdoptionProfile(publicId, cat, effectiveContact, lang), {
+      status: 200,
+      headers: { "Content-Type": "text/html;charset=UTF-8", "X-Content-Type-Options": "nosniff" },
+    });
   }
 
   if (cat.current_mode !== "active") {
@@ -397,6 +406,98 @@ function renderActiveProfile(
       </div>
       ${galleryHtml}
       <p class="privacy-footer">${iconShield(16)} <span>${t(lang, "privacyNoPrivateDataShown")}</span></p>
+    </section>
+  </main>
+</body>
+</html>`;
+}
+
+function renderAdoptionProfile(
+  publicId: string,
+  cat: NonNullable<Awaited<ReturnType<typeof getCatPublicProfile>>>,
+  contact: ContactSettingsPublicView,
+  lang: LanguageCode = "en",
+): string {
+  const safeName = escapeHtml(cat.name);
+  const safeCountry = escapeHtml(getCountryBadgeLabel(cat.country_code));
+  const safeId = escapeHtml(publicId);
+
+  const photoSection = cat.photo_r2_key
+    ? `<img class="adopt-photo" src="/media/cats/${safeId}/photo" alt="${safeName}" />`
+    : `<div class="adopt-photo photo-placeholder">${t(lang, "noPhoto")}</div>`;
+
+  let contactSection = "";
+  if (contact.contact_mode === "phone" && contact.public_phone) {
+    const safePhone = escapeHtml(contact.public_phone);
+    contactSection = `<a class="mp-btn mp-btn-primary contact-btn" href="tel:${safePhone}">${iconContact(16)} ${t(lang, "contactToAdopt")}</a>`;
+  } else if (contact.contact_mode === "relay") {
+    contactSection = `<p class="contact-info">${iconContact(16)} <span>${t(lang, "contactOwner")}</span></p>`;
+  } else {
+    contactSection = `<p class="contact-info">${iconContact(16)} <span>${t(lang, "privacyOwnerControlledContact")}</span></p>`;
+  }
+
+  const rows: [string, string][] = [];
+  if (cat.breed_mix) rows.push([t(lang, "breedMix"), escapeHtml(cat.breed_mix)]);
+  if (cat.color_markings) rows.push([t(lang, "colorMarkings"), escapeHtml(cat.color_markings)]);
+  if (cat.sex) rows.push([t(lang, "sex"), escapeHtml(cat.sex)]);
+  if (cat.weight) rows.push([t(lang, "weight"), escapeHtml(cat.weight)]);
+  if (cat.birth_date) rows.push([t(lang, "birthDate"), escapeHtml(cat.birth_date)]);
+
+  const detailRows = rows.length > 0
+    ? `<dl class="profile-data">${rows.map(([label, value]) => `<div class="data-row"><dt>${label}</dt><dd>${value}</dd></div>`).join("")}</dl>`
+    : "";
+
+  return `<!DOCTYPE html>
+<html lang="${lang}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${safeName} — ${t(lang, "adoptionProfile")} — MishiPass</title>
+  <style>
+    ${MISHIPASS_DESIGN_CSS}
+    body{padding:var(--space-3)}
+    .adopt-shell{max-width:960px;margin:0 auto;padding:var(--space-3) 0 var(--space-6)}
+    .adopt-head{text-align:center;margin:var(--space-3) auto}
+    .adopt-head h1{display:flex;align-items:center;justify-content:center;gap:var(--space-1);font-size:clamp(2rem,6vw,3.5rem);line-height:1.08;margin:0 0 var(--space-1);color:var(--teal);overflow-wrap:anywhere}
+    .adopt-subtitle{margin:0;color:var(--muted);font-weight:700}
+    .adopt-card{display:grid;grid-template-columns:minmax(280px,336px) minmax(0,1fr);gap:var(--space-4);padding:var(--space-4)}
+    .adopt-photo{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;background:#fff7f0}
+    .photo-placeholder{min-height:252px;font-weight:800;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+    .adopt-info{display:flex;flex-direction:column;gap:var(--space-2)}
+    .adopt-info h2{font-size:2rem;line-height:1.08;color:var(--teal);margin:0 0 var(--space-2)}
+    .adopt-pills{display:flex;align-items:center;gap:var(--space-1);flex-wrap:wrap;margin:0 0 var(--space-2)}
+    .mode-adoption{background:#fdf4ff;color:#7e22ce}
+    .profile-data{display:grid;gap:var(--space-1);margin:0}
+    .data-row{display:grid;grid-template-columns:minmax(120px,180px) minmax(0,1fr);gap:var(--space-2);padding:var(--space-1) 0;border-bottom:1px solid var(--line)}
+    .data-row dt{font-weight:900;color:var(--teal)}
+    .data-row dd{margin:0;overflow-wrap:anywhere}
+    .adopt-cta{font-size:.9375rem;font-weight:800;color:var(--teal);margin:var(--space-2) 0 var(--space-1)}
+    .contact-info{display:flex;align-items:center;gap:var(--space-1);margin:0;color:var(--muted);font-weight:700}
+    .contact-btn{gap:var(--space-1)}
+    .privacy-note{display:flex;align-items:center;gap:var(--space-1);color:var(--muted);margin:var(--space-2) 0 0;font-size:.8125rem}
+    @media(max-width:700px){body{padding:var(--space-2)}.adopt-shell{padding:var(--space-2) 0 var(--space-4)}.adopt-card{grid-template-columns:1fr;padding:var(--space-3)}.data-row{grid-template-columns:1fr;gap:0}.contact-btn{width:100%}}
+  </style>
+</head>
+<body>
+  <main class="adopt-shell">
+    ${brandLockupHtml(`/?lang=${lang}`)}
+    <header class="adopt-head">
+      <h1>${iconHome(32)} <span>${t(lang, "adoptionProfile")}</span></h1>
+      <p class="adopt-subtitle">${t(lang, "adoptionSubtitle")}</p>
+    </header>
+    <section class="mp-card adopt-card">
+      <div>${photoSection}</div>
+      <div class="adopt-info">
+        <h2>${safeName}</h2>
+        <p class="adopt-pills">
+          <span class="badge">${safeCountry}</span>
+          <span class="badge mode-adoption">${t(lang, "adoptionProfile")}</span>
+        </p>
+        ${detailRows}
+        <p class="adopt-cta">${t(lang, "interestedInAdopting")}</p>
+        ${contactSection}
+        <p class="privacy-note">${iconShield(16)} <span>${t(lang, "privacyNoPrivateDataShown")}</span></p>
+      </div>
     </section>
   </main>
 </body>
