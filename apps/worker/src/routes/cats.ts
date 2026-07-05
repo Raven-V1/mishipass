@@ -351,6 +351,12 @@ function renderActiveProfile(
   const safeName = escapeHtml(name);
   const safeCountry = escapeHtml(getCountryBadgeLabel(countryCode));
   const safeId = escapeHtml(publicId);
+  const previewRows = [
+    [t(lang, "country"), safeCountry],
+    [t(lang, "breedMix"), catView.breed_mix ? escapeHtml(catView.breed_mix) : t(lang, "notSet")],
+    [t(lang, "sex"), catView.sex ? escapeHtml(catView.sex) : t(lang, "notSet")],
+    [t(lang, "weight"), catView.weight ? escapeHtml(catView.weight) : t(lang, "notSet")],
+  ].map(([label, value]) => `<div class="detail-row"><dt>${label}</dt><dd>${value}</dd></div>`).join("");
 
   const photoSection = photoR2Key
     ? `<img class="profile-photo" src="/media/cats/${safeId}/photo" alt="${safeName}" />`
@@ -366,15 +372,13 @@ function renderActiveProfile(
     contactSection = `<p class="contact-info">${iconContact(16)} <span>${t(lang, "privacyOwnerControlledContact")}</span></p>`;
   }
 
-  // Build detail rows from public fields only
-  const rows: [string, string][] = [];
-  if (catView.breed_mix) rows.push([t(lang, "breedMix"), escapeHtml(catView.breed_mix)]);
-  if (catView.color_markings) rows.push([t(lang, "colorMarkings"), escapeHtml(catView.color_markings)]);
-  if (catView.sex) rows.push([t(lang, "sex"), escapeHtml(catView.sex)]);
-  if (catView.weight) rows.push([t(lang, "weight"), escapeHtml(catView.weight)]);
-
-  const detailRows = rows.length > 0
-    ? `<dl class="profile-data">${rows.map(([label, value]) => `<div class="data-row"><dt>${label}</dt><dd>${value}</dd></div>`).join("")}</dl>`
+  const factRows: [string, string][] = [];
+  if (catView.color_markings) factRows.push([t(lang, "colorMarkings"), escapeHtml(catView.color_markings)]);
+  if (catView.breed_mix) factRows.push([t(lang, "breedMix"), escapeHtml(catView.breed_mix)]);
+  if (catView.sex) factRows.push([t(lang, "sex"), escapeHtml(catView.sex)]);
+  if (catView.weight) factRows.push([t(lang, "weight"), escapeHtml(catView.weight)]);
+  const factGrid = factRows.length > 0
+    ? `<dl class="fact-grid">${factRows.map(([label, value]) => `<div class="fact-card"><dt>${label}</dt><dd>${value}</dd></div>`).join("")}</dl>`
     : "";
 
   const galleryHtml = publicPhotos.length > 0
@@ -390,37 +394,59 @@ function renderActiveProfile(
   <style>
     ${MISHIPASS_DESIGN_CSS}
     body{padding:var(--space-3)}
-    .profile-shell{max-width:736px;margin:var(--space-4) auto}
-    .profile-card{padding:var(--space-4);display:grid;grid-template-columns:200px minmax(0,1fr);gap:var(--space-4);align-items:start}
-    .profile-photo,.photo-placeholder{width:100%;aspect-ratio:1;border-radius:12px;object-fit:cover;background:#fff7f0;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--muted)}
-    .profile-info{display:flex;flex-direction:column;gap:var(--space-2)}
-    .profile-info h1{font-size:clamp(1.75rem,5vw,2.5rem);line-height:1.08;margin:0;color:var(--teal);overflow-wrap:anywhere}
+    .profile-shell{max-width:1184px;margin:var(--space-3) auto;padding-bottom:var(--space-6)}
+    .profile-hero{margin:var(--space-2) 0 var(--space-4)}
+    .profile-hero h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.04;margin:0 0 var(--space-1);color:var(--teal)}
+    .profile-hero p{margin:0;color:var(--muted);font-weight:700}
+    .profile-card{padding:var(--space-4);display:grid;grid-template-columns:minmax(280px,420px) minmax(0,1fr);gap:var(--space-3);align-items:start}
+    .card-title{display:flex;align-items:center;gap:var(--space-1);font-size:1rem;font-weight:900;color:var(--teal);margin:0 0 var(--space-2)}
+    .profile-photo,.photo-placeholder{width:100%;aspect-ratio:1;border-radius:8px;object-fit:cover;background:#fff7f0;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--muted)}
+    .preview-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2);margin-top:var(--space-2)}
+    .preview-actions .mp-panel{padding:var(--space-2)}
+    .profile-info{display:grid;gap:var(--space-2)}
+    .profile-info h2{font-size:2rem;line-height:1.08;margin:0;color:var(--teal);overflow-wrap:anywhere}
     .profile-status{display:flex;align-items:center;gap:var(--space-1);flex-wrap:wrap}
-    .profile-data{display:grid;gap:var(--space-1);margin:var(--space-2) 0 0}
-    .data-row{display:grid;grid-template-columns:minmax(100px,140px) minmax(0,1fr);gap:var(--space-2);padding:var(--space-1) 0;border-bottom:1px solid var(--line)}
-    .data-row dt{font-weight:900;color:var(--teal);font-size:.875rem}
-    .data-row dd{margin:0;overflow-wrap:anywhere}
-    .contact-info{display:flex;align-items:center;gap:var(--space-1);margin:var(--space-2) 0 0;color:var(--muted);font-weight:700}
-    .contact-btn{margin-top:var(--space-2);gap:var(--space-1)}
-    .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:var(--space-2);margin-top:var(--space-3);grid-column:1/-1}
+    .detail-list{display:grid;gap:var(--space-1);margin:0;padding:var(--space-2) 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .detail-row{display:grid;grid-template-columns:minmax(96px,128px) minmax(0,1fr);gap:var(--space-2)}
+    .detail-row dt,.fact-card dt{font-weight:900;color:var(--muted);font-size:.8125rem}
+    .detail-row dd,.fact-card dd{margin:0;font-weight:800;color:var(--ink);overflow-wrap:anywhere}
+    .contact-info{display:flex;align-items:center;gap:var(--space-1);margin:0;color:var(--muted);font-weight:700}
+    .contact-btn{margin-top:var(--space-1);gap:var(--space-1)}
+    .fact-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2);margin:0}
+    .fact-card{padding:var(--space-2);border-radius:8px;border:1px solid var(--line);background:#fff7f0}
+    .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:var(--space-2);margin-top:var(--space-3);grid-column:1/-1}
     .gallery img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px}
-    .privacy-footer{grid-column:1/-1;display:flex;align-items:center;gap:var(--space-1);color:var(--muted);font-size:.8125rem;margin-top:var(--space-2)}
-    @media(max-width:600px){.profile-card{grid-template-columns:1fr;text-align:center}.profile-photo,.photo-placeholder{max-width:200px;margin:0 auto}.profile-status{justify-content:center}.contact-btn{width:100%}.gallery{grid-column:1}}
+    .privacy-footer{grid-column:1/-1;display:flex;align-items:center;gap:var(--space-1);color:var(--muted);font-size:.8125rem;margin-top:var(--space-2);padding:var(--space-2);background:#eef8f5;border-radius:8px}
+    @media(max-width:780px){.profile-card{grid-template-columns:1fr}.preview-actions,.fact-grid{grid-template-columns:1fr}.contact-btn{width:100%}}
+    @media(max-width:560px){body{padding:var(--space-2)}.profile-card{padding:var(--space-3)}}
   </style>
 </head>
 <body>
   <main class="profile-shell">
     ${brandLockupHtml(`/?lang=${lang}`)}
+    <header class="profile-hero">
+      <h1>${t(lang, "viewPublicProfile")}</h1>
+      <p>${t(lang, "privacyOwnerControlledContact")}</p>
+    </header>
     <section class="mp-card profile-card">
-      <div>${photoSection}</div>
+      <div>
+        <p class="card-title">${iconShield(16)} <span>${t(lang, "viewPublicProfile")}</span></p>
+        ${photoSection}
+        <div class="preview-actions">
+          <a class="mp-btn mp-btn-secondary" href="/c/${safeId}/sighting?lang=${lang}">${t(lang, "reportSighting")}</a>
+          ${contact.contact_mode === "phone" && contact.public_phone ? contactSection : `<div class="mp-panel">${contactSection}</div>`}
+        </div>
+      </div>
       <div class="profile-info">
-        <h1>${safeName}</h1>
+        <p class="card-title">${iconHome(16)} <span>${t(lang, "viewPublicProfile")}</span></p>
+        <h2>${safeName}</h2>
         <div class="profile-status">
           <span class="badge">${safeCountry}</span>
           <span class="badge mode-active">${t(lang, "activeProfile")}</span>
         </div>
-        ${detailRows}
-        ${contactSection}
+        <dl class="detail-list">${previewRows}</dl>
+        ${contact.contact_mode === "phone" && contact.public_phone ? `<div class="contact-row">${contactSection}</div>` : contactSection}
+        ${factGrid}
       </div>
       ${galleryHtml}
       <p class="privacy-footer">${iconShield(16)} <span>${t(lang, "privacyNoPrivateDataShown")}</span></p>
