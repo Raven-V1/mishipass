@@ -256,7 +256,7 @@ pre-submission documentation synchronization pass.
 | Dependency vulnerabilities | `npm audit` clean (0 findings, both workspaces) | Verified 2026-07-05 |
 | CI workflow | `.github/workflows/ci.yml` | Active — running on all PRs and pushes to dev and main |
 | Secret scan | Repository-wide regex scan, Day 6 | No committed credentials found at time of scan |
-| Branch protection on main | Require 1 review; no force-push; no delete | Active — applied Day 6; status-check enforcement is off (CI runs but does not block) |
+| Branch protection on main | Require 1 review; no force-push; no delete | Active — applied Day 6; status-check enforcement is off (CI runs but does not block). Repository admins can bypass force-push/review rules (GitHub default); exercised once on 2026-07-05 for a same-session commit-identity correction (no pre-existing commits rewritten). |
 | Dependabot | npm and pip, weekly; grouping and PR limit configured | Active (TRIAGE-04 applied) |
 | Legacy Pages retirement | site/ redirects to Worker app | Active (TRIAGE-05 applied) |
 | XSS mitigation | `escapeHtml` helper, must be called explicitly per route | Active — helper present; not automatic for future routes |
