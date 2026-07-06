@@ -57,6 +57,18 @@ export function iconHome(size = 16): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="${size}" height="${size}" fill="currentColor" aria-hidden="true"><path d="M8 1 1 6v9h5V9h4v6h5V6Z"/></svg>`;
 }
 
+export function iconHeart(size = 16): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="${size}" height="${size}" fill="currentColor" aria-hidden="true"><path d="M8 14 2.6 8.6A3.2 3.2 0 0 1 7 4.1L8 5l1-1a3.2 3.2 0 0 1 4.4 4.6Z"/></svg>`;
+}
+
+export function iconGift(size = 16): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="${size}" height="${size}" fill="currentColor" aria-hidden="true"><path d="M14 5h-2.3A2.5 2.5 0 0 0 8 2.1 2.5 2.5 0 0 0 4.3 5H2v3h1v6h10V8h1Zm-4.7-1.5c.5 0 .9.4.9.9s-.4.9-.9.9H8V4.4c.2-.6.7-.9 1.3-.9Zm-2.6 0c.6 0 1.1.3 1.3.9v.9H6.7c-.5 0-.9-.4-.9-.9s.4-.9.9-.9ZM5 8h2v4H5Zm4 0h2v4H9Z"/></svg>`;
+}
+
+export function iconPrint(size = 16): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="${size}" height="${size}" fill="currentColor" aria-hidden="true"><path d="M4 1h8v3H4Zm8 8v6H4V9Zm2-4H2a1 1 0 0 0-1 1v4h3V8h8v2h3V6a1 1 0 0 0-1-1Z"/></svg>`;
+}
+
 export function iconEmail(size = 16): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="${size}" height="${size}" fill="currentColor" aria-hidden="true"><path d="M14 3H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1Zm-1.2 2L8 8 3.2 5Z"/></svg>`;
 }
