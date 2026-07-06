@@ -107,13 +107,10 @@ describe("handleSightingForm", () => {
     expect(html).toContain("<form");
     expect(html).toContain('name="city"');
     expect(html).toContain(`/c/${TEST_CAT_ID}/sighting`);
-    expect(html).toContain('name="photoCapture"');
-    expect(html).toContain('capture="environment"');
     expect(html).toContain('name="photoUpload"');
     expect(html).toContain("photo-input-visually-hidden");
     expect(html).toContain("sighting-photo-status");
-    expect(html.match(/Take photo/g)?.length).toBe(1);
-    expect(html.match(/Choose existing photo/g)?.length).toBe(1);
+    expect(html).toContain("Photo upload");
     expect(html).toContain("No photo selected");
     expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
   });

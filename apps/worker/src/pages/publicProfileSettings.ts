@@ -119,7 +119,7 @@ export async function handlePublicProfileSettingsPage(
 </head>
 <body>
   <main class="page-shell">
-    ${renderTopNav(lang, { authenticated: true })}
+    ${renderTopNav(lang, { authenticated: true, active: "dashboard" })}
     <div class="page-head">
       <a class="mp-back back-link" href="/dashboard/cats/${safeId}?lang=${lang}">&larr; ${t(lang, "backToDashboard")}</a>
       <h1>Public Profile &amp; QR Code</h1>
@@ -151,7 +151,7 @@ export async function handlePublicProfileSettingsPage(
               <div class="preview-row"><dt>Status</dt><dd>${safeMode}</dd></div>
             </dl>
             <div class="preview-actions">
-              <a class="mp-btn mp-btn-secondary" href="/c/${safeId}?lang=${lang}" target="_blank" rel="noopener">Open Public Profile</a>
+              <a class="mp-btn mp-btn-secondary" href="/c/${safeId}?lang=${lang}">Open Public Profile</a>
               <a class="mp-btn mp-btn-secondary" href="/dashboard/cats/${safeId}/qr?lang=${lang}">Open QR Card</a>
             </div>
           </div>
