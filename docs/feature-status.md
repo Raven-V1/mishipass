@@ -50,9 +50,9 @@ Auditor: Kiro (Phase 0, autonomous task set)
 
 | Feature | Status | Notes |
 |---|---|---|
-| Photo gallery (multiple photos per cat) | missing | Only single photo_r2_key per cat currently. Authorized for this task set. |
+| Photo gallery (multiple photos per cat) | built | Multi-photo gallery with profile selection, public/private toggle (photo_public_id), migration 0007-0013. |
 | Travel mode | deferred | Optional mode, not in must-build. |
-| For Adoption mode | deferred | Optional mode. |
+| For Adoption mode | built | Adoption profile, transfer request flow, i18n. Route wired, tested, deployed. |
 | Memorial mode | deferred | Optional mode. |
 | Celebration mode | deferred | Optional mode. |
 | Push notifications | deferred-v2 | V2 item. |

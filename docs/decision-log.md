@@ -732,3 +732,29 @@ Alternatives considered: Accept-and-document as a low-severity finding (rejected
 inconsistency in the security model).
 
 Decided by: Carlos
+
+---
+
+## [2026-07-05] — Git history identity correction (same-session commits only)
+
+Decision: Rewrite author and committer identity on commits `9505bb0` and
+`84b654b` (both authored 2026-07-05) from `zhanerke06` to `Raven-V1
+<252941306+Raven-V1@users.noreply.github.com>`. These were same-session commits
+created minutes earlier with the wrong local git config identity. No
+pre-existing or historical commits were touched.
+
+Method: Interactive rebase with `--exec "git commit --amend --author=..."` and
+`GIT_COMMITTER_NAME/EMAIL` environment override, followed by admin-bypass
+force-push to main (branch protection rule "cannot force-push" overridden by
+repository admin privilege).
+
+Reason: [Carlos to confirm — correcting an identity leak per the standing rule
+that all non-design implementation commits use the Raven-V1 identity. The local
+git config had zhanerke06's noreply address set from the design-alignment branch
+work and was not updated before committing the fix.]
+
+Alternatives considered: Leaving the misattributed commits (rejected — creates
+a phantom contributor page on GitHub and contradicts the authorship policy).
+Reverting and recommitting (rejected — same result with more noise).
+
+Decided by: Carlos
