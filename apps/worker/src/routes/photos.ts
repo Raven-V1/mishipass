@@ -8,6 +8,23 @@ import { validatePhotoPublicId } from "../utils/photoId.js";
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_CAT_PHOTO_SIZE = 2 * 1024 * 1024; // 2 MB
 
+function fallbackCatPlaceholder(label: string): Response {
+  const safe = label
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640" role="img" aria-label="${safe} photo placeholder"><rect width="640" height="640" rx="48" fill="#FFF7F0"/><circle cx="320" cy="252" r="122" fill="#FFFFFF"/><path d="M226 248c0-54 42-102 94-102s94 48 94 102v76H226Z" fill="#24302f"/><path d="M250 176l32-64 46 58Zm140 0 32-64-78-6Z" fill="#24302f"/><circle cx="284" cy="250" r="10" fill="#FFFFFF"/><circle cx="356" cy="250" r="10" fill="#FFFFFF"/><path d="M308 286c8 10 16 14 24 14s16-4 24-14" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round"/><text x="320" y="470" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" font-weight="700" fill="#24776E">${safe}</text><text x="320" y="514" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#667674">No photo uploaded yet</text></svg>`;
+  return new Response(svg, {
+    headers: {
+      "Content-Type": "image/svg+xml;charset=UTF-8",
+      "Cache-Control": "public, max-age=3600",
+      "X-Content-Type-Options": "nosniff",
+    },
+  });
+}
+
 export function checkMagicBytes(header: Uint8Array, mimeType: string): boolean {
   if (header.length < 4) return false;
 
@@ -122,7 +139,7 @@ export async function handleCatPhotoServe(
 
   const object = await photos.get(cat.photo_r2_key);
   if (!object) {
-    return new Response("Not Found", { status: 404 });
+    return fallbackCatPlaceholder(cat.name);
   }
 
   return new Response(object.body, {

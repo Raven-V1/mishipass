@@ -346,15 +346,15 @@ function renderVetForm(
     .vet-head{display:grid;gap:var(--space-1);margin-bottom:var(--space-3)}
     h1{display:flex;align-items:center;gap:var(--space-1);font-size:clamp(2.25rem,6vw,3.5rem);line-height:1.02;margin:0;color:var(--teal)}
     .vet-subtitle{margin:0;color:var(--muted);font-weight:700}
-    .status-panel{padding:var(--space-3);border:0;border-radius:8px;background:linear-gradient(180deg,#df5a53 0%,#c94b46 100%);margin:0 0 var(--space-3);box-shadow:0 16px 38px rgba(201,75,70,.22);text-align:center;color:#fff}
-    .status-panel h2{margin:0 0 var(--space-2);color:#fff;text-align:left}
-    .status-layout{display:grid;grid-template-columns:minmax(0,210px) minmax(0,1fr);gap:var(--space-3);align-items:center}
-    .status-art{min-height:164px;border-radius:8px;background:rgba(255,255,255,.14);display:grid;place-items:center;padding:var(--space-2)}
-    .status-art img{max-width:180px;width:100%;object-fit:contain}
-    .status-copy{margin-top:var(--space-2);text-align:left}
-    .status-copy strong{display:block;color:#fff;font-size:1.7rem}
-    .status-copy p{margin:4px 0 0;color:rgba(255,255,255,.92);font-weight:700}
-    .status-btn{margin-top:var(--space-3);background:#fff;border-color:#fff;color:#b8443f}
+    .status-panel{padding:var(--space-3);border:1px solid var(--line);border-radius:8px;background:#fffaf6;margin:0 auto var(--space-3);box-shadow:0 12px 32px rgba(56,38,26,.06);text-align:center;color:var(--ink);max-width:820px}
+    .status-panel h2{margin:0 0 var(--space-2);color:var(--teal);text-align:left}
+    .status-layout{display:grid;gap:var(--space-2);justify-items:center}
+    .status-art{min-height:148px;display:grid;place-items:center;padding:var(--space-2)}
+    .status-art img{max-width:184px;width:100%;object-fit:contain}
+    .status-copy{margin-top:var(--space-1);text-align:center}
+    .status-copy strong{display:block;color:var(--teal);font-size:1.75rem}
+    .status-copy p{margin:6px 0 0;color:var(--muted);font-weight:700}
+    .status-btn{margin-top:var(--space-3);background:var(--brand-orange);border-color:var(--brand-orange);color:#fff}
     .visit-form{display:grid;gap:var(--space-3)}
     .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2) var(--space-3)}
     .med-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-2)}
@@ -363,11 +363,18 @@ function renderVetForm(
     .section-title{font-size:1.25rem;line-height:1.2;color:var(--teal);margin:0}
     .section-note{margin:0;color:var(--muted);font-size:.875rem}
     .form-section{display:grid;gap:var(--space-2);padding:var(--space-3);border:1px solid var(--line);border-radius:8px;background:#fff;box-shadow:0 10px 24px rgba(56,38,26,.05)}
+    .form-section.visit-shell{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:var(--space-3)}
+    .form-section.visit-shell .section-title,
+    .form-section.visit-shell .section-note,
+    .form-section.visit-shell .visit-grid,
+    .form-section.visit-shell .visit-grid-right{grid-column:auto}
+    .visit-grid,.visit-grid-right{display:grid;gap:var(--space-2)}
+    .visit-grid-right .field textarea{min-height:96px}
     .submit-row{display:flex;gap:var(--space-2);flex-wrap:wrap}
     .submit-btn{flex:1 1 220px;margin-top:0;background:var(--green);border-color:var(--green)}
     .cancel-btn{flex:1 1 180px}
     .upload-drop{display:flex;align-items:center;justify-content:center;min-height:108px;border-radius:8px;border:1px dashed #dfc9bb;background:#fffaf6;text-align:center;color:var(--muted);font-weight:700}
-    @media(max-width:860px){.status-layout,.form-grid,.med-grid{grid-template-columns:1fr}}
+    @media(max-width:860px){.status-layout,.form-grid,.med-grid,.form-section.visit-shell{grid-template-columns:1fr}}
     @media(max-width:430px){body{padding:var(--space-2)}.vet-shell{padding:var(--space-2) 0 var(--space-4)}.vet-card{padding:var(--space-3)}.photo-action{flex-basis:100%}.submit-row>*{flex-basis:100%}}
   </style>
 </head>
@@ -391,16 +398,19 @@ function renderVetForm(
     </div>
   </section>
     <form class="visit-form" method="POST" action="/api/cats/${safeId}/vet-visit/finish?lang=${lang}" enctype="multipart/form-data">
-      <section class="form-section">
-        <h2 class="section-title">${t(lang, "addNewVisit")}</h2>
-        <div class="form-grid">
+      <section class="form-section visit-shell">
+        <div class="visit-grid">
+          <h2 class="section-title">${t(lang, "addNewVisit")}</h2>
           <div class="field"><label for="clinic_name">${t(lang, "clinicName")}</label><input type="text" id="clinic_name" name="clinic_name" maxlength="500" /></div>
-          <div class="field"><label for="reason">${t(lang, "reasonForVisit")}</label><textarea id="reason" name="reason" maxlength="500" rows="3"></textarea></div>
           <div class="field"><label for="vet_name">${t(lang, "vetName")}</label><input type="text" id="vet_name" name="vet_name" maxlength="500" /></div>
-          <div class="field"><label for="diagnosis">${t(lang, "diagnosis")}</label><textarea id="diagnosis" name="diagnosis" maxlength="500" rows="3"></textarea></div>
           <div class="field"><label for="visit_date">${t(lang, "visitDate")}</label><input type="date" id="visit_date" name="visit_date" /></div>
           <div class="field"><label for="visit_time">${t(lang, "visitTime")}</label><input type="time" id="visit_time" name="visit_time" /></div>
-          <div class="field field-wide"><label for="treatment">${t(lang, "treatment")}</label><textarea id="treatment" name="treatment" maxlength="500" rows="3"></textarea></div>
+        </div>
+        <div class="visit-grid-right">
+          <h2 class="section-title" style="visibility:hidden">${t(lang, "addNewVisit")}</h2>
+          <div class="field"><label for="reason">${t(lang, "reasonForVisit")}</label><textarea id="reason" name="reason" maxlength="500" rows="3"></textarea></div>
+          <div class="field"><label for="diagnosis">${t(lang, "diagnosis")}</label><textarea id="diagnosis" name="diagnosis" maxlength="500" rows="3"></textarea></div>
+          <div class="field"><label for="treatment">${t(lang, "treatment")}</label><textarea id="treatment" name="treatment" maxlength="500" rows="3"></textarea></div>
         </div>
       </section>
 

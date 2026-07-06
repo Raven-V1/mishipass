@@ -10,9 +10,13 @@ import { handleQrPage } from "../qrPage.js";
 import type { RequestContext } from "../../middleware/session.js";
 
 const mockGetCatForOwner = vi.fn();
+const mockGetContactSettingsForOwner = vi.fn();
+const mockGetMissingAlertForOwner = vi.fn();
 
 vi.mock("../../db/index.js", () => ({
   getCatForOwner: (...args: unknown[]) => mockGetCatForOwner(...args),
+  getContactSettingsForOwner: (...args: unknown[]) => mockGetContactSettingsForOwner(...args),
+  getMissingAlertForOwner: (...args: unknown[]) => mockGetMissingAlertForOwner(...args),
 }));
 
 const fakeDb = {} as D1Database;
@@ -23,6 +27,10 @@ const unauthed: RequestContext = { ownerId: null };
 
 beforeEach(() => {
   mockGetCatForOwner.mockReset();
+  mockGetContactSettingsForOwner.mockReset();
+  mockGetMissingAlertForOwner.mockReset();
+  mockGetContactSettingsForOwner.mockResolvedValue({ contact_mode: "relay", public_phone: null });
+  mockGetMissingAlertForOwner.mockResolvedValue(null);
 });
 
 describe("handleQrPage", () => {
