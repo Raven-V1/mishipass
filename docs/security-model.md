@@ -260,13 +260,14 @@ pre-submission documentation synchronization pass.
 | Dependabot | npm and pip, weekly; grouping and PR limit configured | Active (TRIAGE-04 applied) |
 | Legacy Pages retirement | site/ redirects to Worker app | Active (TRIAGE-05 applied) |
 | XSS mitigation | `escapeHtml` helper, must be called explicitly per route | Active — helper present; not automatic for future routes |
-| IDOR mitigation | No internal PKs in any client response | Active |
+| IDOR mitigation | No internal PKs in any client response | Active — cat_photos.id replaced with opaque photo_public_id on public gallery routes (2026-07-05, migration 0013) |
 | Session length guard | 256-character maximum before hashing | Active |
 | Parameterized D1 queries | `.prepare(...).bind(...)` throughout `src/db/repositories/` | Source-confirmed — no string concatenation in any query path |
 | UNIQUE constraint + retry | D1 schema constraint, Worker retry on collision | Active |
 | D1-backed rate limiting on `/c/:publicId` | HMAC-hashed IP key, D1 counter | Active — enforced |
 | D1-backed rate limiting on sighting submit | HMAC-hashed IP key, D1 counter | Active — enforced |
 | Image upload validation (MIME + size + magic-byte) | Worker middleware | Active — enforced on cat photo, sighting photo, and vaccine sticker uploads |
+| D1-backed rate limiting on public gallery serve | HMAC-hashed IP key, D1 counter, 60 req/min | Active — added 2026-07-05 (previously absent; VULN-W-005) |
 | HMAC-SHA256 reporter IP hashing | `SIGHTING_IP_HMAC_SECRET` environment variable | Active — secret confirmed set in production 2026-07-05; missing secret fails closed |
 | R2 key non-exposure | Worker media routes serve photos; raw keys never in responses | Active |
 | Sighting photo owner-only access | Authenticated owner check on photo route | Active |

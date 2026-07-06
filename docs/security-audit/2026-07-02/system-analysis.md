@@ -86,6 +86,16 @@ server-rendered HTML. Risk: information about dashboard structure (form field
 names, tab labels) is visible without auth. This is informational only; actual
 cat data requires a valid session. Control: acceptable for Beta.
 
+**I-6 — Internal PK via public gallery photo route (VULN-W-005):**
+The public gallery serve route (`/media/cats/:publicId/photos/:photoId/public`)
+exposed the sequential integer `cat_photos.id` as the `:photoId` URL parameter,
+and `renderActiveProfile` rendered this ID into public HTML `<img>` src attributes.
+The sequential nature allowed inference of total photo row count.
+No cross-cat access was possible (query enforced `c.public_id AND cp.is_public = 1`).
+Control (post-fix): `photo_public_id` (CSPRNG, 16-char Crockford Base32, UNIQUE)
+replaces the integer PK on all public surfaces. Rate limiting added (60 req/min,
+HMAC-hashed IP). Assessment: **ADEQUATE** (fixed 2026-07-05).
+
 ---
 
 ### Denial of Service

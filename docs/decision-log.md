@@ -710,3 +710,25 @@ Alternatives considered: Cherry-picking the commit to main (not pursued —
 branch already deleted and fix is non-blocking for Beta 1.5 submission).
 
 Decided by: Carlos
+
+---
+
+## [2026-07-05] — Public gallery photo identifier hardening
+
+Decision: Replaced `cat_photos.id` (internal sequential integer PK) with a new
+random, CSPRNG-generated, UNIQUE-constrained `photo_public_id` (16-character
+Crockford Base32, ~80 bits entropy) for all public-facing gallery photo URLs.
+Added D1-backed rate limiting (HMAC-hashed IP, 60 req/min) to the public
+gallery serve route, which previously had none.
+
+Reason: [Carlos to confirm — post-audit finding identified 2026-07-05: the
+public gallery route exposed the internal integer PK in rendered HTML and URL
+paths, violating the "no internal PK in any client response" control. Fixed
+same-day before submission given low architectural risk.]
+
+Alternatives considered: Accept-and-document as a low-severity finding (rejected
+— full fix was achievable within the session and mirrors the existing
+`cats.public_id` pattern; leaving it unfixed would leave a control-claim
+inconsistency in the security model).
+
+Decided by: Carlos
