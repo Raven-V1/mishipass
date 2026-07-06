@@ -5,12 +5,15 @@
  * in application logic. Raw R2 keys are never exposed to clients.
  */
 
+import { generatePhotoPublicId } from "../../utils/photoId.js";
+
 export interface CatPhotoRow {
   id: number;
   r2_key: string;
   is_profile: number;
   is_public: number;
   created_at: string;
+  photo_public_id: string;
 }
 
 export interface CatPhotoView {
@@ -31,7 +34,7 @@ export async function listCatPhotos(
 ): Promise<CatPhotoRow[]> {
   const result = await db
     .prepare(
-      `SELECT cp.id, cp.r2_key, cp.is_profile, cp.is_public, cp.created_at
+      `SELECT cp.id, cp.r2_key, cp.is_profile, cp.is_public, cp.created_at, cp.photo_public_id
        FROM cat_photos cp
        WHERE cp.cat_id = (SELECT id FROM cats WHERE public_id = ? AND owner_id = ?)
        ORDER BY cp.created_at DESC`,
@@ -43,14 +46,16 @@ export async function listCatPhotos(
 
 /**
  * Insert a new photo for a cat. If it's the first photo, mark it as profile.
- * Returns the new photo's internal id (used for subsequent operations).
+ * Generates an opaque photo_public_id (Crockford Base32, 16 chars) with retry on
+ * UNIQUE constraint collision, matching the pattern used for cat public IDs.
+ * Returns the new photo's photo_public_id for use in public-facing URLs.
  */
 export async function insertCatPhoto(
   db: D1Database,
   publicId: string,
   ownerId: number,
   r2Key: string,
-): Promise<number> {
+): Promise<string> {
   // Check if any photo exists already
   const existing = await db
     .prepare(
@@ -62,25 +67,37 @@ export async function insertCatPhoto(
 
   const isProfile = (existing?.cnt ?? 0) === 0 ? 1 : 0;
 
-  const result = await db
-    .prepare(
-      `INSERT INTO cat_photos (cat_id, r2_key, is_profile)
-       VALUES ((SELECT id FROM cats WHERE public_id = ? AND owner_id = ?), ?, ?)`,
-    )
-    .bind(publicId, ownerId, r2Key, isProfile)
-    .run();
+  // Retry on UNIQUE constraint collision (up to 5 attempts)
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const photoPublicId = generatePhotoPublicId();
+    try {
+      const result = await db
+        .prepare(
+          `INSERT INTO cat_photos (cat_id, r2_key, is_profile, photo_public_id)
+           VALUES ((SELECT id FROM cats WHERE public_id = ? AND owner_id = ?), ?, ?, ?)`,
+        )
+        .bind(publicId, ownerId, r2Key, isProfile, photoPublicId)
+        .run();
 
-  const photoId = result.meta.last_row_id as number;
+      const photoId = result.meta.last_row_id as number;
 
-  // If this is the first photo (profile), also update cats.photo_r2_key for backward compat
-  if (isProfile) {
-    await db
-      .prepare(`UPDATE cats SET photo_r2_key = ? WHERE public_id = ? AND owner_id = ?`)
-      .bind(r2Key, publicId, ownerId)
-      .run();
+      // If this is the first photo (profile), also update cats.photo_r2_key for backward compat
+      if (isProfile) {
+        await db
+          .prepare(`UPDATE cats SET photo_r2_key = ? WHERE public_id = ? AND owner_id = ?`)
+          .bind(r2Key, publicId, ownerId)
+          .run();
+      }
+
+      return photoPublicId;
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "";
+      if (msg.includes("UNIQUE") && attempt < 4) continue;
+      throw e;
+    }
   }
 
-  return photoId;
+  throw new Error("Could not generate a unique photo_public_id after 5 attempts");
 }
 
 /**
@@ -238,44 +255,46 @@ export async function toggleCatPhotoPublic(
 }
 
 /**
- * List photo IDs that are public for a given cat (no ownership check).
+ * List photo public IDs that are public for a given cat (no ownership check).
  * Used on the public profile page to display gallery photos.
+ * Returns photo_public_id (opaque identifier) instead of internal id.
  */
 export async function listPublicCatPhotos(
   db: D1Database,
   publicId: string,
-): Promise<Array<{ id: number }>> {
+): Promise<Array<{ photo_public_id: string }>> {
   const result = await db
     .prepare(
-      `SELECT cp.id
+      `SELECT cp.photo_public_id
        FROM cat_photos cp
        INNER JOIN cats c ON c.id = cp.cat_id
-       WHERE c.public_id = ? AND c.deleted_at IS NULL AND cp.is_public = 1
+       WHERE c.public_id = ? AND c.deleted_at IS NULL AND cp.is_public = 1 AND cp.photo_public_id IS NOT NULL
        ORDER BY cp.created_at DESC`,
     )
     .bind(publicId)
-    .all<{ id: number }>();
+    .all<{ photo_public_id: string }>();
   return result.results;
 }
 
 /**
  * Get the R2 key for a specific photo only if it is marked public.
  * No ownership check -- used for unauthenticated public gallery serving.
+ * Looks up by photo_public_id (opaque identifier), not internal id.
  * Returns null if the photo does not exist, belongs to a deleted cat, or is not public.
  */
 export async function getPublicCatPhotoR2Key(
   db: D1Database,
   publicId: string,
-  photoId: number,
+  photoPublicId: string,
 ): Promise<string | null> {
   const row = await db
     .prepare(
       `SELECT cp.r2_key
        FROM cat_photos cp
        INNER JOIN cats c ON c.id = cp.cat_id
-       WHERE cp.id = ? AND c.public_id = ? AND c.deleted_at IS NULL AND cp.is_public = 1`,
+       WHERE cp.photo_public_id = ? AND c.public_id = ? AND c.deleted_at IS NULL AND cp.is_public = 1`,
     )
-    .bind(photoId, publicId)
+    .bind(photoPublicId, publicId)
     .first<{ r2_key: string }>();
   return row?.r2_key ?? null;
 }

@@ -154,30 +154,28 @@ changes the mode. The QR never changes.
 
 ### Current vulnerability state
 
-As of Day 6, all known npm audit findings are confined to development and
-tooling dependencies (Vitest, Wrangler, `@cloudflare/vitest-pool-workers`, and
-their transitive packages used for local testing and CI) — not the production
-request path. Non-breaking patches were applied via `npm audit fix`. Remaining
-findings require major-version upgrades that are deferred to the Day-13
-security pass for controlled compatibility verification, and are tracked in
-`docs/decision-log.md` and `.audit-known-issues.json`.
+As of 2026-07-05, `npm audit` reports **0 vulnerabilities** in both the root
+workspace and `apps/worker`. The previously-deferred major-version upgrades
+(vitest 2.x → 4.x, @cloudflare/vitest-pool-workers 0.x → 0.16.x, wrangler
+3.x → 4.x) have been resolved — the project now runs vitest 4.1.9 and
+wrangler 4.107.0. No high or critical findings remain in the dependency tree.
 
-| Package | Severity | Installed | Patched version | Blocker |
-|---|---|---|---|---|
-| vitest | critical | 2.1.9 | 4.1.9 | major breaking change |
-| @cloudflare/vitest-pool-workers | critical | 0.5.30 | 0.16.20 | major breaking change |
-| wrangler | high | 3.114.17 | 4.105.0 | major breaking change |
-| devalue, undici, vite, ws | high | transitive | blocked | depend on the three packages above |
+| Workspace | npm audit result | Date verified |
+|---|---|---|
+| root | 0 vulnerabilities | 2026-07-05 |
+| apps/worker | 0 vulnerabilities | 2026-07-05 |
 
 ### Automated controls
 
 - **Dependabot** monitors npm in `apps/web` and `apps/worker`, and pip in
-  `tools/python`, on a weekly schedule.
+  `tools/python`, on a weekly schedule. Configured with grouping and
+  `open-pull-requests-limit` per the 2026-07-02 audit triage (TRIAGE-04).
 - **GitHub Actions CI** (`.github/workflows/ci.yml`) is configured to run
   TypeScript typecheck across all three workspaces, the full test suite, and a
   targeted dependency audit that distinguishes new findings from known-deferred
   packages. New high or critical vulnerabilities fail the build.
-- **Aikido** security scan and report. **(Scheduled — not yet completed.)**
+- **Aikido** security scan: not in scope for Beta 1.5. Replaced by the manual
+  security audit completed 2026-07-02 (`docs/security-audit/2026-07-02/`).
 
 ---
 
@@ -245,20 +243,22 @@ keeping a living control-status table (Section 8) updated at each milestone.
 
 ## 8. Secure development lifecycle control status
 
-Current MishiPass Beta 1.5 control status. Updated 2026-07-01 for Day 10
-Recovery Board and WhatsApp-ready Missing Card closure.
+Current MishiPass Beta 1.5 control status. Updated 2026-07-05 for
+pre-submission documentation synchronization pass.
 
 | Control | Implementation | Status |
 |---|---|---|
 | Type safety — worker, web, shared | `tsc --noEmit` per workspace | CI-enforced on all PRs and pushes |
 | Ambient type declarations | `apps/worker/src/types/cloudflare-test.d.ts` | Backend/API exists, not manually verified vs prod |
-| Test gate — shared-validation | 33 Vitest tests | CI-enforced |
-| Test gate — worker | Vitest across route, middleware, db test files | CI-enforced |
+| Test gate — shared-validation | 43 Vitest tests | CI-enforced |
+| Test gate — worker | 279 Vitest tests across route, middleware, db test files | CI-enforced |
 | Dependency audit allowlist | `.audit-known-issues.json` | Active — CI gate blocks new high/critical findings |
+| Dependency vulnerabilities | `npm audit` clean (0 findings, both workspaces) | Verified 2026-07-05 |
 | CI workflow | `.github/workflows/ci.yml` | Active — running on all PRs and pushes to dev and main |
 | Secret scan | Repository-wide regex scan, Day 6 | No committed credentials found at time of scan |
 | Branch protection on main | Require 1 review; no force-push; no delete | Active — applied Day 6; status-check enforcement is off (CI runs but does not block) |
-| Dependabot | npm and pip, weekly | Active |
+| Dependabot | npm and pip, weekly; grouping and PR limit configured | Active (TRIAGE-04 applied) |
+| Legacy Pages retirement | site/ redirects to Worker app | Active (TRIAGE-05 applied) |
 | XSS mitigation | `escapeHtml` helper, must be called explicitly per route | Active — helper present; not automatic for future routes |
 | IDOR mitigation | No internal PKs in any client response | Active |
 | Session length guard | 256-character maximum before hashing | Active |
@@ -267,7 +267,7 @@ Recovery Board and WhatsApp-ready Missing Card closure.
 | D1-backed rate limiting on `/c/:publicId` | HMAC-hashed IP key, D1 counter | Active — enforced |
 | D1-backed rate limiting on sighting submit | HMAC-hashed IP key, D1 counter | Active — enforced |
 | Image upload validation (MIME + size + magic-byte) | Worker middleware | Active — enforced on cat photo, sighting photo, and vaccine sticker uploads |
-| HMAC-SHA256 reporter IP hashing | `SIGHTING_IP_HMAC_SECRET` environment variable | Active — missing secret fails closed |
+| HMAC-SHA256 reporter IP hashing | `SIGHTING_IP_HMAC_SECRET` environment variable | Active — secret confirmed set in production 2026-07-05; missing secret fails closed |
 | R2 key non-exposure | Worker media routes serve photos; raw keys never in responses | Active |
 | Sighting photo owner-only access | Authenticated owner check on photo route | Active |
 | Sighting detail owner-scoped | Ownership check on detail view route, 404 for non-owners | Active |
@@ -276,8 +276,24 @@ Recovery Board and WhatsApp-ready Missing Card closure.
 | WhatsApp-ready Missing Card | Owner-only generated share link, public fields only | Active |
 | Recovery Board | Missing-mode only, city/age filters, public-safe fields only | Active |
 | Owner auth backend | PBKDF2-SHA256, opaque session token, HttpOnly cookie | Active |
+| Logto OIDC (Google login) | Authorization Code + PKCE, server-side | Active — secrets set in production 2026-07-05 |
 | Aikido security scan | — | Not in Beta 1.5 scope; replaced by manual audit 2026-07-02 |
 | Manual security audit | `docs/security-audit/2026-07-02/` | Completed 2026-07-02 |
+
+### Known gaps — Tier 2
+
+The following items were identified in the 2026-07-02 manual security audit
+(TRIAGE-07, TRIAGE-08) and remain unresolved. Both require the Constitution
+Section 10 alignment loop before implementation — they are not approved for
+build.
+
+- **Login-endpoint rate limiting (PROPOSED):** Adding per-IP rate limiting to
+  `/api/auth/login` would mitigate brute-force attempts beyond PBKDF2's
+  per-attempt CPU cost. Requires design decision: D1-backed rate limit vs
+  Cloudflare WAF rule.
+- **CORS posture for deferred web split (DEFERRED):** Applicable only if/when
+  `apps/web` becomes a deployed React app at a separate origin. Not needed
+  while the Worker serves all authenticated surfaces.
 
 ---
 
@@ -330,13 +346,14 @@ as Worker secrets.
   vars are absent, so the error is safe to display.
 - OIDC cookies are cleared (Max-Age=0) on both success and failure paths.
 
-**Production status as of this branch:** code path present and tested;
-provider credentials are not yet set in the production Worker deployment.
-Google and Apple login will become active once the Logto tenant is created,
-Google/Apple connectors are configured in Logto, and the six Worker secrets
-are set via `wrangler secret put`.
+**Production status:** Logto secrets (`LOGTO_ENDPOINT`, `LOGTO_APP_ID`,
+`LOGTO_CLIENT_SECRET`, `LOGTO_REDIRECT_URI`, `LOGTO_GOOGLE_CONNECTOR_TARGET`)
+are confirmed set in the production Worker deployment as of 2026-07-05.
+`LOGTO_APPLE_CONNECTOR_TARGET` is not currently set — Apple login is not active.
+Google login is operational; Apple login requires Apple Developer Program
+connector configuration in Logto before activation.
 
-**Aikido security scan:** not in scope for Beta 1.5; manual audit completed 2026-07-02.
+**Aikido security scan:** not in scope for Beta 1.5; replaced by manual audit completed 2026-07-02.
 
 ---
 

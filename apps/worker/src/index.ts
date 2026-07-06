@@ -16,9 +16,10 @@ import { handleMissingCardPage } from "./routes/missingCard.js";
 import { handleRequestTransfer, handleListTransferRequests, handleAcceptTransfer, handleDeclineTransfer } from "./routes/transferRequests.js";
 import { handleRecoveryBoardOptIn, handleRecoveryBoardPage } from "./routes/recoveryBoard.js";
 import { handleHistory, handleRoot } from "./pages/root.js";
-import { handleDashboard } from "./pages/dashboard.js";
+import { handleDashboard, handleDashboardRegister } from "./pages/dashboard.js";
 import { handleCatDetail } from "./pages/catDetail.js";
 import { handleCartillaPage, handleVetVisitDetailPage } from "./pages/cartilla.js";
+import { handlePublicProfileSettingsPage } from "./pages/publicProfileSettings.js";
 import { handleQrPage } from "./pages/qrPage.js";
 import { handleSightingInbox, handleSightingDetail } from "./pages/sightingInbox.js";
 import { getLanguageFromRequest, resolveOwnerLang } from "./utils/i18n.js";
@@ -74,6 +75,7 @@ const DASHBOARD_CAT_CARTILLA = /^\/dashboard\/cats\/([^/]+)\/cartilla$/;
 const DASHBOARD_CAT_VET_VISIT_DETAIL = /^\/dashboard\/cats\/([^/]+)\/cartilla\/vet-visits\/([^/]+)$/;
 const DASHBOARD_CAT_MISSING_CARD = /^\/dashboard\/cats\/([^/]+)\/missing-card$/;
 const DASHBOARD_CAT_QR = /^\/dashboard\/cats\/([^/]+)\/qr$/;
+const DASHBOARD_CAT_PUBLIC_PROFILE = /^\/dashboard\/cats\/([^/]+)\/public-profile$/;
 const DASHBOARD_CAT_SIGHTINGS = /^\/dashboard\/cats\/([^/]+)\/sightings$/;
 const DASHBOARD_CAT_SIGHTING_DETAIL = /^\/dashboard\/cats\/([^/]+)\/sightings\/([^/]+)$/;
 const VET_VISIT_START = /^\/api\/cats\/([^/]+)\/vet-visit\/start$/;
@@ -92,7 +94,7 @@ const CAT_PHOTO_DELETE = /^\/api\/cats\/([^/]+)\/photos\/(\d+)\/delete$/;
 const CAT_GALLERY_SERVE = /^\/media\/cats\/([^/]+)\/photos\/(\d+)$/;
 const CAT_UPDATE = /^\/api\/cats\/([^/]+)\/update$/;
 const CAT_PHOTO_TOGGLE_PUBLIC = /^\/api\/cats\/([^/]+)\/photos\/(\d+)\/visibility$/;
-const CAT_PUBLIC_GALLERY_SERVE = /^\/media\/cats\/([^/]+)\/photos\/(\d+)\/public$/;
+const CAT_PUBLIC_GALLERY_SERVE = /^\/media\/cats\/([^/]+)\/photos\/([0-9A-HJKMNP-TV-Z]{16})\/public$/;
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -114,6 +116,10 @@ export default {
 
     if (method === "GET" && pathname === "/dashboard") {
       return handleDashboard(env);
+    }
+
+    if (method === "GET" && pathname === "/dashboard/register") {
+      return handleDashboardRegister(env);
     }
 
     if (method === "GET" && pathname === "/recovery-board") {
@@ -148,6 +154,13 @@ export default {
       const ctx = await resolveSession(request, env.DB);
       const lang = ctx.ownerId ? await resolveOwnerLang(env.DB, ctx.ownerId) : "en" as const;
       return handleQrPage(qrMatch[1]!, env.DB, ctx, env.PUBLIC_BASE_URL, lang);
+    }
+
+    const publicProfileSettingsMatch = DASHBOARD_CAT_PUBLIC_PROFILE.exec(pathname);
+    if (method === "GET" && publicProfileSettingsMatch) {
+      const ctx = await resolveSession(request, env.DB);
+      const lang = ctx.ownerId ? await resolveOwnerLang(env.DB, ctx.ownerId) : "en" as const;
+      return handlePublicProfileSettingsPage(publicProfileSettingsMatch[1]!, env.DB, ctx, env.PUBLIC_BASE_URL, lang);
     }
 
     const sightingsPageMatch = DASHBOARD_CAT_SIGHTINGS.exec(pathname);
@@ -434,7 +447,7 @@ export default {
 
     const publicGalleryServeMatch = CAT_PUBLIC_GALLERY_SERVE.exec(pathname);
     if (method === "GET" && publicGalleryServeMatch) {
-      return handlePublicGalleryPhotoServe(publicGalleryServeMatch[1]!, parseInt(publicGalleryServeMatch[2]!, 10), env.DB, env.PHOTOS);
+      return handlePublicGalleryPhotoServe(publicGalleryServeMatch[1]!, publicGalleryServeMatch[2]!, env.DB, env.PHOTOS, env.SIGHTING_IP_HMAC_SECRET, request);
     }
 
     const catUpdateMatch = CAT_UPDATE.exec(pathname);

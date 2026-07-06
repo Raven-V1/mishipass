@@ -1,11 +1,10 @@
 import { getCatForOwner } from "../db/index.js";
-import { MISHIPASS_DESIGN_CSS, brandLockupHtml, escapeHtml, htmlResponse } from "../utils/html.js";
+import { MISHIPASS_DESIGN_CSS, escapeHtml, htmlResponse } from "../utils/html.js";
 import { generateQrSvg } from "../utils/qr.js";
 import type { RequestContext } from "../middleware/session.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
 import { renderTopNav, TOP_NAV_CSS } from "./partials/topNav.js";
 import { iconContact, iconQrCode } from "../utils/icons.js";
-import { MISHIPASS_LOGO_SRC } from "../utils/brandAssets.js";
 
 export async function handleQrPage(
   publicId: string,
@@ -48,19 +47,13 @@ export async function handleQrPage(
     .print-header{font-weight:900;font-size:1.25rem;color:var(--teal);margin:0 0 var(--space-1);display:flex;align-items:center;justify-content:center;gap:var(--space-1)}
     .print-sub{font-size:.9375rem;color:var(--muted);margin:0 0 var(--space-4);text-align:center;font-weight:700}
     .card-pair{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:var(--space-3);align-items:center;margin-bottom:var(--space-4)}
-    .printable-card{position:relative;border:2px dashed #f0b39f;border-radius:22px;padding:var(--space-3);min-height:380px;background:rgba(255,255,255,.94);text-align:center;box-shadow:0 14px 40px rgba(56,38,26,.08)}
-    .printable-card:before{content:"";position:absolute;inset:18px;border-radius:18px;background:linear-gradient(160deg,rgba(255,240,233,.65),rgba(232,250,247,.45));z-index:0}
+    .printable-card{position:relative;border:2px dashed #f0b39f;border-radius:18px;padding:var(--space-3);aspect-ratio:1.45/1;background:rgba(255,255,255,.96);text-align:center;box-shadow:0 14px 40px rgba(56,38,26,.08)}
+    .printable-card:before{content:"";position:absolute;inset:14px;border-radius:14px;background:linear-gradient(160deg,rgba(255,240,233,.65),rgba(232,250,247,.45));z-index:0}
     .printable-card>*{position:relative;z-index:1}
     .card-label{display:inline-flex;align-items:center;justify-content:center;min-height:28px;padding:0 .9rem;border-radius:999px;background:#fff0e9;color:var(--brand-coral);font-size:.6875rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin:0 0 var(--space-2)}
-    .front-top{display:grid;grid-template-columns:minmax(0,1fr) 148px;gap:var(--space-2);align-items:center;margin-bottom:var(--space-2)}
-    .front-cat{display:flex;align-items:center;justify-content:center;min-height:164px;border-radius:18px;background:rgba(255,255,255,.78)}
-    .front-cat img{width:100%;max-width:220px;object-fit:contain}
-    .card-qr{margin:0 auto;border-radius:18px;padding:12px;background:#fff;border:2px solid #f0b39f;box-shadow:0 8px 24px rgba(56,38,26,.10)}
-    .card-qr svg{display:block;width:124px;height:124px}
-    .card-name{font-size:1.65rem;font-weight:900;color:var(--teal);margin:var(--space-2) 0 .35rem}
-    .reward-pill{display:inline-flex;align-items:center;gap:6px;background:#fff0e9;color:var(--brand-coral);border-radius:999px;padding:.42rem .9rem;font-size:.875rem;font-weight:900}
-    .front-copy{margin:var(--space-2) 0;font-weight:800;color:var(--ink)}
-    .contact-strip{display:inline-flex;align-items:center;gap:8px;justify-content:center;width:100%;min-height:44px;border-radius:999px;background:#eef8f5;color:var(--teal);font-size:.875rem;font-weight:800;padding:0 var(--space-2)}
+    .front-card{display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .front-card .card-qr{margin:auto;border-radius:18px;padding:14px;background:#fff;border:2px solid #f0b39f;box-shadow:0 8px 24px rgba(56,38,26,.10)}
+    .front-card .card-qr svg{display:block;width:min(100%,46mm);height:min(100%,46mm)}
     .back-card{display:flex;flex-direction:column;justify-content:center}
     .back-headline{font-size:2rem;font-weight:900;color:var(--ink);line-height:1.08;margin:var(--space-2) 0}
     .back-headline span{color:var(--brand-coral)}
@@ -79,19 +72,18 @@ export async function handleQrPage(
       .no-print{display:none!important}
       body{margin:0;padding:0;background:white}
       .qr-shell{max-width:none;padding:0}
-      .card-pair{display:grid;grid-template-columns:1fr 8mm 1fr;gap:8mm;padding:8mm}
-      .printable-card{border:1.5px dashed #d8c8bd;border-radius:8px;padding:6mm;min-height:0}
-      .front-card .card-qr svg{width:40mm;height:40mm}
+      .card-pair{display:grid;grid-template-columns:1fr 6mm 1fr;gap:6mm;padding:6mm}
+      .printable-card{border:1.5px dashed #d8c8bd;border-radius:8px;padding:5mm;aspect-ratio:1.45/1}
+      .front-card .card-qr svg{width:42mm;height:42mm}
     }
-    @media(max-width:860px){.card-pair{grid-template-columns:1fr}.scissors{display:none}.printable-card{min-height:0}}
-    @media(max-width:560px){body{padding:var(--space-2)}.print-section{padding:var(--space-3)}.front-top{grid-template-columns:1fr}.qr-actions button,.qr-actions a{flex-basis:100%;max-width:none}.back-headline{font-size:1.65rem}}
+    @media(max-width:860px){.card-pair{grid-template-columns:1fr}.scissors{display:none}}
+    @media(max-width:560px){body{padding:var(--space-2)}.print-section{padding:var(--space-3)}.qr-actions button,.qr-actions a{flex-basis:100%;max-width:none}.back-headline{font-size:1.65rem}}
   </style>
 </head>
 <body>
   <main class="qr-shell">
     <div class="no-print">
       ${renderTopNav(lang, { authenticated: true })}
-      ${brandLockupHtml(`/?lang=${lang}`)}
       <a class="back-link mp-back" href="/dashboard/cats/${safeId}?lang=${lang}">&larr; ${safeName}</a>
     </div>
 
@@ -109,15 +101,7 @@ export async function handleQrPage(
       <div class="card-pair">
         <div class="printable-card front-card">
           <p class="card-label">FRONT</p>
-          <div class="front-top">
-            <div class="front-cat">${cat.photo_r2_key
-              ? `<img src="/media/cats/${safeId}/photo" alt="${safeName}" />`
-              : `<img src="${MISHIPASS_LOGO_SRC}" alt="MishiPass cat" />`}</div>
-            <div class="card-qr">${qrSvg}</div>
-          </div>
-          <span class="reward-pill">&#127873; ${t(lang, "scanToMeetMe")}</span>
-          <p class="front-copy">${t(lang, "thankYouForHelping")}</p>
-          <div class="contact-strip">${iconContact(16)} <span>${t(lang, "emergencyContact")}</span></div>
+          <div class="card-qr" aria-label="${safeName} QR">${qrSvg}</div>
         </div>
         <span class="scissors no-print" aria-hidden="true">&#9986;</span>
         <div class="printable-card back-card">
@@ -127,6 +111,7 @@ export async function handleQrPage(
           <ul class="back-list">
             <li>${iconContact(16)} <span>${t(lang, "scanToView")}</span></li>
             <li>${iconContact(16)} <span>${t(lang, "ownerWillBeNotified")}</span></li>
+            <li>${iconContact(16)} <span>${t(lang, "emergencyContact")}</span></li>
             <li>${iconContact(16)} <span>${t(lang, "thankYouForHelping")}</span></li>
           </ul>
           <p class="brand-mark">Mishi<span>Pass</span></p>

@@ -16,8 +16,8 @@ MishiPass
 │   ├── Public Cat Profile
 │   │   ├── Active Profile View
 │   │   ├── Missing Alert View
+│   │   ├── For Adoption View
 │   │   ├── Travel View (optional)
-│   │   ├── Adoption View (optional)
 │   │   ├── Memorial View (optional)
 │   │   └── Celebration View (optional)
 │   ├── Sighting Report Form
@@ -37,8 +37,8 @@ MishiPass
 │   │   ├── Active Profile Mode
 │   │   ├── Missing Alert Mode
 │   │   ├── Vet Visit Mode
+│   │   ├── For Adoption Mode
 │   │   ├── Travel Mode (optional)
-│   │   ├── Adoption Mode (optional)
 │   │   ├── Memorial Mode (optional)
 │   │   └── Celebration Mode (optional)
 │   ├── Missing Center
@@ -70,11 +70,12 @@ MishiPass
 
 - Worker root page (landing)
 - Owner dashboard home
-- Register / login / logout
+- Register / login / logout (email/password + Google via Logto OIDC)
 - Cat registration and edit (including expanded profile fields)
 - QR card with real QR SVG/image
 - Active Profile public view
 - Missing Alert public view with mode switching
+- For Adoption public profile with transfer request flow
 - WhatsApp-ready Missing Card with public alert link
 - Recovery Board with city and alert-age filters
 - Vet Visit mode (owner activation, public form, Save & Finish, 24h expiry)
@@ -82,6 +83,7 @@ MishiPass
 - Sighting Report Form (text + optional photo)
 - Sighting Reports inbox (owner-only)
 - Cat profile photo upload and display (R2-backed)
+- Cat photo gallery (multiple photos, selectable profile, owner-only gallery access)
 - Sighting photo owner-only display (R2-backed)
 - Privacy & Contact Settings
 - Owner Settings language selector (English, Español, Қазақша)
@@ -98,10 +100,8 @@ MishiPass
 
 - Optional modes:
   - Travel
-  - Adoption
   - Memorial
   - Celebration
-  - Public Preview
 
 ## Access boundaries (from the security model)
 

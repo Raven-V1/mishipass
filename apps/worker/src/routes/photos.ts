@@ -1,6 +1,9 @@
 import { validateId } from "@mishipass/shared-validation";
 import { getCatForOwner, getCatPublicProfile, listSightingReportsForOwner, updateCatPhoto, insertCatPhoto, listCatPhotos, setCatProfilePhoto, deleteCatPhoto, getCatPhotoR2Key, toggleCatPhotoPublic, getPublicCatPhotoR2Key } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
+import { checkDurableRateLimit } from "../middleware/durableRateLimit.js";
+import { hmacSha256Hex } from "../utils/crypto.js";
+import { validatePhotoPublicId } from "../utils/photoId.js";
 
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_CAT_PHOTO_SIZE = 2 * 1024 * 1024; // 2 MB
@@ -260,9 +263,9 @@ export async function handleGalleryPhotoUpload(
   const objectKey = `cats/${publicId}/gallery/${hex}.${ext}`;
 
   await photos.put(objectKey, fileBuffer, { httpMetadata: { contentType: photoFile.type } });
-  const photoId = await insertCatPhoto(db, publicId, ctx.ownerId, objectKey);
+  const photoPublicId = await insertCatPhoto(db, publicId, ctx.ownerId, objectKey);
 
-  return Response.json({ success: true, photoId }, { status: 201 });
+  return Response.json({ success: true, photoPublicId }, { status: 201 });
 }
 
 /**
@@ -388,20 +391,39 @@ export async function handleTogglePhotoPublic(
 }
 
 /**
- * GET /media/cats/:publicId/photos/:photoId/public
+ * GET /media/cats/:publicId/photos/:photoPublicId/public
  * Public gallery photo serving. No auth required but photo must be is_public = 1.
+ * Uses opaque photo_public_id instead of internal integer PK.
+ * Rate-limited via HMAC-hashed IP, D1-backed counter (60 requests/min).
  */
 export async function handlePublicGalleryPhotoServe(
   publicId: string,
-  photoId: number,
+  photoPublicId: string,
   db: D1Database,
   photoBucket: R2Bucket,
+  hmacSecret: string | undefined,
+  request: Request,
 ): Promise<Response> {
   if (!validateId(publicId)) {
     return new Response("Not Found", { status: 404 });
   }
 
-  const r2Key = await getPublicCatPhotoR2Key(db, publicId, photoId);
+  if (!validatePhotoPublicId(photoPublicId)) {
+    return new Response("Not Found", { status: 404 });
+  }
+
+  // Rate limit: HMAC-hashed IP, matching the /c/:publicId lookup pattern (60/min)
+  if (hmacSecret) {
+    const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+    const hashedIp = await hmacSha256Hex(ip, hmacSecret);
+    const rateLimitKey = `gallery:${hashedIp.slice(0, 16)}:${publicId}`;
+    const allowed = await checkDurableRateLimit(db, rateLimitKey, 60, 1);
+    if (!allowed) {
+      return new Response("Too many requests. Try again later.", { status: 429 });
+    }
+  }
+
+  const r2Key = await getPublicCatPhotoR2Key(db, publicId, photoPublicId);
   if (!r2Key) {
     return new Response("Not Found", { status: 404 });
   }

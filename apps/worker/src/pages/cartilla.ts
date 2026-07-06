@@ -7,7 +7,7 @@ import {
 } from "../db/index.js";
 import type { MedicationEntry, VaccineEntry, VetVisitEntry } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
-import { MISHIPASS_DESIGN_CSS, brandLockupHtml, escapeHtml, htmlResponse } from "../utils/html.js";
+import { MISHIPASS_DESIGN_CSS, escapeHtml, htmlResponse } from "../utils/html.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
 import { renderTopNav, TOP_NAV_CSS } from "./partials/topNav.js";
 import { ILLUSTRATION_VET_CAT_SRC } from "../utils/designAssets.js";
@@ -83,8 +83,7 @@ export async function handleCartillaPage(
     .form-actions{display:flex;gap:var(--space-2);margin-top:var(--space-2);flex-wrap:wrap}
     .form-actions .mp-btn{flex:1 1 180px}
     .save-btn{background:var(--green);border-color:var(--green)}
-    .upload-drop{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:164px;border-radius:8px;border:1px dashed #a9d9ce;background:#fbfffd;text-align:center;color:var(--muted);font-weight:700}
-    .upload-drop strong{display:block;color:var(--teal);margin-bottom:6px}
+    .form-note{margin:0;color:var(--muted);font-size:.875rem;font-weight:700}
     .collapsible-form{border:1px solid var(--line);border-radius:8px;padding:var(--space-2);margin:var(--space-2) 0;background:#fff}
     .collapsible-form summary{font-size:1.1rem;font-weight:800;color:var(--teal);cursor:pointer;list-style:none;display:flex;align-items:center;gap:var(--space-1)}
     .collapsible-form summary::-webkit-details-marker{display:none}
@@ -108,7 +107,6 @@ export async function handleCartillaPage(
 <body>
   <main class="page-shell">
     ${renderTopNav(lang, { authenticated: true })}
-    ${brandLockupHtml(`/?lang=${lang}`)}
   <section class="mp-card cartilla-shell">
     <div class="nav"><a class="mp-back" href="/dashboard/cats/${safeId}?lang=${lang}">&larr; ${safeName}</a></div>
     <h1>${t(lang, "cartilla")}</h1>
@@ -170,7 +168,6 @@ export async function handleVetVisitDetailPage(
 <body>
   <main class="page-shell">
     ${renderTopNav(lang, { authenticated: true })}
-    ${brandLockupHtml(`/?lang=${lang}`)}
   <section class="mp-card detail-shell">
     <div class="nav"><a class="mp-back" href="/dashboard/cats/${safeId}/cartilla?lang=${lang}">&larr; ${t(lang, "cartilla")}</a></div>
     <h1>${t(lang, "vetVisit")}</h1>
@@ -201,19 +198,9 @@ function renderVaccines(publicId: string, vaccines: VaccineEntry[], _nextVaccine
       <form id="vaccine-form">
         <div class="form-grid">
           <label class="field">${t(lang, "vaccineName")}<input name="vaccine_name" required maxlength="100" /></label>
-          <label class="field">${t(lang, "manufacturer")}<input name="manufacturer" maxlength="100" /></label>
-          <label class="field">${t(lang, "lotNumber")}<input name="lot_number" maxlength="100" /></label>
           <label class="field">${t(lang, "dateGiven")}<input name="date_given" type="date" /></label>
-          <label class="field">${t(lang, "nextDue")}<input name="next_due" type="date" /></label>
-          <label class="field">${t(lang, "veterinarian")}<input name="veterinarian" maxlength="100" /></label>
-          <div class="field field-wide">
-            <span>${t(lang, "vaccineSticker")} (${t(lang, "optional")})</span>
-            <div class="upload-drop">
-              <strong>${t(lang, "uploadStickerImage")}</strong>
-              <span>JPG, PNG</span>
-            </div>
-          </div>
         </div>
+        <p class="form-note">Save the vaccine entry first, then upload the sticker photo from that vaccine's history card.</p>
         <div class="form-actions">
           <a class="mp-btn mp-btn-secondary" href="/dashboard/cats/${publicId}?lang=${lang}">${t(lang, "cancel")}</a>
           <button class="mp-btn mp-btn-primary save-btn" type="submit">${t(lang, "saveVaccine")}</button>

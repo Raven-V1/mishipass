@@ -53,14 +53,141 @@ async function setup() {
 }
 
 describe("Gallery visibility enforcement", () => {
-  it("public gallery serve returns 404 for private photo (is_public=0)", async () => {
+  it("public gallery serve returns 404 for old-style integer photoId (route does not match)", async () => {
     const { catId } = await setup();
-    // No photos uploaded, but even with a random photoId it should 404
+    // Old integer-based URL should no longer match the route regex
     const res = await worker.fetch(
       new Request(`http://localhost/media/cats/${catId}/photos/999/public`),
       env,
     );
     expect(res.status).toBe(404);
+  });
+
+  it("public gallery serve returns 404 for non-existent photo_public_id", async () => {
+    const { catId } = await setup();
+    // Valid format but non-existent photo_public_id (16 Crockford Base32 chars)
+    const res = await worker.fetch(
+      new Request(`http://localhost/media/cats/${catId}/photos/AAAAAAAAAAAAAAAA/public`),
+      env,
+    );
+    expect(res.status).toBe(404);
+  });
+
+  it("public gallery serve returns 404 for valid photo_public_id paired with wrong cat publicId", async () => {
+    const { cookie, catId } = await setup();
+    // Upload a photo to get a real photo_public_id
+    const jpegHeader = new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0, ...new Array(96).fill(0)]);
+    const form = new FormData();
+    form.append("photo", new File([jpegHeader], "test.jpg", { type: "image/jpeg" }));
+    const uploadRes = await worker.fetch(
+      new Request(`http://localhost/api/cats/${catId}/photos`, {
+        method: "POST",
+        headers: { Cookie: cookie },
+        body: form,
+      }),
+      env,
+    );
+    expect(uploadRes.status).toBe(201);
+    const { photoPublicId } = await uploadRes.json() as { photoPublicId: string };
+
+    // Toggle photo to public
+    const listRes = await worker.fetch(
+      new Request(`http://localhost/api/cats/${catId}/photos`, { headers: { Cookie: cookie } }),
+      env,
+    );
+    const { photos } = await listRes.json() as { photos: Array<{ id: number }> };
+    await worker.fetch(
+      new Request(`http://localhost/api/cats/${catId}/photos/${photos[0]!.id}/visibility`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: cookie },
+        body: JSON.stringify({ isPublic: true }),
+      }),
+      env,
+    );
+
+    // Create a second cat
+    const cat2Res = await worker.fetch(
+      new Request("http://localhost/api/cats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: cookie },
+        body: JSON.stringify({ name: "OtherCat", countryCode: "MX" }),
+      }),
+      env,
+    );
+    const cat2 = await cat2Res.json() as { publicId: string };
+
+    // Try accessing the photo via the WRONG cat's publicId
+    const crossCatRes = await worker.fetch(
+      new Request(`http://localhost/media/cats/${cat2.publicId}/photos/${photoPublicId}/public`),
+      env,
+    );
+    expect(crossCatRes.status).toBe(404);
+  });
+
+  it("public gallery serve succeeds with valid photo_public_id, matching publicId, and is_public=1", async () => {
+    const { cookie, catId } = await setup();
+    // Upload a photo
+    const jpegHeader = new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0, ...new Array(96).fill(0)]);
+    const form = new FormData();
+    form.append("photo", new File([jpegHeader], "test.jpg", { type: "image/jpeg" }));
+    const uploadRes = await worker.fetch(
+      new Request(`http://localhost/api/cats/${catId}/photos`, {
+        method: "POST",
+        headers: { Cookie: cookie },
+        body: form,
+      }),
+      env,
+    );
+    expect(uploadRes.status).toBe(201);
+    const { photoPublicId } = await uploadRes.json() as { photoPublicId: string };
+
+    // Toggle photo to public
+    const listRes = await worker.fetch(
+      new Request(`http://localhost/api/cats/${catId}/photos`, { headers: { Cookie: cookie } }),
+      env,
+    );
+    const { photos } = await listRes.json() as { photos: Array<{ id: number }> };
+    await worker.fetch(
+      new Request(`http://localhost/api/cats/${catId}/photos/${photos[0]!.id}/visibility`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: cookie },
+        body: JSON.stringify({ isPublic: true }),
+      }),
+      env,
+    );
+
+    // Public serve should now succeed (200 with image data)
+    const serveRes = await worker.fetch(
+      new Request(`http://localhost/media/cats/${catId}/photos/${photoPublicId}/public`),
+      env,
+    );
+    expect(serveRes.status).toBe(200);
+    expect(serveRes.headers.get("Content-Type")).toBe("image/jpeg");
+  });
+
+  it("public gallery serve returns 404 when photo is private (is_public=0) even with valid photo_public_id", async () => {
+    const { cookie, catId } = await setup();
+    // Upload a photo (defaults to is_public=0)
+    const jpegHeader = new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0, ...new Array(96).fill(0)]);
+    const form = new FormData();
+    form.append("photo", new File([jpegHeader], "test.jpg", { type: "image/jpeg" }));
+    const uploadRes = await worker.fetch(
+      new Request(`http://localhost/api/cats/${catId}/photos`, {
+        method: "POST",
+        headers: { Cookie: cookie },
+        body: form,
+      }),
+      env,
+    );
+    expect(uploadRes.status).toBe(201);
+    const { photoPublicId } = await uploadRes.json() as { photoPublicId: string };
+
+    // Without toggling to public, the serve should 404
+    const serveRes = await worker.fetch(
+      new Request(`http://localhost/media/cats/${catId}/photos/${photoPublicId}/public`),
+      env,
+    );
+    expect(serveRes.status).toBe(404);
   });
 
   it("toggle visibility requires authentication", async () => {

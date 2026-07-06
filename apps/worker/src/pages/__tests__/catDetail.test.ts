@@ -68,7 +68,7 @@ describe("handleCatDetail", () => {
     const html = await res.text();
     expect(html).toContain("mp-top-nav");
     expect(html).toContain("/dashboard");
-    expect(html).toContain(`/c/${TEST_CAT_ID}`);
+    expect(html).toContain(`/dashboard/cats/${TEST_CAT_ID}/public-profile`);
   });
 
   it("does not expose raw private fields on the owner detail page", async () => {

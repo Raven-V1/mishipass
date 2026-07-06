@@ -1,6 +1,6 @@
 import { getCatForOwner } from "../db/index.js";
 import { getCountryBadgeLabel } from "../data/countries.js";
-import { MISHIPASS_DESIGN_CSS, brandLockupHtml, escapeHtml, htmlResponse } from "../utils/html.js";
+import { MISHIPASS_DESIGN_CSS, escapeHtml, htmlResponse } from "../utils/html.js";
 import type { RequestContext } from "../middleware/session.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
 import { renderTopNav, TOP_NAV_CSS } from "./partials/topNav.js";
@@ -93,7 +93,6 @@ export async function handleCatDetail(
 <body>
   <main class="page-shell">
     ${renderTopNav(lang, { authenticated: true })}
-    ${brandLockupHtml(`/?lang=${lang}`)}
     <section class="mp-card detail-card">
       <div><a class="mp-back" href="/dashboard?lang=${lang}">&larr; ${t(lang, "dashboard")}</a></div>
       <div class="hero">
@@ -104,7 +103,7 @@ export async function handleCatDetail(
           <p class="id-line">${safeId}</p>
           <div class="hero-stat-grid">${statCards}</div>
           <div class="nav-links">
-            <a href="/c/${safeId}?lang=${lang}">${t(lang, "viewPublicProfile")}</a>
+            <a href="/dashboard/cats/${safeId}/public-profile?lang=${lang}">${t(lang, "viewPublicProfile")}</a>
             <a href="/dashboard/cats/${safeId}/qr?lang=${lang}">${t(lang, "qrCard")}</a>
             <a href="/dashboard/cats/${safeId}/cartilla?lang=${lang}">${t(lang, "cartilla")}</a>
         ${cat.current_mode === "missing" ? `<a href="/dashboard/cats/${safeId}/sightings?lang=${lang}">${t(lang, "reports")}</a>` : ""}

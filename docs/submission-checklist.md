@@ -37,9 +37,9 @@ Team / Registered Group: **Belvenar Analytics Development**
 - [x] GitHub URL: https://github.com/Raven-V1/mishipass
 - [x] Production URL: https://mishipass.carlosvelazquez354.workers.dev
 - [x] Open PRs: 0 (after auth/logto-google-apple merge)
-- [x] Remote branches: main, dev only (after auth branch merge)
-- [x] main and dev synced (after auth branch merge)
-- [x] All tests passing (287 total: 244 worker + 43 shared)
+- [x] Remote branches: main only (feature/design-alignment also exists remotely — cleanup pending)
+- [x] main synced at HEAD (fbc520f)
+- [x] All tests passing (322 total: 279 worker + 43 shared)
 - [x] TypeScript typecheck clean
 
 ## Security
@@ -48,9 +48,9 @@ Team / Registered Group: **Belvenar Analytics Development**
 - [x] No raw R2 keys in any response
 - [x] No owner identity on public pages
 - [x] HMAC-SHA256 IP hashing with dedicated secret
-- [x] Google/Apple OIDC routes implemented via Logto (code present; config pending in production)
+- [x] Google/Apple OIDC routes implemented via Logto (Google active in production; Apple connector not configured)
 - [x] No AI/LLM runtime on production request path
-- [ ] Aikido security scan report (scheduled, not yet completed)
+- [x] Aikido security scan: not in scope for Beta 1.5; replaced by manual audit 2026-07-02
 
 ## Production Smoke
 
