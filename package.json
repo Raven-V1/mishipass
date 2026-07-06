@@ -5,5 +5,9 @@
   "workspaces": [
     "apps/*",
     "packages/shared/*"
-  ]
+  ],
+  "scripts": {
+    "typecheck": "npm run typecheck --workspace apps/worker",
+    "test": "npm test --workspace apps/worker"
+  }
 }
