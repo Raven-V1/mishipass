@@ -5,5 +5,11 @@
   "workspaces": [
     "apps/*",
     "packages/shared/*"
-  ]
+  ],
+  "scripts": {
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
 }
