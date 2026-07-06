@@ -133,7 +133,7 @@ export async function handleCatDetail(
       </section>
 
       <div class="section-heading"><h2>${t(lang, "galleryTitle")}</h2></div>
-      <section class="mp-card gallery-panel">
+      <section class="mp-card gallery-panel" id="gallery-upload">
         <div class="upload-area">
           <label class="mp-btn mp-btn-secondary" for="gallery-upload-input">${t(lang, "uploadPhoto")}</label>
           <input type="file" id="gallery-upload-input" accept="image/jpeg,image/png,image/webp" />

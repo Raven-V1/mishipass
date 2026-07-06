@@ -7,6 +7,8 @@
     "packages/shared/*"
   ],
   "scripts": {
+    "typecheck": "npm run typecheck --workspace apps/worker",
+    "test": "npm test --workspace apps/worker",
     "test:e2e": "playwright test"
   },
   "devDependencies": {

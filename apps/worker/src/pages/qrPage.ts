@@ -1,5 +1,5 @@
 import { getCatForOwner } from "../db/index.js";
-import { MISHIPASS_DESIGN_CSS, escapeHtml, htmlResponse } from "../utils/html.js";
+import { MISHIPASS_DESIGN_CSS, brandLogoHtml, escapeHtml, htmlResponse } from "../utils/html.js";
 import { generateQrSvg } from "../utils/qr.js";
 import type { RequestContext } from "../middleware/session.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
@@ -25,7 +25,6 @@ export async function handleQrPage(
   const safeName = escapeHtml(cat.name);
   const safeId = escapeHtml(publicId);
   const publicUrl = `${publicBaseUrl}/c/${publicId}`;
-  const safeUrl = escapeHtml(publicUrl);
   const qrSvg = generateQrSvg(publicUrl);
 
   const html = `<!DOCTYPE html>
@@ -52,9 +51,15 @@ export async function handleQrPage(
     .printable-card:before{content:"";position:absolute;inset:14px;border-radius:14px;background:linear-gradient(160deg,rgba(255,240,233,.65),rgba(232,250,247,.45));z-index:0}
     .printable-card>*{position:relative;z-index:1}
     .card-label{display:inline-flex;align-items:center;justify-content:center;min-height:28px;padding:0 .9rem;border-radius:999px;background:#fff0e9;color:var(--brand-coral);font-size:.6875rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin:0 0 var(--space-2)}
-    .front-card{display:flex;flex-direction:column;align-items:center;justify-content:center}
-    .front-card .card-qr{margin:auto;border-radius:18px;padding:14px;background:#fff;border:2px solid #f0b39f;box-shadow:0 8px 24px rgba(56,38,26,.10)}
-    .front-card .card-qr svg{display:block;width:min(100%,46mm);height:min(100%,46mm)}
+    .front-card{display:grid;grid-template-columns:1fr 136px;grid-template-rows:auto 1fr auto;gap:var(--space-2);align-items:center;text-align:center}
+    .front-card .card-label{grid-column:1/-1;justify-self:center}
+    .front-illustration{align-self:center;justify-self:center;width:142px;height:118px;border-radius:999px;background:#fff;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;box-shadow:0 8px 24px rgba(56,38,26,.08)}
+    .front-illustration .brand-logo-large{width:112px;margin-bottom:-6px}
+    .front-card .card-qr{justify-self:center;border-radius:12px;padding:10px;background:#fff;border:2px solid #f0b39f;box-shadow:0 8px 24px rgba(56,38,26,.10)}
+    .front-card .card-qr svg{display:block;width:104px;height:104px}
+    .reward-pill{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:30px;padding:0 1rem;border-radius:8px;background:#fff0e9;color:var(--brand-coral);font-weight:900;font-size:.8rem}
+    .front-help{margin:0;color:var(--ink);font-weight:800;font-size:.85rem}
+    .contact-strip{grid-column:1/-1;display:inline-flex;align-items:center;justify-content:center;gap:8px;justify-self:center;min-height:34px;padding:0 .9rem;border-radius:8px;background:#f0fbf6;color:var(--teal);font-size:.78rem;font-weight:900}
     .back-card{display:flex;flex-direction:column;justify-content:center}
     .cat-chip{display:inline-flex;align-items:center;justify-content:center;padding:.35rem .9rem;border-radius:999px;background:#fff;color:var(--teal);font-size:.75rem;font-weight:900;border:1px solid var(--line);margin:0 auto var(--space-2)}
     .back-headline{font-size:2rem;font-weight:900;color:var(--ink);line-height:1.08;margin:var(--space-2) 0}
@@ -100,6 +105,29 @@ export async function handleQrPage(
     <section class="mp-card print-section">
       <p class="print-header no-print">${t(lang, "printDoubleSided")}</p>
       <p class="print-sub no-print">${t(lang, "cutInstruction")}</p>
+      <div class="card-pair">
+        <div class="printable-card front-card">
+          <p class="card-label">FRONT</p>
+          <div class="front-illustration" aria-hidden="true">${brandLogoHtml("brand-logo-large")}</div>
+          <div>
+            <div class="card-qr" aria-label="${safeName} QR" data-public-url="${escapeHtml(publicUrl)}">${qrSvg}</div>
+            <p class="reward-pill">🎁 REWARD</p>
+            <p class="front-help">Help bring me home!</p>
+          </div>
+          <p class="contact-strip">${iconContact(16)} Emergency Contact through MishiPass</p>
+        </div>
+        <span class="scissors no-print" aria-hidden="true">&#9986;</span>
+        <div class="printable-card back-card">
+          <p class="card-label">BACK</p>
+          <p class="back-headline">If you find this cat,<br /><span>scan this QR.</span></p>
+          <div class="back-divider"></div>
+          <ul class="back-list">
+            <li>${iconContact(16)} <span>${t(lang, "scanToView")}</span></li>
+            <li>${iconContact(16)} <span>${t(lang, "ownerWillBeNotified")}</span></li>
+            <li>${iconContact(16)} <span>${t(lang, "emergencyContact")}</span></li>
+            <li>${iconContact(16)} <span>${t(lang, "thankYouForHelping")}</span></li>
+          </ul>
+          <p class="brand-mark">Mishi<span>Pass</span></p>
       <div class="qr-stage">
         <div class="card-pair">
           <div class="printable-card front-card">
@@ -124,33 +152,12 @@ export async function handleQrPage(
         </div>
       </div>
       <div class="qr-actions no-print">
-        <button class="mp-btn mp-btn-secondary" id="copy-link-btn" onclick="copyPublicLink()">${t(lang, "copyLink")}</button>
+        <button class="mp-btn mp-btn-secondary" id="download-pdf-btn" onclick="window.print()">Download PDF</button>
         <button class="mp-btn print-card-btn" onclick="window.print()">${t(lang, "printCard")}</button>
       </div>
       <p class="tip-note no-print">${t(lang, "tipPrintCardstock")}</p>
     </section>
   </main>
-  <script>
-  function copyPublicLink(){
-    var url=${JSON.stringify(safeUrl)};
-    var btn=document.getElementById("copy-link-btn");
-    if(!btn)return;
-    if(navigator.clipboard){
-      navigator.clipboard.writeText(url).then(function(){
-        btn.textContent=${JSON.stringify(t(lang, "linkCopied"))};
-        setTimeout(function(){btn.textContent=${JSON.stringify(t(lang, "copyLink"))};},2000);
-      }).catch(fallback);
-    } else { fallback(); }
-    function fallback(){
-      var ta=document.createElement("textarea");
-      ta.value=url;ta.style.position="fixed";ta.style.opacity="0";
-      document.body.appendChild(ta);ta.select();document.execCommand("copy");
-      document.body.removeChild(ta);
-      btn.textContent=${JSON.stringify(t(lang, "linkCopied"))};
-      setTimeout(function(){btn.textContent=${JSON.stringify(t(lang, "copyLink"))};},2000);
-    }
-  }
-  </script>
 </body>
 </html>`;
 
