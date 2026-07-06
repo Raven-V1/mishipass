@@ -187,13 +187,10 @@ describe("renderVetVisitPage", () => {
     expect(html).not.toContain("cartilla");
     expect(html).toContain("Medication Record");
     expect(html).toContain("Vaccine");
-    expect(html).toContain('name="vaccine_sticker_photo_capture"');
-    expect(html).toContain('capture="environment"');
     expect(html).toContain('name="vaccine_sticker_photo_upload"');
     expect(html).toContain("photo-input-visually-hidden");
     expect(html).toContain("vaccine-sticker-status");
-    expect(html.match(/Take photo/g)?.length).toBe(1);
-    expect(html.match(/Choose existing photo/g)?.length).toBe(1);
+    expect(html.match(/Photo upload/g)?.length).toBe(1);
     expect(html).toContain("No photo selected");
   });
 

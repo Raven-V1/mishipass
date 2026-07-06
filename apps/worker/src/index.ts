@@ -22,6 +22,7 @@ import { handleCartillaPage, handleVetVisitDetailPage } from "./pages/cartilla.j
 import { handlePublicProfileSettingsPage } from "./pages/publicProfileSettings.js";
 import { handleQrPage } from "./pages/qrPage.js";
 import { handleSightingInbox, handleSightingDetail } from "./pages/sightingInbox.js";
+import { handleSettingsPage } from "./pages/settings.js";
 import { getLanguageFromRequest, resolveOwnerLang } from "./utils/i18n.js";
 import { handleBrandAsset } from "./utils/brandAssets.js";
 import { ILLUSTRATION_NOT_FOUND_SRC } from "./utils/designAssets.js";
@@ -78,6 +79,7 @@ const DASHBOARD_CAT_QR = /^\/dashboard\/cats\/([^/]+)\/qr$/;
 const DASHBOARD_CAT_PUBLIC_PROFILE = /^\/dashboard\/cats\/([^/]+)\/public-profile$/;
 const DASHBOARD_CAT_SIGHTINGS = /^\/dashboard\/cats\/([^/]+)\/sightings$/;
 const DASHBOARD_CAT_SIGHTING_DETAIL = /^\/dashboard\/cats\/([^/]+)\/sightings\/([^/]+)$/;
+const DASHBOARD_SETTINGS = /^\/dashboard\/settings$/;
 const VET_VISIT_START = /^\/api\/cats\/([^/]+)\/vet-visit\/start$/;
 const VET_VISIT_CANCEL = /^\/api\/cats\/([^/]+)\/vet-visit\/cancel$/;
 const VET_VISIT_FINISH = /^\/api\/cats\/([^/]+)\/vet-visit\/finish$/;
@@ -120,6 +122,15 @@ export default {
 
     if (method === "GET" && pathname === "/dashboard/register") {
       return handleDashboardRegister(env);
+    }
+
+    if (method === "GET" && DASHBOARD_SETTINGS.test(pathname)) {
+      const ctx = await resolveSession(request, env.DB);
+      const lang = ctx.ownerId ? await resolveOwnerLang(env.DB, ctx.ownerId) : "en" as const;
+      if (ctx.ownerId === null) {
+        return handleDashboard(env);
+      }
+      return handleSettingsPage(lang);
     }
 
     if (method === "GET" && pathname === "/recovery-board") {

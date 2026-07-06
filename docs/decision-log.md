@@ -758,3 +758,12 @@ a phantom contributor page on GitHub and contradicts the authorship policy).
 Reverting and recommitting (rejected — same result with more noise).
 
 Decided by: Carlos
+
+---
+
+## 2026-07-05 - Commit attribution correction and history rewrite on main
+
+Decision: Rewrite author/committer of ce0eb78 (redesign -> Zhanerke Askerbekova) and 4fe0158 (Playwright scaffold -> Raven-V1), strip incorrect Co-Authored-By trailers, back up pre-rewrite state, force-push main and dev.
+Reason: [PLACEHOLDER - Carlos to fill in his own wording]
+Alternatives considered: (1) .mailmap remap only - rejected, does not change authorship GitHub attributes to the commits. (2) Forward-only fix - rejected, leaves design and tooling work misattributed on main.
+Decided by: Carlos

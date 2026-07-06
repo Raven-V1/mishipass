@@ -92,7 +92,7 @@ export async function handleCatDetail(
 </head>
 <body>
   <main class="page-shell">
-    ${renderTopNav(lang, { authenticated: true })}
+    ${renderTopNav(lang, { authenticated: true, active: "dashboard" })}
     <section class="mp-card detail-card">
       <div><a class="mp-back" href="/dashboard?lang=${lang}">&larr; ${t(lang, "dashboard")}</a></div>
       <div class="hero">

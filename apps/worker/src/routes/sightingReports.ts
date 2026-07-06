@@ -435,10 +435,8 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
           <div class="placeholder-photo"><span>${t(lang, "noPhoto")}<br />${t(lang, "photoUpload")}</span></div>
           <div class="photo-picker">
             <div class="photo-picker-actions">
-              <label for="photo-capture" class="photo-action">${t(lang, "takePhoto")}</label>
-              <label for="photo-upload" class="photo-action">${t(lang, "chooseExistingPhoto")}</label>
+              <label for="photo-upload" class="photo-action">${t(lang, "photoUpload")}</label>
             </div>
-            <input class="photo-input-visually-hidden" type="file" id="photo-capture" name="photoCapture" accept="image/*" capture="environment" />
             <input class="photo-input-visually-hidden" type="file" id="photo-upload" name="photoUpload" accept="image/*" />
             <div id="sighting-photo-status" class="photo-status">${t(lang, "noPhotoSelected")}</div>
           </div>
@@ -495,7 +493,6 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
     var pin=document.getElementById("sighting-map-pin");
     var useLocationBtn=document.getElementById("map-use-location");
     var clearLocationBtn=document.getElementById("map-clear-location");
-    var photoCapture=document.getElementById("photo-capture");
     var photoUpload=document.getElementById("photo-upload");
     var photoStatus=document.getElementById("sighting-photo-status");
     var dateInput=document.getElementById("sighting-date");
@@ -547,7 +544,6 @@ function renderSightingForm(publicId: string, catName: string, lang: LanguageCod
         photoStatus.textContent=file?file.name:${JSON.stringify(t(lang, "noPhotoSelected"))};
       });
     }
-    bindPhotoInput(photoCapture);
     bindPhotoInput(photoUpload);
     document.querySelector("form").addEventListener("submit",function(){
       var datePart=dateInput&&dateInput.value?dateInput.value:"";

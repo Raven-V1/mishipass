@@ -171,6 +171,10 @@ Production URL: `https://mishipass.carlosvelazquez354.workers.dev`
 6. **Vet Visit mode without a real vet account:** Click "Start Vet Visit" from the dashboard. Then open the same public QR URL — it shows the vet entry form. Anyone can fill it in (this is a documented Beta limitation; dedicated vet accounts are deferred). Click "Save & Finish Visit" to return the cat to Active Profile automatically.
 7. **Recovery Board:** Visit `/recovery-board` to see any cats currently in Missing Alert mode.
 
+## Commit attribution correction - 2026-07-05
+
+Two commits on main were recorded under an incorrect automated committer identity (a bot account and a Co-Authored-By trailer) and were rewritten to the correct authors: Raven-V1 for tooling/logic, Zhanerke Askerbekova for design. Pre-rewrite state preserved in backup/pre-attribution-rewrite-2026-07-05. Collaborators must re-sync main (and dev) after the force-push.
+
 ## Submission notes
 
 - Do not include `node_modules/`, `dist/`, or `.wrangler/` in any submission package.

@@ -93,32 +93,44 @@ export async function handleCartillaPage(
     .btn{margin-top:var(--space-2)}
     .sticker{display:block;width:160px;height:112px;object-fit:cover;margin-top:var(--space-2);border-radius:8px}
     .photo-picker{margin:var(--space-1) 0 var(--space-2)}.photo-picker-actions{display:flex;gap:var(--space-1);flex-wrap:wrap}.photo-action{flex:1 1 160px}.photo-input-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}.photo-status{margin-top:var(--space-1);overflow-wrap:anywhere}
-    .empty-state{text-align:center;padding:var(--space-2) 0 var(--space-4)}
-    .empty-state img{display:block;width:min(100%,420px);margin:0 auto var(--space-3)}
-    .empty-state h2{font-size:clamp(2rem,5vw,3rem);line-height:1.05;margin:0 0 var(--space-1)}
-    .empty-state p{max-width:420px;margin:0 auto;color:var(--muted);font-weight:700;font-size:1.05rem}
-    .empty-actions{display:flex;justify-content:center;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-4)}
-    .empty-actions .mp-btn{min-width:180px}
+    .empty-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3);margin:var(--space-2) 0 var(--space-4)}
+    .empty-card{padding:var(--space-3);display:grid;gap:var(--space-2);min-height:260px}
+    .empty-card-head{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2)}
+    .empty-card-head h2{font-size:1.5rem;margin:0}
+    .empty-card-head p{margin:4px 0 0;color:var(--muted);font-weight:700;font-size:.9rem}
+    .empty-card-art{display:grid;place-items:center;min-height:148px;text-align:center}
+    .empty-card-art img{display:block;width:min(100%,220px);margin:0 auto var(--space-2)}
+    .empty-card-art strong{display:block;color:var(--teal);font-size:1.1rem}
+    .empty-card-art p{max-width:240px;margin:8px auto 0;color:var(--muted);font-weight:700}
     .well-note{display:flex;align-items:center;justify-content:center;gap:var(--space-1);margin-top:var(--space-4);padding:var(--space-2);border-radius:999px;background:#eef8f5;color:var(--teal);font-size:.875rem;font-weight:800}
-    @media(max-width:860px){.split-section,.form-grid{grid-template-columns:1fr}}
-    @media(max-width:430px){body{padding:var(--space-2)}.page-shell{margin:var(--space-2) auto}.cartilla-shell{padding:var(--space-3)}.grid{grid-template-columns:1fr}.photo-action,.btn,.empty-actions .mp-btn{width:100%;flex-basis:100%}.form-actions .mp-btn{flex-basis:100%}}
+    @media(max-width:860px){.split-section,.form-grid,.empty-grid{grid-template-columns:1fr}}
+    @media(max-width:430px){body{padding:var(--space-2)}.page-shell{margin:var(--space-2) auto}.cartilla-shell{padding:var(--space-3)}.grid{grid-template-columns:1fr}.photo-action,.btn{width:100%;flex-basis:100%}.form-actions .mp-btn{flex-basis:100%}}
   </style>
 </head>
 <body>
   <main class="page-shell">
-    ${renderTopNav(lang, { authenticated: true })}
+    ${renderTopNav(lang, { authenticated: true, active: "dashboard" })}
   <section class="mp-card cartilla-shell">
     <div class="nav"><a class="mp-back" href="/dashboard/cats/${safeId}?lang=${lang}">&larr; ${safeName}</a></div>
     <h1>${t(lang, "cartilla")}</h1>
     <p class="intro-copy">${safeName} ${t(lang, "cartillaPrivateRecords")}</p>
-    ${isEmpty ? `<section class="empty-state">
-      <img src="${ILLUSTRATION_VET_CAT_SRC}" alt="" />
-      <h2>${t(lang, "noMedicalRecordsTitle")}</h2>
-      <p>${t(lang, "noMedicalRecordsSubtitle")}</p>
-      <div class="empty-actions">
-        <a class="mp-btn mp-btn-secondary" href="#vaccine-form">${t(lang, "addVaccine")}</a>
-        <a class="mp-btn mp-btn-secondary" href="/dashboard/cats/${safeId}?lang=${lang}">${t(lang, "addVetVisit")}</a>
-      </div>
+    ${isEmpty ? `<section class="empty-grid">
+      <article class="mp-card empty-card">
+        <div class="empty-card-head"><div><h2>${t(lang, "vaccines")}</h2><p>Keep track of all vaccinations.</p></div><a class="mp-btn mp-btn-primary" href="#vaccine-form">${t(lang, "addVaccine")}</a></div>
+        <div class="empty-card-art"><img src="${ILLUSTRATION_VET_CAT_SRC}" alt="" /><strong>No records yet.</strong><p>Add your cat's first vaccine to get started.</p></div>
+      </article>
+      <article class="mp-card empty-card">
+        <div class="empty-card-head"><div><h2>${t(lang, "medicationRecord")}</h2><p>Track ongoing and past medications.</p></div><a class="mp-btn mp-btn-primary" href="#medication-form">${t(lang, "save")}</a></div>
+        <div class="empty-card-art"><img src="${ILLUSTRATION_VET_CAT_SRC}" alt="" /><strong>No records yet.</strong><p>Add your cat's medication record to keep track.</p></div>
+      </article>
+      <article class="mp-card empty-card">
+        <div class="empty-card-head"><div><h2>${t(lang, "vetVisit")}</h2><p>Record checkups and vet consultations.</p></div><a class="mp-btn mp-btn-primary" href="/dashboard/cats/${safeId}?lang=${lang}">${t(lang, "addVetVisit")}</a></div>
+        <div class="empty-card-art"><img src="${ILLUSTRATION_VET_CAT_SRC}" alt="" /><strong>No records yet.</strong><p>Add your cat's first vet visit.</p></div>
+      </article>
+      <article class="mp-card empty-card">
+        <div class="empty-card-head"><div><h2>${t(lang, "weight")}</h2><p>Monitor your cat's weight over time.</p></div><span class="mp-btn mp-btn-secondary">${t(lang, "notSet")}</span></div>
+        <div class="empty-card-art"><img src="${ILLUSTRATION_VET_CAT_SRC}" alt="" /><strong>No records yet.</strong><p>Add weight entries from vet visits to see history.</p></div>
+      </article>
     </section>` : ""}
     ${renderVetVisits(safeId, vetVisits, lang)}
     ${renderVaccines(safeId, vaccines, cat.next_vaccine_date, lang)}
@@ -136,7 +148,7 @@ export async function handleCartillaPage(
       medForm.addEventListener("submit",function(e){e.preventDefault();var f=e.target;postJson("/api/cats/${safeId}/medications",{medication_name:f.medication_name.value,dose:f.dose.value,duration:f.duration.value,start_date:f.start_date.value,prescriber_name:f.prescriber_name.value,notes:f.notes.value}).then(function(r){if(r.ok) location.reload(); else r.text().then(alert);});});
       document.querySelectorAll(".photo-input-visually-hidden").forEach(function(input){input.addEventListener("change",function(){var status=document.getElementById(input.getAttribute("data-photo-status"));if(status) status.textContent=input.files&&input.files[0]?input.files[0].name:${JSON.stringify(t(lang, "noPhotoSelected"))};});});
       var stickerForms=document.querySelectorAll(".sticker-form");
-      for(var i=0;i<stickerForms.length;i++) stickerForms[i].addEventListener("submit",function(e){e.preventDefault();var f=e.target;var file=(f.photoCapture&&f.photoCapture.files[0])||(f.photoUpload&&f.photoUpload.files[0]);if(!file)return;var fd=new FormData();fd.append("photo",file);fetch(f.action,{method:"POST",credentials:"same-origin",body:fd}).then(function(r){if(r.ok) location.reload(); else r.text().then(alert);});});
+      for(var i=0;i<stickerForms.length;i++) stickerForms[i].addEventListener("submit",function(e){e.preventDefault();var f=e.target;var file=f.photo&&f.photo.files[0];if(!file)return;var fd=new FormData();fd.append("photo",file);fetch(f.action,{method:"POST",credentials:"same-origin",body:fd}).then(function(r){if(r.ok) location.reload(); else r.text().then(alert);});});
     })();
   </script>
 </body>
@@ -167,7 +179,7 @@ export async function handleVetVisitDetailPage(
 <style>${MISHIPASS_DESIGN_CSS}${TOP_NAV_CSS}body{padding:var(--space-3)}.page-shell{max-width:672px;margin:var(--space-4) auto}.detail-shell{padding:var(--space-4);margin-top:var(--space-3)}.nav{font-size:0.875rem;margin-bottom:var(--space-3)}h1{color:var(--teal)}.field{margin:var(--space-2) 0}.label{font-size:0.875rem;color:var(--muted);font-weight:800}.value{white-space:pre-wrap}@media(max-width:430px){body{padding:var(--space-2)}.detail-shell{padding:var(--space-3)}}</style></head>
 <body>
   <main class="page-shell">
-    ${renderTopNav(lang, { authenticated: true })}
+    ${renderTopNav(lang, { authenticated: true, active: "dashboard" })}
   <section class="mp-card detail-shell">
     <div class="nav"><a class="mp-back" href="/dashboard/cats/${safeId}/cartilla?lang=${lang}">&larr; ${t(lang, "cartilla")}</a></div>
     <h1>${t(lang, "vetVisit")}</h1>
@@ -191,7 +203,7 @@ function renderVetVisits(publicId: string, visits: VetVisitEntry[], lang: Langua
 function renderVaccines(publicId: string, vaccines: VaccineEntry[], _nextVaccineDate: string | null, lang: LanguageCode): string {
   const history = vaccines.length === 0
     ? `<p class="muted">${t(lang, "noMatches")}</p>`
-    : `<div class="timeline">${vaccines.map(v => `<div class="record history-card"><div class="history-icon">+</div><div class="history-meta"><strong>${escapeHtml(v.vaccine_name)}</strong><p>${t(lang, "dateGiven")}: ${dateOrEmpty(v.date_given, lang)}</p><p>${t(lang, "nextDue")}: ${t(lang, "unknown")}</p>${v.sticker_photo_r2_key ? `<img class="sticker" src="/media/cats/${publicId}/vaccines/${v.id}/sticker-photo" alt="${t(lang, "vaccineSticker")}" />` : ""}<form class="sticker-form" action="/api/cats/${publicId}/vaccines/${v.id}/sticker-photo"><div class="photo-picker"><div class="photo-picker-actions"><label class="photo-action" for="sticker-capture-${v.id}">${t(lang, "takePhoto")}</label><label class="photo-action" for="sticker-upload-${v.id}">${t(lang, "chooseExistingPhoto")}</label></div><input class="photo-input-visually-hidden" id="sticker-capture-${v.id}" type="file" name="photoCapture" accept="image/*" capture="environment" data-photo-status="sticker-status-${v.id}" /><input class="photo-input-visually-hidden" id="sticker-upload-${v.id}" type="file" name="photoUpload" accept="image/*" data-photo-status="sticker-status-${v.id}" /><div id="sticker-status-${v.id}" class="photo-status">${t(lang, "noPhotoSelected")}</div></div><button class="btn secondary" type="submit">${t(lang, "photoUpload")}</button></form></div><div class="history-chevron">›</div></div>`).join("")}</div>`;
+    : `<div class="timeline">${vaccines.map(v => `<div class="record history-card"><div class="history-icon">+</div><div class="history-meta"><strong>${escapeHtml(v.vaccine_name)}</strong><p>${t(lang, "dateGiven")}: ${dateOrEmpty(v.date_given, lang)}</p><p>${t(lang, "nextDue")}: ${t(lang, "unknown")}</p>${v.sticker_photo_r2_key ? `<img class="sticker" src="/media/cats/${publicId}/vaccines/${v.id}/sticker-photo" alt="${t(lang, "vaccineSticker")}" />` : ""}<form class="sticker-form" action="/api/cats/${publicId}/vaccines/${v.id}/sticker-photo"><div class="photo-picker"><div class="photo-picker-actions"><label class="photo-action" for="sticker-upload-${v.id}">${t(lang, "photoUpload")}</label></div><input class="photo-input-visually-hidden" id="sticker-upload-${v.id}" type="file" name="photo" accept="image/*" data-photo-status="sticker-status-${v.id}" /><div id="sticker-status-${v.id}" class="photo-status">${t(lang, "noPhotoSelected")}</div></div><button class="btn secondary" type="submit">${t(lang, "save")}</button></form></div><div class="history-chevron">›</div></div>`).join("")}</div>`;
   return `<section class="split-section">
     <div class="panel-card">
       <div class="panel-heading"><h2>${t(lang, "addNewVaccine")}</h2></div>

@@ -438,7 +438,6 @@ function renderActiveProfile(
         </div>
       </div>
       <div class="profile-info">
-        <p class="card-title">${iconHome(16)} <span>${t(lang, "viewPublicProfile")}</span></p>
         <h2>${safeName}</h2>
         <div class="profile-status">
           <span class="badge">${safeCountry}</span>

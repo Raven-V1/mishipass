@@ -45,7 +45,8 @@ export async function handleQrPage(
     .print-section{padding:var(--space-4)}
     .print-header{font-weight:900;font-size:1.25rem;color:var(--teal);margin:0 0 var(--space-1);display:flex;align-items:center;justify-content:center;gap:var(--space-1)}
     .print-sub{font-size:.9375rem;color:var(--muted);margin:0 0 var(--space-4);text-align:center;font-weight:700}
-    .card-pair{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:var(--space-3);align-items:center;margin-bottom:var(--space-4)}
+    .qr-stage{border-radius:18px;background:linear-gradient(180deg,#fff8f2 0%,#f4fcfa 100%);border:1px solid var(--line);padding:var(--space-3);margin-bottom:var(--space-4)}
+    .card-pair{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:var(--space-3);align-items:center}
     .printable-card{position:relative;border:2px dashed #f0b39f;border-radius:18px;padding:var(--space-3);aspect-ratio:1.45/1;background:rgba(255,255,255,.96);text-align:center;box-shadow:0 14px 40px rgba(56,38,26,.08)}
     .printable-card:before{content:"";position:absolute;inset:14px;border-radius:14px;background:linear-gradient(160deg,rgba(255,240,233,.65),rgba(232,250,247,.45));z-index:0}
     .printable-card>*{position:relative;z-index:1}
@@ -60,6 +61,7 @@ export async function handleQrPage(
     .front-help{margin:0;color:var(--ink);font-weight:800;font-size:.85rem}
     .contact-strip{grid-column:1/-1;display:inline-flex;align-items:center;justify-content:center;gap:8px;justify-self:center;min-height:34px;padding:0 .9rem;border-radius:8px;background:#f0fbf6;color:var(--teal);font-size:.78rem;font-weight:900}
     .back-card{display:flex;flex-direction:column;justify-content:center}
+    .cat-chip{display:inline-flex;align-items:center;justify-content:center;padding:.35rem .9rem;border-radius:999px;background:#fff;color:var(--teal);font-size:.75rem;font-weight:900;border:1px solid var(--line);margin:0 auto var(--space-2)}
     .back-headline{font-size:2rem;font-weight:900;color:var(--ink);line-height:1.08;margin:var(--space-2) 0}
     .back-headline span{color:var(--brand-coral)}
     .back-divider{width:72%;height:1px;background:var(--line);margin:0 auto var(--space-3)}
@@ -88,7 +90,7 @@ export async function handleQrPage(
 <body>
   <main class="qr-shell">
     <div class="no-print">
-      ${renderTopNav(lang, { authenticated: true })}
+      ${renderTopNav(lang, { authenticated: true, active: "dashboard" })}
       <a class="back-link mp-back" href="/dashboard/cats/${safeId}?lang=${lang}">&larr; ${safeName}</a>
     </div>
 
@@ -126,6 +128,27 @@ export async function handleQrPage(
             <li>${iconContact(16)} <span>${t(lang, "thankYouForHelping")}</span></li>
           </ul>
           <p class="brand-mark">Mishi<span>Pass</span></p>
+      <div class="qr-stage">
+        <div class="card-pair">
+          <div class="printable-card front-card">
+            <p class="card-label">FRONT</p>
+            <div class="cat-chip">${safeName}</div>
+            <div class="card-qr" aria-label="${safeName} QR">${qrSvg}</div>
+          </div>
+          <span class="scissors no-print" aria-hidden="true">&#9986;</span>
+          <div class="printable-card back-card">
+            <p class="card-label">BACK</p>
+            <div class="cat-chip">MishiPass ID</div>
+            <p class="back-headline">If you find this cat,<br /><span>scan this QR.</span></p>
+            <div class="back-divider"></div>
+            <ul class="back-list">
+              <li>${iconContact(16)} <span>${t(lang, "scanToView")}</span></li>
+              <li>${iconContact(16)} <span>${t(lang, "ownerWillBeNotified")}</span></li>
+              <li>${iconContact(16)} <span>${t(lang, "emergencyContact")}</span></li>
+              <li>${iconContact(16)} <span>${t(lang, "thankYouForHelping")}</span></li>
+            </ul>
+            <p class="brand-mark">Mishi<span>Pass</span></p>
+          </div>
         </div>
       </div>
       <div class="qr-actions no-print">

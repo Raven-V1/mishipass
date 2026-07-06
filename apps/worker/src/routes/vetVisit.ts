@@ -346,14 +346,15 @@ function renderVetForm(
     .vet-head{display:grid;gap:var(--space-1);margin-bottom:var(--space-3)}
     h1{display:flex;align-items:center;gap:var(--space-1);font-size:clamp(2.25rem,6vw,3.5rem);line-height:1.02;margin:0;color:var(--teal)}
     .vet-subtitle{margin:0;color:var(--muted);font-weight:700}
-    .status-panel{padding:var(--space-3);border:1px solid var(--line);border-radius:8px;background:#fffdf9;margin:0 0 var(--space-3);box-shadow:0 10px 24px rgba(56,38,26,.05);text-align:center}
-    .status-panel h2{margin:0 0 var(--space-2);color:var(--teal);text-align:left}
-    .status-art{min-height:148px;border-radius:8px;background:linear-gradient(135deg,#fff7f0,#eef8f5);display:grid;place-items:center;padding:var(--space-2)}
+    .status-panel{padding:var(--space-3);border:0;border-radius:8px;background:linear-gradient(180deg,#df5a53 0%,#c94b46 100%);margin:0 0 var(--space-3);box-shadow:0 16px 38px rgba(201,75,70,.22);text-align:center;color:#fff}
+    .status-panel h2{margin:0 0 var(--space-2);color:#fff;text-align:left}
+    .status-layout{display:grid;grid-template-columns:minmax(0,210px) minmax(0,1fr);gap:var(--space-3);align-items:center}
+    .status-art{min-height:164px;border-radius:8px;background:rgba(255,255,255,.14);display:grid;place-items:center;padding:var(--space-2)}
     .status-art img{max-width:180px;width:100%;object-fit:contain}
-    .status-copy{margin-top:var(--space-2)}
-    .status-copy strong{display:block;color:var(--teal);font-size:1.5rem}
-    .status-copy p{margin:4px 0 0;color:var(--muted);font-weight:700}
-    .status-btn{margin-top:var(--space-2);background:var(--brand-orange);border-color:var(--brand-orange)}
+    .status-copy{margin-top:var(--space-2);text-align:left}
+    .status-copy strong{display:block;color:#fff;font-size:1.7rem}
+    .status-copy p{margin:4px 0 0;color:rgba(255,255,255,.92);font-weight:700}
+    .status-btn{margin-top:var(--space-3);background:#fff;border-color:#fff;color:#b8443f}
     .visit-form{display:grid;gap:var(--space-3)}
     .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2) var(--space-3)}
     .med-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-2)}
@@ -366,7 +367,7 @@ function renderVetForm(
     .submit-btn{flex:1 1 220px;margin-top:0;background:var(--green);border-color:var(--green)}
     .cancel-btn{flex:1 1 180px}
     .upload-drop{display:flex;align-items:center;justify-content:center;min-height:108px;border-radius:8px;border:1px dashed #dfc9bb;background:#fffaf6;text-align:center;color:var(--muted);font-weight:700}
-    @media(max-width:860px){.form-grid,.med-grid{grid-template-columns:1fr}}
+    @media(max-width:860px){.status-layout,.form-grid,.med-grid{grid-template-columns:1fr}}
     @media(max-width:430px){body{padding:var(--space-2)}.vet-shell{padding:var(--space-2) 0 var(--space-4)}.vet-card{padding:var(--space-3)}.photo-action{flex-basis:100%}.submit-row>*{flex-basis:100%}}
   </style>
 </head>
@@ -380,12 +381,14 @@ function renderVetForm(
   </header>
   <section class="status-panel">
     <h2>${t(lang, "currentVisitStatus")}</h2>
-    <div class="status-art">${photoSection}</div>
-    <div class="status-copy">
-      <strong>${t(lang, "noVetVisitsYet")}</strong>
-      <p>${t(lang, "noVetVisitsSummary")}</p>
+    <div class="status-layout">
+      <div class="status-art">${photoSection}</div>
+      <div class="status-copy">
+        <strong>${t(lang, "noVetVisitsYet")}</strong>
+        <p>${t(lang, "noVetVisitsSummary")}</p>
+        <button type="button" class="mp-btn mp-btn-primary status-btn" onclick="document.getElementById('clinic_name').focus()">${t(lang, "addVetVisit")}</button>
+      </div>
     </div>
-    <button type="button" class="mp-btn mp-btn-primary status-btn" onclick="document.getElementById('clinic_name').focus()">${t(lang, "addVetVisit")}</button>
   </section>
     <form class="visit-form" method="POST" action="/api/cats/${safeId}/vet-visit/finish?lang=${lang}" enctype="multipart/form-data">
       <section class="form-section">
@@ -417,7 +420,7 @@ function renderVetForm(
         <div class="form-grid" style="margin-top:var(--space-2)">
           <div class="field"><label for="follow_up_date">${t(lang, "followUpDate")}</label><input type="date" id="follow_up_date" name="follow_up_date" /></div>
           <div class="field"><label for="notes">${t(lang, "notes")}</label><textarea id="notes" name="notes" maxlength="500" rows="3"></textarea></div>
-          <div class="field field-wide"><label>${t(lang, "uploadDocuments")}</label><div class="upload-drop">${t(lang, "uploadDocuments")}</div><div class="photo-picker"><div class="photo-picker-actions"><label class="photo-action" for="vaccine_sticker_photo_capture">${t(lang, "takePhoto")}</label><label class="photo-action" for="vaccine_sticker_photo_upload">${t(lang, "chooseExistingPhoto")}</label></div><input class="photo-input-visually-hidden" type="file" id="vaccine_sticker_photo_capture" name="vaccine_sticker_photo_capture" accept="image/*" capture="environment" data-photo-status="vaccine-sticker-status" /><input class="photo-input-visually-hidden" type="file" id="vaccine_sticker_photo_upload" name="vaccine_sticker_photo_upload" accept="image/*" data-photo-status="vaccine-sticker-status" /><div id="vaccine-sticker-status" class="photo-status">${t(lang, "noPhotoSelected")}</div></div></div>
+          <div class="field field-wide"><label>${t(lang, "uploadDocuments")}</label><div class="upload-drop">${t(lang, "uploadDocuments")}</div><div class="photo-picker"><div class="photo-picker-actions"><label class="photo-action" for="vaccine_sticker_photo_upload">${t(lang, "photoUpload")}</label></div><input class="photo-input-visually-hidden" type="file" id="vaccine_sticker_photo_upload" name="vaccine_sticker_photo_upload" accept="image/*" data-photo-status="vaccine-sticker-status" /><div id="vaccine-sticker-status" class="photo-status">${t(lang, "noPhotoSelected")}</div></div></div>
         </div>
       </section>
 
