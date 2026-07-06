@@ -4,7 +4,7 @@
 
 MishiPass is a privacy-first dynamic QR passport and recovery system for cats.
 One permanent QR code adapts to what the cat needs — Active Profile, Missing
-Alert, or temporary Vet Visit — while keeping private owner and medical data
+Alert, Vet Visit, or For Adoption — while keeping private owner and medical data
 separate from public pages. Built as a Cloudflare Workers TypeScript application
 with D1 and R2, it demonstrates a focused product with clear public/private
 data boundaries, a dynamic QR workflow, and multilingual support.
@@ -35,12 +35,15 @@ privacy-first application.
 
 ## Key Features
 
-- **Dynamic QR routing**: one static URL, three distinct public experiences
+- **Dynamic QR routing**: one static URL, four distinct public experiences (Active, Missing, Vet Visit, For Adoption)
 - **Active Profile**: public-safe cat details and owner-controlled contact
 - **Missing Alert**: city/area, reward visibility, sighting reports, WhatsApp card, Recovery Board
 - **Vet Visit**: temporary mode-gated form for documentation-only records
+- **For Adoption**: public adoption profile with transfer request flow
 - **Digital Cartilla**: private owner-only vet visits, vaccines, sticker photos, Medication Record
 - **Recovery Board**: public opt-in missing cat listings with city and alert-age filters
+- **Cat Photo Gallery**: multiple photos per cat, owner-only access, selectable profile photo
+- **Google login**: Logto OIDC with Authorization Code + PKCE, server-side only
 - **Privacy-first**: no internal IDs, no raw R2 keys, no owner identity on public pages
 - **Multilingual**: English, Spanish, and Kazakh support for owner and guest interfaces
 
@@ -66,9 +69,10 @@ QR scan / browser visit
   → Cloudflare Worker (TypeScript)
     → D1 lookup: resolve public_id → cat + current_mode
       → Mode routing:
-        active  → Active Profile HTML
-        missing → Missing Alert HTML + sighting form
-        vet     → Vet Visit form (if session active)
+        active   → Active Profile HTML
+        missing  → Missing Alert HTML + sighting form
+        vet      → Vet Visit form (if session active)
+        adoption → For Adoption profile + transfer request
       → Response: server-rendered HTML or JSON API
 ```
 
@@ -76,9 +80,11 @@ QR scan / browser visit
 
 | Surface | Accessible data | Protected data |
 |---|---|---|
-| Public `/c/:id` | Cat name, country, photo, mode-appropriate info | Owner identity, cartilla, medications, internal IDs |
+| Public `/c/:id` (active) | Cat name, country, photo, contact preference | Owner identity, cartilla, medications, internal IDs |
+| Public `/c/:id` (missing) | Cat name, area, city, reward (if visible), sighting form | Owner identity, cartilla, medications, internal IDs |
+| Public `/c/:id` (adoption) | Cat name, photo, breed, color, contact mode | Owner identity, cartilla, medications, internal IDs |
 | Sighting form | Submit text + photo | Reporter IP (HMAC-hashed only) |
-| Owner dashboard | Full cat profile, cartilla, sightings | Requires authenticated session |
+| Owner dashboard | Full cat profile, cartilla, sightings, gallery | Requires authenticated session |
 | Recovery Board | Missing alerts (public-safe fields) | Owner contact (relay only), medical data |
 | Vet Visit form | Temporary submit access | Existing cartilla history not shown |
 
@@ -88,15 +94,17 @@ QR scan / browser visit
 - Opaque session token in HttpOnly cookie; only SHA-256 hash stored in D1
 - Session expiry enforced server-side
 - Owner-scoped queries prevent cross-owner data access
-- Google/Apple login: **not enabled** (buttons are design placeholders only)
+- Google login: **active** via Logto OIDC (Authorization Code + PKCE, server-side); secrets confirmed set in production 2026-07-05
+- Apple login: **not enabled** (Logto Apple connector not yet configured; `LOGTO_APPLE_CONNECTOR_TARGET` not set)
 
 ## Testing Matrix
 
 | Category | Tool | Count | Status |
 |---|---|---|---|
-| Worker unit tests | Vitest + @cloudflare/vitest-pool-workers | 219 | Passing |
+| Worker unit tests | Vitest + @cloudflare/vitest-pool-workers | 279 | Passing |
 | Shared validation | Vitest | 43 | Passing |
 | TypeScript typecheck | `tsc --noEmit` | all workspaces | Clean |
+| npm audit | npm audit (root + apps/worker) | 0 findings | Clean |
 | Production smoke | curl.exe | 4 routes | root:200, dashboard:200, breeds:200, invalid:404 |
 
 ### Manual verification coverage
@@ -140,12 +148,16 @@ QR scan / browser visit
 ## Acknowledgments
 
 - Registered team / group: Belvenar Analytics Development
-- Project owner and implementation lead: Carlos
-- Design authority: Zhanerke
+- Project owner and implementation lead: Carlos Velazquez
+- Design authority: Zhanerke Askerbekova
 - Platform: Cloudflare Workers, D1, and R2
 - Dependency monitoring: Dependabot
 - Optional breed reference: TheCatAPI
 - AI-assisted implementation/review tools: Kiro, Codex, Claude, ChatGPT
+
+Belvenar Analytics Development is the registered display-only brand for this
+team's hackathon participation. It is not a git identity, commit author, or
+code contributor.
 
 Dependabot was used for dependency monitoring. Major-version PRs that failed CI
 or conflicted were closed/deferred and are not counted as merged project
@@ -163,16 +175,19 @@ See `docs/submission-checklist.md` for the complete pre-submission verification 
 ## Known Beta Limitations
 
 - Vet Visit mode is temporary and scanner-submitted; dedicated vet accounts are deferred.
-- Google and Apple login buttons are visual design placeholders only — not enabled.
+- Apple login button is a design placeholder only — Logto Apple connector not configured.
 - TheCatAPI assistance is optional and degrades to local fallback choices.
 - Recovery Board uses city and alert-age filters only; no location tracking.
 - Medication Record is documentation-only: no dosage, reminders, or interactions.
+- D1 migration ledger is empty (base tables applied by hand); `wrangler d1 migrations list` shows all 12 migrations as "to be applied" despite the schema being current. This is a known operational drift condition, not a data integrity issue.
 
 ## Deferred / Out of Scope
 
-- Version 2 features and optional modes (Travel, Adoption, Memorial, Celebration)
+- Version 2 features and optional modes (Travel, Memorial, Celebration)
 - Additional animal species
 - AI vet, symptom checker, medication reminders, or medical advice
 - Official/legal passport or travel-document claims
 - Social network, marketplace, shelter CRM, push notifications
 - WhatsApp backend automation (manual share link only)
+- Dedicated vet accounts (mode-gated temporary access used instead)
+- Apple login (Logto Apple connector not configured)

@@ -1,6 +1,6 @@
 import { getCatForOwner, getContactSettingsForOwner, getMissingAlertForOwner } from "../db/index.js";
 import type { RequestContext } from "../middleware/session.js";
-import { MISHIPASS_DESIGN_CSS, brandLockupHtml, escapeHtml, htmlResponse } from "../utils/html.js";
+import { MISHIPASS_DESIGN_CSS, escapeHtml, htmlResponse } from "../utils/html.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
 import { renderTopNav, TOP_NAV_CSS } from "../pages/partials/topNav.js";
 
@@ -50,7 +50,6 @@ export async function handleMissingCardPage(
 <body>
   <main class="missing-card-shell">
     ${renderTopNav(lang, { authenticated: true })}
-    ${brandLockupHtml(`/?lang=${lang}`)}
     <a class="mp-back back" href="/dashboard/cats/${escapeHtml(publicId)}?lang=${lang}">&larr; ${t(lang, "backToDashboard")}</a>
     <div class="hero"><h1>${t(lang, "whatsappCard")}</h1><p>${t(lang, "openPublicAlert")}</p></div>
     <div class="mp-card card">

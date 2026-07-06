@@ -675,3 +675,60 @@ Reason: The Kiro run instructions require per-hunk author splitting
 batched mixed logic+markup commits under a single author instead of splitting.
 
 Decided by: Carlos
+
+---
+
+## [2026-07-05] — Git-identity policy: commits attributed to Raven-V1, not Zhanerke
+
+Decision: All non-design implementation commits are attributed to the Raven-V1
+GitHub identity. Commits are no longer attributed to Zhanerke Askerbekova's
+identity unless the work is specifically her design implementation (e.g.,
+feature/design-alignment branch). This supersedes earlier patterns where
+mixed authorship was batched under a single contributor.
+
+Reason: [Carlos to confirm — placeholder: avoids misattributing implementation
+work and maintains clear authorship boundaries between design and engineering]
+
+Alternatives considered: Continuing mixed attribution (rejected — created
+confusion in round-3 as documented above). Per-hunk splitting in every commit
+(impractical with current tooling).
+
+Decided by: Carlos
+
+---
+
+## [2026-07-05] — Accepted loss of CodeQL permissions fix (commit 9bb4624)
+
+Decision: Accept the loss of commit 9bb4624 (CodeQL workflow permissions fix)
+from the deleted Raven-V1-patch-1 branch. The fix is not re-applied.
+
+Reason: [Carlos to confirm — placeholder: branch was deleted as part of
+repository cleanup; the CodeQL permissions fix was low-priority relative to
+submission timeline and can be re-implemented post-submission if needed]
+
+Alternatives considered: Cherry-picking the commit to main (not pursued —
+branch already deleted and fix is non-blocking for Beta 1.5 submission).
+
+Decided by: Carlos
+
+---
+
+## [2026-07-05] — Public gallery photo identifier hardening
+
+Decision: Replaced `cat_photos.id` (internal sequential integer PK) with a new
+random, CSPRNG-generated, UNIQUE-constrained `photo_public_id` (16-character
+Crockford Base32, ~80 bits entropy) for all public-facing gallery photo URLs.
+Added D1-backed rate limiting (HMAC-hashed IP, 60 req/min) to the public
+gallery serve route, which previously had none.
+
+Reason: [Carlos to confirm — post-audit finding identified 2026-07-05: the
+public gallery route exposed the internal integer PK in rendered HTML and URL
+paths, violating the "no internal PK in any client response" control. Fixed
+same-day before submission given low architectural risk.]
+
+Alternatives considered: Accept-and-document as a low-severity finding (rejected
+— full fix was achievable within the session and mirrors the existing
+`cats.public_id` pattern; leaving it unfixed would leave a control-claim
+inconsistency in the security model).
+
+Decided by: Carlos

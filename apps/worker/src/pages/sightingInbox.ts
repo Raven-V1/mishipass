@@ -1,5 +1,5 @@
 import { getCatForOwner, getSightingReportForOwner, listSightingReportsForOwner } from "../db/index.js";
-import { MISHIPASS_DESIGN_CSS, brandLockupHtml, escapeHtml, htmlResponse } from "../utils/html.js";
+import { MISHIPASS_DESIGN_CSS, escapeHtml, htmlResponse } from "../utils/html.js";
 import type { RequestContext } from "../middleware/session.js";
 import { type LanguageCode, t } from "../utils/i18n.js";
 import { renderTopNav, TOP_NAV_CSS } from "./partials/topNav.js";
@@ -80,7 +80,6 @@ export async function handleSightingInbox(
 <body>
   <main class="page-shell">
     ${renderTopNav(lang, { authenticated: true })}
-    ${brandLockupHtml(`/?lang=${lang}`)}
   <section class="mp-card inbox-shell">
     <div class="nav"><a class="mp-back" href="/dashboard/cats/${safeId}?lang=${lang}">&larr; ${safeName}</a></div>
     <h1>${t(lang, "reports")}</h1>
@@ -150,7 +149,6 @@ export async function handleSightingDetail(
 <body>
   <main class="page-shell">
     ${renderTopNav(lang, { authenticated: true })}
-    ${brandLockupHtml(`/?lang=${lang}`)}
   <section class="mp-card detail-shell">
     <div class="nav"><a class="mp-back" href="/dashboard/cats/${safeId}/sightings?lang=${lang}">&larr; ${t(lang, "reports")}</a></div>
     <h1>${t(lang, "reportSighting")}: ${safeName}</h1>

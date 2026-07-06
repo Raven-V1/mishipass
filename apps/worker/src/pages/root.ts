@@ -81,9 +81,7 @@ function buildRootHtml(request: Request, env: LogtoEnv = {}): string {
     .form-row{margin-bottom:var(--space-2)}
     .form-row label{font-size:.75rem;color:var(--ink)}
     .form-row input{border-radius:8px;background:#fff;border-color:#f0d9d2;min-height:48px}
-    .form-meta{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);margin:var(--space-1) 0 var(--space-2);font-size:.75rem}
-    .check-label{display:inline-flex;align-items:center;gap:var(--space-1);font-size:.75rem;margin:0;color:var(--muted)}
-    .check-label input{width:16px;min-height:16px}
+    .auth-note{margin:var(--space-1) 0 var(--space-2);font-size:.75rem;color:var(--muted);font-weight:800}
     .login-form .mp-btn{width:100%;border-radius:8px;background:var(--brand-orange);border-color:var(--brand-orange)}
     .social-panel{display:grid;gap:var(--space-2)}
     .divider{display:flex;align-items:center;gap:var(--space-2);font-size:.75rem;font-weight:900;color:var(--ink);text-align:center}
@@ -134,7 +132,7 @@ function buildRootHtml(request: Request, env: LogtoEnv = {}): string {
           <a href="#features">Features</a>
           <a href="#how-it-works">How it works</a>
           <a href="#contact">Contact</a>
-          <a class="mp-btn signup-pill" href="#sign-up">Sign up</a>
+          <a class="mp-btn signup-pill" href="/dashboard/register?lang=${lang}">Sign up</a>
         </nav>
       </div>
     </header>
@@ -172,14 +170,14 @@ function buildRootHtml(request: Request, env: LogtoEnv = {}): string {
             <form class="login-form" id="home-login-form">
               <div class="form-row"><label for="home-email">Email</label><input id="home-email" type="email" autocomplete="email" placeholder="Enter your email" required /></div>
               <div class="form-row"><label for="home-password">Password</label><input id="home-password" type="password" autocomplete="current-password" placeholder="Enter your password" required /></div>
-              <div class="form-meta"><label class="check-label"><input type="checkbox" /> Remember me</label><a href="/dashboard?lang=${lang}">Forgot password?</a></div>
+              <p class="auth-note">Password reset is not available in this beta yet.</p>
               <button class="mp-btn" type="submit">Log In</button>
               <p id="home-login-error" class="home-error" style="display:none;color:#991b1b;font-size:.875rem;margin:var(--space-1) 0 0"></p>
             </form>
             <aside class="social-panel">
               <div class="divider">OR</div>
               ${socialButtons}
-              <p class="signup-note">Don't have an account? <a href="/dashboard?lang=${lang}">Sign up</a></p>
+              <p class="signup-note">Don't have an account? <a href="/dashboard/register?lang=${lang}">Sign up</a></p>
             </aside>
           </section>
           <p class="privacy-line"><span class="paw-icon paw-icon-sm" aria-hidden="true"></span><span>Your cat's data stays private and secure with MishiPass</span></p>
@@ -194,7 +192,7 @@ function buildRootHtml(request: Request, env: LogtoEnv = {}): string {
           <p class="mobile-tagline">THE DIGITAL PASSPORT FOR YOUR CAT</p>
           <p class="create-title">Create your account</p>
           <div class="mobile-actions">
-            <a class="email-pill" href="/dashboard?lang=${lang}">${iconEmail(24)}<span>Sign up with Email</span></a>
+            <a class="email-pill" href="/dashboard/register?lang=${lang}">${iconEmail(24)}<span>Sign up with Email</span></a>
             ${socialButtons}
           </div>
           <div class="mobile-divider">OR</div>
@@ -228,7 +226,7 @@ function buildRootHtml(request: Request, env: LogtoEnv = {}): string {
       err.style.display="none";btn.disabled=true;btn.textContent="Working...";
       fetch("/api/auth/login",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email,password:pw})}).then(function(r){
         btn.disabled=false;btn.textContent="Log In";
-        if(r.ok){window.location.href="/dashboard";}
+        if(r.ok){window.location.href=${JSON.stringify(`/dashboard?lang=${lang}`)};}
         else{r.text().then(function(t){err.textContent=t||"Login failed";err.style.display="block"});}
       }).catch(function(){btn.disabled=false;btn.textContent="Log In";err.textContent="Network error";err.style.display="block";});
     });

@@ -5,6 +5,9 @@
 - Requested target: `https://mishipass.carlosvelazquez354.workers.dev`.
 - Priority order: public and unauthenticated flows first.
 - Visual source of truth: repository mockups in `assets/mockups/` plus canonical design assets in `assets/design/` and `apps/worker/public/assets/`.
+- Requested target: `https://mishipass.carlosvelazquez354.workers.dev`
+- Priority order: public and unauthenticated flows first
+- Visual source of truth: repository mockups in `assets/mockups/` plus canonical design assets in `assets/design/` and `apps/worker/public/assets/`
 - Active public/unauthenticated routes identified from Worker routing:
   - `GET /`
   - `GET /history`
@@ -19,6 +22,9 @@
 ## Environment limitation
 
 Production browser/curl access from this container was blocked by the outbound proxy before the request reached the site:
+## Environment Limitation
+
+Production browser/curl access from the restricted environment was blocked by the outbound proxy before the request reached the site:
 
 ```text
 curl: (56) CONNECT tunnel failed, response 403
@@ -32,6 +38,12 @@ Because of that proxy limitation, I could not truthfully certify live production
 
 - Confirmed the production URL documented in the repository is `https://mishipass.carlosvelazquez354.workers.dev`.
 - Confirmed the Worker routes that define public/unauthenticated flows.
+Because of that proxy limitation, this pass could not truthfully certify live production browser results for console errors, network failures, responsive screenshots, or broken production assets in that environment.
+
+## Repository Checks Completed
+
+- Confirmed the production URL documented in the repository is `https://mishipass.carlosvelazquez354.workers.dev`
+- Confirmed the Worker routes that define public and unauthenticated flows
 - Confirmed canonical served asset paths are:
   - `/assets/brand/logo.png`
   - `/assets/brand/paw.png`
@@ -43,6 +55,9 @@ Because of that proxy limitation, I could not truthfully certify live production
 - Confirmed approved mockups available for visual comparison include landing, desktop landing, public profile, invalid QR, QR card, missing alert, empty sighting, sighting report, dashboard, cat registration, vaccine portal, vet portal, empty medical record, and error page.
 
 ## QA result status
+- Confirmed approved mockups available for visual comparison include landing, desktop landing, public profile, invalid QR, QR card, missing alert, empty sighting, sighting report, dashboard, cat registration, vaccine portal, vet portal, empty medical record, and error page
+
+## QA Result Status
 
 | Check | Status | Notes |
 |---|---:|---|
@@ -72,3 +87,19 @@ For each active public/unauthenticated route, capture:
 4. Screenshot compared to the matching approved mockup.
 5. Click results for visible buttons and links.
 6. QR public URL behavior for a valid active-profile cat, invalid QR, missing-mode cat, vet-mode cat, and sighting form.
+## Follow-Up Needed Outside Proxy-Restricted Environment
+
+Run a live browser QA pass against production with these minimum viewports:
+
+- Desktop: `1440 x 1000`
+- Tablet: `768 x 1024`
+- Mobile: `390 x 844`
+
+For each active public/unauthenticated route, capture:
+
+1. HTTP status and final URL
+2. Console messages
+3. Failed network requests
+4. Screenshot compared to the matching approved mockup
+5. Click results for visible buttons and links
+6. QR public URL behavior for a valid active-profile cat, invalid QR, missing-mode cat, vet-mode cat, and sighting form

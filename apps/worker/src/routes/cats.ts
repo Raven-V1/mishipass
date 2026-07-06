@@ -345,7 +345,7 @@ function renderActiveProfile(
   photoR2Key: string | null,
   contact: ContactSettingsPublicView,
   catView: { sex: string | null; color_markings: string | null; breed_mix: string | null; weight: string | null },
-  publicPhotos: Array<{ id: number }>,
+  publicPhotos: Array<{ photo_public_id: string }>,
   lang: LanguageCode = "en",
 ): string {
   const safeName = escapeHtml(name);
@@ -382,7 +382,7 @@ function renderActiveProfile(
     : "";
 
   const galleryHtml = publicPhotos.length > 0
-    ? `<div class="gallery">${publicPhotos.map(p => `<img src="/media/cats/${safeId}/photos/${p.id}/public" alt="${safeName}" loading="lazy" />`).join("")}</div>`
+    ? `<div class="gallery">${publicPhotos.map(p => `<img src="/media/cats/${safeId}/photos/${escapeHtml(p.photo_public_id)}/public" alt="${safeName}" loading="lazy" />`).join("")}</div>`
     : "";
 
   return `<!DOCTYPE html>

@@ -7,7 +7,24 @@ depending on the cat's situation. The QR code itself never changes — the
 TypeScript Worker reads the cat's current mode from D1 and returns the appropriate
 interface.
 
-## Built and verified
+**Verification status:** The demo flow steps below have NOT been run end-to-end
+against the current production deployment (Version ID `b7f8b204-5b79-4a6a-b61a-8f3eb1fdfd56`,
+deployed 2026-07-05). The Constitution Section 21 demo flow (9 original steps,
+expanded to 16 implementation-accurate steps below) is pending live verification.
+
+## Constitution Section 21 — 9-step demo verification
+
+- [ ] Step 1: Register a cat → system generates public ID and URL
+- [ ] Step 2: Show QR card with scannable QR
+- [ ] Step 3: Scan → Active Profile renders correctly
+- [ ] Step 4: Switch to Missing Alert
+- [ ] Step 5: Scan same URL → Missing Alert renders (different experience)
+- [ ] Step 6: Submit a sighting report
+- [ ] Step 7: Owner sees sighting in dashboard inbox
+- [ ] Step 8: Start Vet Visit → scan same URL → Vet form renders
+- [ ] Step 9: Save & Finish → scan again → Active Profile (auto-return)
+
+## Built and verified (against local/staging, not production end-to-end)
 
 | Step | Action | What it shows |
 |---|---|---|
@@ -32,8 +49,7 @@ interface.
 
 | Feature | Status |
 |---|---|
-| Optional modes (Travel, Adoption, Memorial, Celebration) | Deferred |
-| Public Preview mode | Deferred |
+| Optional modes (Travel, Memorial, Celebration) | Deferred |
 
 ## Recording notes (for Day 14)
 

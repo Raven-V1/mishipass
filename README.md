@@ -13,6 +13,7 @@ manager, social network, or marketplace.
 ## Working now
 
 - Owner registration, login, logout (PBKDF2-SHA256, HttpOnly session cookies)
+- Google login via Logto OIDC (Authorization Code + PKCE, server-side)
 - Owner dashboard (Worker-rendered HTML, same-origin)
 - Cat registration with country selection
 - Visual breed/color registration assist with TheCatAPI fallback
@@ -22,11 +23,13 @@ manager, social network, or marketplace.
 - Printable QR card
 - Active Profile public page
 - Missing Alert mode with mode switching
+- For Adoption mode with transfer request flow
 - WhatsApp-ready missing card with public alert link
 - Recovery Board with city and alert-age filters
 - Vet Visit mode with temporary 24-hour session
 - Save & Finish Visit can record vet visit, vaccines, vaccine sticker photo, and Medication Record before auto-return to Active Profile
 - Owner-only Digital Cartilla for vet visits, vaccines, Medication Record, and sticker photos
+- Cat photo gallery (multiple photos per cat, owner-only gallery, selectable profile photo)
 - Guest and owner language support for English, Spanish, and Kazakh
 - Public sighting report form with text and optional photo
 - Owner sighting report inbox
@@ -43,12 +46,11 @@ manager, social network, or marketplace.
 
 ## Intentionally not enabled
 
-- Google login — button is visible as a design placeholder only; no OAuth is implemented
-- Apple login — button is visible as a design placeholder only; no OAuth is implemented
+- Apple login — button is visible as a design placeholder only; Logto Apple connector is not configured
 
 ## Deferred Version 1 optional items
 
-- Optional modes (Travel, Adoption, Memorial, Celebration, Public Preview)
+- Optional modes (Travel, Memorial, Celebration)
 
 ## How the QR works
 
@@ -100,14 +102,22 @@ npx wrangler d1 execute mishipass --local --file=migrations/0001_initial.sql
 npx wrangler d1 execute mishipass --local --file=migrations/0002_cat_profile_fields.sql
 npx wrangler d1 execute mishipass --local --file=migrations/0003_rate_limits.sql
 npx wrangler d1 execute mishipass --local --file=migrations/0004_soft_delete_cats.sql
+npx wrangler d1 execute mishipass --local --file=migrations/0005_owner_settings.sql
+npx wrangler d1 execute mishipass --local --file=migrations/0006_owner_identities.sql
+npx wrangler d1 execute mishipass --local --file=migrations/0007_cat_photos.sql
+npx wrangler d1 execute mishipass --local --file=migrations/0008_add_cat_next_vaccine_date.sql
+npx wrangler d1 execute mishipass --local --file=migrations/0009_add_cat_photo_visibility.sql
+npx wrangler d1 execute mishipass --local --file=migrations/0010_add_cat_microchip.sql
+npx wrangler d1 execute mishipass --local --file=migrations/0011_transfer_units.sql
+npx wrangler d1 execute mishipass --local --file=migrations/0012_sighting_lat_lng.sql
 npx wrangler dev
 ```
 
 ## Running tests
 
 ```bash
-npm test --workspace=mishipass-worker
-npm test --workspace=@mishipass/shared-validation
+npm test --workspace=mishipass-worker        # 279 tests (29 test files)
+npm test --workspace=@mishipass/shared-validation  # 43 tests
 npx tsc --noEmit --project apps/worker/tsconfig.json
 ```
 
@@ -121,8 +131,9 @@ npx tsc --noEmit --project apps/worker/tsconfig.json
 
 ### Optional — Logto OIDC (Google / Apple login)
 
-All six must be set for social login to activate. Buttons render as disabled
-when any are absent.
+Five secrets must be set for Google login to activate. Apple additionally
+requires `LOGTO_APPLE_CONNECTOR_TARGET`. Buttons render as disabled when
+provider secrets are absent.
 
 | Variable | Purpose | Where set |
 |---|---|---|
@@ -137,6 +148,10 @@ Google requires a Logto Google connector configured with Google Cloud OAuth 2.0
 credentials. Apple requires a Logto Apple connector and an Apple Developer
 Program account. Provider credentials are never committed to this repository.
 
+**For judges:** Google login is active on the production deployment. You can
+test it directly at the production URL. Email/password registration also works
+without any external service. Apple login is not active.
+
 ## Production deployment
 
 ```bash
@@ -145,6 +160,16 @@ npx wrangler deploy
 ```
 
 Production URL: `https://mishipass.carlosvelazquez354.workers.dev`
+
+## Judge testing instructions
+
+1. **Visit the production URL:** https://mishipass.carlosvelazquez354.workers.dev
+2. **Log in:** Use Google login (active) or register a new account with email/password.
+3. **Reach a live demo cat:** After login, the dashboard shows registered cats. If none exist, register a new cat (any name, any country). The system generates a public ID and QR code.
+4. **Scan or open the QR URL:** Click the QR card or open `/c/MP-XX-XXXX-XXXX` directly to see the Active Profile.
+5. **Switch modes:** From the dashboard, switch the cat to Missing Alert or start a Vet Visit to see different experiences from the same URL.
+6. **Vet Visit mode without a real vet account:** Click "Start Vet Visit" from the dashboard. Then open the same public QR URL — it shows the vet entry form. Anyone can fill it in (this is a documented Beta limitation; dedicated vet accounts are deferred). Click "Save & Finish Visit" to return the cat to Active Profile automatically.
+7. **Recovery Board:** Visit `/recovery-board` to see any cats currently in Missing Alert mode.
 
 ## Submission notes
 
