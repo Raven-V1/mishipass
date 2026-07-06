@@ -31,3 +31,6 @@ Hackathon_info/
 .codex-smoke/
 .tmp-*.png
 .tmp-edge-profile/
+
+# Playwright test-results (generated on each run)
+test-results/
