@@ -344,28 +344,173 @@ describe("missing_alerts", () => {
     expect(nonOwnerView).toBeNull();
   });
 
-  it("Recovery Board returns missing cats by default and hides active cats", async () => {
+  it("Recovery Board returns only opted-in missing cats and hides active cats", async () => {
     const ownerId = await createOwner(OWNER_A_EMAIL);
     await insertCat(env.DB, { public_id: PUBLIC_ID_A, owner_id: ownerId, name: "Mishi", country_code: "MX" });
     await insertCat(env.DB, { public_id: PUBLIC_ID_B, owner_id: ownerId, name: "Luna", country_code: "MX" });
 
-    // Beta 1.5 correction: Missing mode cats appear on the board by default.
+    // Only cats with recovery_board_opt_in = 1 should appear on the public board.
     await upsertMissingAlert(env.DB, PUBLIC_ID_A, ownerId, { city: "Juárez", recovery_board_opt_in: 1, activated_at: NOW });
     await upsertMissingAlert(env.DB, PUBLIC_ID_B, ownerId, { city: "Juárez", recovery_board_opt_in: 0, activated_at: NOW });
     await updateCatMode(env.DB, PUBLIC_ID_A, ownerId, "missing");
     await updateCatMode(env.DB, PUBLIC_ID_B, ownerId, "missing");
 
     const board = await listRecoveryBoardAlerts(env.DB);
-    expect(board).toHaveLength(2);
-    expect(board.map(entry => entry.public_id).sort()).toEqual([PUBLIC_ID_A, PUBLIC_ID_B].sort());
+    expect(board).toHaveLength(1);
+    expect(board[0]!.public_id).toBe(PUBLIC_ID_A);
 
-    await updateCatMode(env.DB, PUBLIC_ID_B, ownerId, "active");
+    await updateCatMode(env.DB, PUBLIC_ID_A, ownerId, "active");
     const activeHiddenBoard = await listRecoveryBoardAlerts(env.DB);
-    expect(activeHiddenBoard).toHaveLength(1);
-    expect(activeHiddenBoard[0]!.public_id).toBe(PUBLIC_ID_A);
+    expect(activeHiddenBoard).toHaveLength(0);
     // Internal ids must not be present.
-    expect((activeHiddenBoard[0] as unknown as Record<string, unknown>)["id"]).toBeUndefined();
-    expect((activeHiddenBoard[0] as unknown as Record<string, unknown>)["owner_id"]).toBeUndefined();
+    expect((board[0] as unknown as Record<string, unknown>)["id"]).toBeUndefined();
+    expect((board[0] as unknown as Record<string, unknown>)["owner_id"]).toBeUndefined();
+  });
+
+  it("Recovery Board MUST NOT expose opted-out missing alerts (CVE mitigation)", async () => {
+    const ownerId = await createOwner(OWNER_A_EMAIL);
+    await insertCat(env.DB, { public_id: PUBLIC_ID_A, owner_id: ownerId, name: "Mishi", country_code: "MX" });
+    
+    // Create a missing alert with recovery_board_opt_in = 0 (explicitly opted out)
+    await upsertMissingAlert(env.DB, PUBLIC_ID_A, ownerId, { 
+      city: "Juárez", 
+      area: "Centro",
+      recovery_board_opt_in: 0, 
+      activated_at: NOW 
+    });
+    await updateCatMode(env.DB, PUBLIC_ID_A, ownerId, "missing");
+
+    // Public Recovery Board MUST NOT return this alert
+    const board = await listRecoveryBoardAlerts(env.DB);
+    expect(board).toHaveLength(0);
+    
+    // Verify the alert exists but is not publicly visible
+    const ownerView = await getMissingAlertForOwner(env.DB, PUBLIC_ID_A, ownerId);
+    expect(ownerView).not.toBeNull();
+    expect(ownerView!.recovery_board_opt_in).toBe(0);
+  });
+
+  it("Recovery Board MUST NOT expose missing alerts when opt-in is NULL/default", async () => {
+    const ownerId = await createOwner(OWNER_A_EMAIL);
+    await insertCat(env.DB, { public_id: PUBLIC_ID_A, owner_id: ownerId, name: "Mishi", country_code: "MX" });
+    
+    // Create a missing alert without specifying recovery_board_opt_in (defaults to 0)
+    await upsertMissingAlert(env.DB, PUBLIC_ID_A, ownerId, { 
+      city: "Juárez", 
+      activated_at: NOW 
+    });
+    await updateCatMode(env.DB, PUBLIC_ID_A, ownerId, "missing");
+
+    // Public Recovery Board MUST NOT return this alert (default is opt-out)
+    const board = await listRecoveryBoardAlerts(env.DB);
+    expect(board).toHaveLength(0);
+  });
+
+  it("Recovery Board respects opt-in flag even with city filter", async () => {
+    const ownerId = await createOwner(OWNER_A_EMAIL);
+    await insertCat(env.DB, { public_id: PUBLIC_ID_A, owner_id: ownerId, name: "Mishi", country_code: "MX" });
+    await insertCat(env.DB, { public_id: PUBLIC_ID_B, owner_id: ownerId, name: "Luna", country_code: "MX" });
+    
+    // Both in same city, one opted in, one opted out
+    await upsertMissingAlert(env.DB, PUBLIC_ID_A, ownerId, { 
+      city: "Juárez", 
+      recovery_board_opt_in: 1, 
+      activated_at: NOW 
+    });
+    await upsertMissingAlert(env.DB, PUBLIC_ID_B, ownerId, { 
+      city: "Juárez", 
+      recovery_board_opt_in: 0, 
+      activated_at: NOW 
+    });
+    await updateCatMode(env.DB, PUBLIC_ID_A, ownerId, "missing");
+    await updateCatMode(env.DB, PUBLIC_ID_B, ownerId, "missing");
+
+    // Filter by city - should still only return opted-in alert
+    const boardFiltered = await listRecoveryBoardAlerts(env.DB, "Juárez");
+    expect(boardFiltered).toHaveLength(1);
+    expect(boardFiltered[0]!.public_id).toBe(PUBLIC_ID_A);
+    
+    // Unfiltered should also only return opted-in alert
+    const boardUnfiltered = await listRecoveryBoardAlerts(env.DB);
+    expect(boardUnfiltered).toHaveLength(1);
+    expect(boardUnfiltered[0]!.public_id).toBe(PUBLIC_ID_A);
+  });
+
+  it("Recovery Board respects opt-in flag even with age filter", async () => {
+    const ownerId = await createOwner(OWNER_A_EMAIL);
+    await insertCat(env.DB, { public_id: PUBLIC_ID_A, owner_id: ownerId, name: "Mishi", country_code: "MX" });
+    await insertCat(env.DB, { public_id: PUBLIC_ID_B, owner_id: ownerId, name: "Luna", country_code: "MX" });
+    
+    // Both recent, one opted in, one opted out
+    await upsertMissingAlert(env.DB, PUBLIC_ID_A, ownerId, { 
+      city: "Juárez", 
+      recovery_board_opt_in: 1, 
+      activated_at: NOW 
+    });
+    await upsertMissingAlert(env.DB, PUBLIC_ID_B, ownerId, { 
+      city: "Juárez", 
+      recovery_board_opt_in: 0, 
+      activated_at: NOW 
+    });
+    await updateCatMode(env.DB, PUBLIC_ID_A, ownerId, "missing");
+    await updateCatMode(env.DB, PUBLIC_ID_B, ownerId, "missing");
+
+    // Filter by age (7 days) - should still only return opted-in alert
+    const boardFiltered = await listRecoveryBoardAlerts(env.DB, undefined, 7);
+    expect(boardFiltered).toHaveLength(1);
+    expect(boardFiltered[0]!.public_id).toBe(PUBLIC_ID_A);
+  });
+
+  it("Recovery Board respects opt-in flag with combined city and age filters", async () => {
+    const ownerId = await createOwner(OWNER_A_EMAIL);
+    await insertCat(env.DB, { public_id: PUBLIC_ID_A, owner_id: ownerId, name: "Mishi", country_code: "MX" });
+    await insertCat(env.DB, { public_id: PUBLIC_ID_B, owner_id: ownerId, name: "Luna", country_code: "MX" });
+    
+    // Both match filters, one opted in, one opted out
+    await upsertMissingAlert(env.DB, PUBLIC_ID_A, ownerId, { 
+      city: "Juárez", 
+      recovery_board_opt_in: 1, 
+      activated_at: NOW 
+    });
+    await upsertMissingAlert(env.DB, PUBLIC_ID_B, ownerId, { 
+      city: "Juárez", 
+      recovery_board_opt_in: 0, 
+      activated_at: NOW 
+    });
+    await updateCatMode(env.DB, PUBLIC_ID_A, ownerId, "missing");
+    await updateCatMode(env.DB, PUBLIC_ID_B, ownerId, "missing");
+
+    // Combined filters - should still only return opted-in alert
+    const board = await listRecoveryBoardAlerts(env.DB, "Juárez", 7);
+    expect(board).toHaveLength(1);
+    expect(board[0]!.public_id).toBe(PUBLIC_ID_A);
+  });
+
+  it("Recovery Board does not leak internal fields from opted-out alerts", async () => {
+    const ownerId = await createOwner(OWNER_A_EMAIL);
+    await insertCat(env.DB, { public_id: PUBLIC_ID_A, owner_id: ownerId, name: "Mishi", country_code: "MX" });
+    
+    // Create opted-out alert with sensitive data
+    await upsertMissingAlert(env.DB, PUBLIC_ID_A, ownerId, { 
+      city: "Juárez", 
+      area: "Private Area",
+      reward_amount: "10000",
+      reward_visible: 1,
+      recovery_board_opt_in: 0, 
+      activated_at: NOW 
+    });
+    await updateCatMode(env.DB, PUBLIC_ID_A, ownerId, "missing");
+
+    // Public board should return empty array, not expose any data
+    const board = await listRecoveryBoardAlerts(env.DB);
+    expect(board).toHaveLength(0);
+    
+    // Verify no partial data is leaked
+    const boardString = JSON.stringify(board);
+    expect(boardString).not.toContain("Mishi");
+    expect(boardString).not.toContain("Juárez");
+    expect(boardString).not.toContain("Private Area");
+    expect(boardString).not.toContain("10000");
   });
 });
 
