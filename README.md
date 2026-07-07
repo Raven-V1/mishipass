@@ -173,7 +173,7 @@ Production URL: `https://mishipass.carlosvelazquez354.workers.dev`
 
 ## Commit attribution correction - 2026-07-05
 
-Two commits on main were recorded under an incorrect automated committer identity (a bot account and a Co-Authored-By trailer) and were rewritten to the correct authors: Raven-V1 for tooling/logic, Zhanerke Askerbekova for design. Pre-rewrite state preserved in backup/pre-attribution-rewrite-2026-07-05. Collaborators must re-sync main (and dev) after the force-push.
+Multiple commits on main were recorded under an incorrect automated committer identity (a bot account and a Co-Authored-By trailer) and were rewritten to the correct authors: Raven-V1 for tooling/logic, Zhanerke Askerbekova for design. Pre-rewrite state preserved in backup/pre-attribution-rewrite-2026-07-05. Collaborators must re-sync main (and dev) after the force-push.
 
 ## Submission notes
 
