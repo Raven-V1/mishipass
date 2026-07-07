@@ -207,7 +207,7 @@ describe("handleRequestTransfer - HTML injection mitigation", () => {
     expect(res.status).toBe(201);
     expect(mockSendEmail).toHaveBeenCalledTimes(1);
     
-    const emailPayload = mockSendEmail.mock.calls[0][0];
+    const emailPayload = mockSendEmail.mock.calls[0]![0];
     expect(emailPayload.html).toContain("&lt;script&gt;");
     expect(emailPayload.html).toContain("&lt;/script&gt;");
     expect(emailPayload.html).toContain("&lt;img");
@@ -243,7 +243,7 @@ describe("handleRequestTransfer - HTML injection mitigation", () => {
     expect(res.status).toBe(201);
     expect(mockSendEmail).toHaveBeenCalledTimes(1);
     
-    const emailPayload = mockSendEmail.mock.calls[0][0];
+    const emailPayload = mockSendEmail.mock.calls[0]![0];
     expect(emailPayload.html).toContain("&lt;b&gt;Evil&lt;/b&gt;");
     expect(emailPayload.html).toContain("&lt;script&gt;");
     expect(emailPayload.html).not.toContain("<b>Evil</b>");
@@ -278,7 +278,7 @@ describe("handleRequestTransfer - HTML injection mitigation", () => {
     expect(res.status).toBe(201);
     expect(mockSendEmail).toHaveBeenCalledTimes(1);
     
-    const emailPayload = mockSendEmail.mock.calls[0][0];
+    const emailPayload = mockSendEmail.mock.calls[0]![0];
     expect(emailPayload.html).toContain("&lt;a href=");
     expect(emailPayload.html).toContain("&gt;click&lt;/a&gt;");
     expect(emailPayload.html).not.toContain('<a href="evil.com">');
@@ -313,7 +313,7 @@ describe("handleRequestTransfer - HTML injection mitigation", () => {
     expect(res.status).toBe(201);
     expect(mockSendEmail).toHaveBeenCalledTimes(1);
     
-    const emailPayload = mockSendEmail.mock.calls[0][0];
+    const emailPayload = mockSendEmail.mock.calls[0]![0];
     expect(emailPayload.html).toContain("&amp;");
     expect(emailPayload.html).toContain("&lt;3");
     expect(emailPayload.html).toContain("&quot;Best&quot;");
@@ -349,7 +349,7 @@ describe("handleRequestTransfer - HTML injection mitigation", () => {
     expect(res.status).toBe(201);
     expect(mockSendEmail).toHaveBeenCalledTimes(1);
     
-    const emailPayload = mockSendEmail.mock.calls[0][0];
+    const emailPayload = mockSendEmail.mock.calls[0]![0];
     // Should not contain message section when no message provided
     expect(emailPayload.html).not.toContain("Their message:");
   });
@@ -418,7 +418,7 @@ describe("handleRequestTransfer - HTML injection mitigation", () => {
     expect(res.status).toBe(201);
     expect(mockSendEmail).toHaveBeenCalledTimes(1);
     
-    const emailPayload = mockSendEmail.mock.calls[0][0];
+    const emailPayload = mockSendEmail.mock.calls[0]![0];
     // Verify subject line escapes HTML
     expect(emailPayload.subject).toContain("&lt;script&gt;");
     expect(emailPayload.subject).not.toContain("<script>");
@@ -464,7 +464,7 @@ describe("handleAcceptTransfer - HTML injection mitigation", () => {
     expect(res.status).toBe(200);
     expect(mockSendEmail).toHaveBeenCalledTimes(1);
     
-    const emailPayload = mockSendEmail.mock.calls[0][0];
+    const emailPayload = mockSendEmail.mock.calls[0]![0];
     expect(emailPayload.html).toContain("&lt;iframe");
     expect(emailPayload.html).toContain("&lt;/iframe&gt;");
     expect(emailPayload.html).not.toContain("<iframe");
@@ -495,7 +495,7 @@ describe("handleAcceptTransfer - HTML injection mitigation", () => {
     expect(res.status).toBe(200);
     expect(mockSendEmail).toHaveBeenCalledTimes(1);
     
-    const emailPayload = mockSendEmail.mock.calls[0][0];
+    const emailPayload = mockSendEmail.mock.calls[0]![0];
     expect(emailPayload.html).toContain("the cat");
   });
 });
@@ -536,7 +536,7 @@ describe("handleDeclineTransfer - HTML injection mitigation", () => {
     expect(res.status).toBe(200);
     expect(mockSendEmail).toHaveBeenCalledTimes(1);
     
-    const emailPayload = mockSendEmail.mock.calls[0][0];
+    const emailPayload = mockSendEmail.mock.calls[0]![0];
     expect(emailPayload.html).toContain("&lt;style&gt;");
     expect(emailPayload.html).toContain("&lt;/style&gt;");
     expect(emailPayload.html).not.toContain("<style>");
@@ -576,7 +576,7 @@ describe("handleDeclineTransfer - HTML injection mitigation", () => {
     expect(res.status).toBe(200);
     expect(mockSendEmail).toHaveBeenCalledTimes(1);
     
-    const emailPayload = mockSendEmail.mock.calls[0][0];
+    const emailPayload = mockSendEmail.mock.calls[0]![0];
     
     // Verify the HTML is escaped in the email body
     expect(emailPayload.html).toContain("&lt;img src=x onerror=alert(document.cookie)&gt;");
@@ -623,7 +623,7 @@ describe("handleDeclineTransfer - HTML injection mitigation", () => {
     expect(res.status).toBe(200);
     expect(mockSendEmail).toHaveBeenCalledTimes(1);
     
-    const emailPayload = mockSendEmail.mock.calls[0][0];
+    const emailPayload = mockSendEmail.mock.calls[0]![0];
     
     // Verify script tags are escaped
     expect(emailPayload.html).toContain("&lt;script&gt;");
