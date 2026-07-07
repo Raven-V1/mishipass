@@ -114,7 +114,7 @@ describe("handleRegister", () => {
     expect(callArgs[1].email).toBe("cat@example.com");
   });
 
-  it("returns 409 on duplicate email", async () => {
+  it("returns 201 on duplicate email to prevent enumeration", async () => {
     mockInsertOwner.mockRejectedValue(new Error("UNIQUE constraint failed: owners.email"));
 
     const res = await handleRegister(
@@ -122,7 +122,101 @@ describe("handleRegister", () => {
       fakeDb,
     );
 
-    expect(res.status).toBe(409);
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    expect(body).toEqual({});
+  });
+
+  it("returns identical response for new and duplicate emails (anti-enumeration)", async () => {
+    // Test that successful registration and duplicate email return identical responses
+    
+    // First: successful registration
+    mockInsertOwner.mockResolvedValue(undefined);
+    const successRes = await handleRegister(
+      jsonRequest({ email: "new@test.com", password: "validpass123" }),
+      fakeDb,
+    );
+    const successStatus = successRes.status;
+    const successBody = await successRes.json();
+    const successHeaders = Object.fromEntries(successRes.headers.entries());
+
+    // Second: duplicate email
+    mockInsertOwner.mockRejectedValue(new Error("UNIQUE constraint failed: owners.email"));
+    const dupeRes = await handleRegister(
+      jsonRequest({ email: "existing@test.com", password: "validpass123" }),
+      fakeDb,
+    );
+    const dupeStatus = dupeRes.status;
+    const dupeBody = await dupeRes.json();
+    const dupeHeaders = Object.fromEntries(dupeRes.headers.entries());
+
+    // Assert responses are identical
+    expect(dupeStatus).toBe(successStatus);
+    expect(dupeStatus).toBe(201);
+    expect(dupeBody).toEqual(successBody);
+    expect(dupeBody).toEqual({});
+    expect(dupeHeaders["content-type"]).toBe(successHeaders["content-type"]);
+  });
+
+  it("prevents account enumeration via timing-safe duplicate handling", async () => {
+    // Verify that duplicate email errors are caught and return success
+    mockInsertOwner.mockRejectedValue(new Error("UNIQUE constraint failed: owners.email"));
+
+    const res = await handleRegister(
+      jsonRequest({ email: "probe@attacker.com", password: "password123" }),
+      fakeDb,
+    );
+
+    // Should return success, not error
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    expect(body).not.toHaveProperty("error");
+    expect(body).toEqual({});
+  });
+
+  it("does not leak account existence through different error messages", async () => {
+    // Test multiple duplicate scenarios to ensure consistent responses
+    const testEmails = [
+      "user1@test.com",
+      "user2@test.com",
+      "admin@test.com",
+    ];
+
+    for (const email of testEmails) {
+      mockInsertOwner.mockRejectedValue(new Error("UNIQUE constraint failed: owners.email"));
+      
+      const res = await handleRegister(
+        jsonRequest({ email, password: "testpass123" }),
+        fakeDb,
+      );
+
+      expect(res.status).toBe(201);
+      const body = await res.json();
+      expect(body).toEqual({});
+      expect(body).not.toHaveProperty("error");
+    }
+  });
+
+  it("handles UNIQUE constraint with different error message formats", async () => {
+    // Test various UNIQUE constraint error formats
+    const errorFormats = [
+      "UNIQUE constraint failed: owners.email",
+      "UNIQUE constraint failed",
+      "constraint UNIQUE failed",
+    ];
+
+    for (const errorMsg of errorFormats) {
+      mockInsertOwner.mockRejectedValue(new Error(errorMsg));
+      
+      const res = await handleRegister(
+        jsonRequest({ email: "test@example.com", password: "password123" }),
+        fakeDb,
+      );
+
+      expect(res.status).toBe(201);
+      const body = await res.json();
+      expect(body).toEqual({});
+    }
   });
 
   it("returns 400 on missing email", async () => {
