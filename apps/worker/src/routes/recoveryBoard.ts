@@ -50,7 +50,7 @@ export async function handleRecoveryBoardPage(request: Request, db: D1Database):
       <button class="mp-btn mp-btn-primary" type="submit">${t(lang, "filter")}</button>
     </form>
     <div class="grid">${alerts.length === 0 ? `<div class="empty mp-card"><p class="empty-title">${t(lang, "noMatches")}</p><p class="empty-copy">${t(lang, "recoveryBoardSummary")}</p></div>` : alerts.map((a) => `<article class="card">
-      ${a.photo_r2_key ? `<img src="/media/cats/${escapeHtml(a.public_id)}/photo" alt="${escapeHtml(a.name)}" loading="lazy" />` : `<div class="placeholder" style="background:#fff7f0;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:.875rem;font-weight:700">${t(lang, "noPhoto")}</div>`}
+      ${a.photo_r2_key ? `<img src="/media/cats/${escapeHtml(a.public_id)}/photo" alt="${escapeHtml(a.name)}" loading="lazy" />` : `<div class="placeholder mp-photo-slot">${t(lang, "noPhoto")}</div>`}
       <div class="location-copy">
         <span class="status-chip">Missing</span>
         <strong>${escapeHtml(a.city || t(lang, "unknown"))}${a.area ? `, ${escapeHtml(a.area)}` : ""}</strong>

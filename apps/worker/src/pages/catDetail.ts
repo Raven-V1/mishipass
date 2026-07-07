@@ -137,7 +137,7 @@ export async function handleCatDetail(
         <div class="upload-area">
           <label class="mp-btn mp-btn-secondary" for="gallery-upload-input">${t(lang, "uploadPhoto")}</label>
           <input type="file" id="gallery-upload-input" accept="image/jpeg,image/png,image/webp" />
-          <p id="upload-status" class="muted" style="margin:var(--space-1) 0 0;font-size:.875rem"></p>
+          <p id="upload-status" class="muted mp-field-hint"></p>
         </div>
         <div class="gallery-grid" id="gallery-grid"><p class="gallery-empty">${t(lang, "noPhotos")}</p></div>
       </section>

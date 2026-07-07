@@ -152,7 +152,7 @@ function buildDashboardHtml(mode: "dashboard" | "register" = "dashboard"): strin
             <div class="reg-photo-area">
               <div id="reg-photo-preview-wrap" class="cat-photo-placeholder reg-photo-placeholder" aria-label="Upload photo">
                 <span class="paw-icon paw-icon-lg" id="reg-photo-paw"></span>
-                <img id="reg-photo-preview" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%" alt="Preview" />
+                <img id="reg-photo-preview" class="mp-photo-preview" alt="Preview" />
               </div>
               <input type="file" accept="image/jpeg,image/png,image/webp" class="photo-file-input" id="reg-photo-input" />
               <label for="reg-photo-input" class="btn-secondary reg-photo-btn" data-i18n="photoUpload">Photo upload</label>
@@ -206,9 +206,9 @@ function buildDashboardHtml(mode: "dashboard" | "register" = "dashboard"): strin
         </section>
 
         <!-- Bottom bar -->
-        <div id="reg-cancel-warn" class="hidden" style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:var(--space-2) var(--space-3);display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);flex-wrap:wrap">
-          <span style="font-weight:700;font-size:.9375rem" data-i18n="unsavedChangesWarning">Unsaved changes will be lost. Are you sure?</span>
-          <div style="display:flex;gap:var(--space-1)"><button type="button" class="btn-danger" id="reg-cancel-confirm" data-i18n="discard">Discard</button><button type="button" class="btn-secondary" id="reg-cancel-stay" data-i18n="keepEditing">Keep editing</button></div>
+        <div id="reg-cancel-warn" class="hidden mp-warn-bar">
+          <span class="mp-warn-label" data-i18n="unsavedChangesWarning">Unsaved changes will be lost. Are you sure?</span>
+          <div class="mp-btn-group"><button type="button" class="btn-danger" id="reg-cancel-confirm" data-i18n="discard">Discard</button><button type="button" class="btn-secondary" id="reg-cancel-stay" data-i18n="keepEditing">Keep editing</button></div>
         </div>
         <div class="reg-bottom-bar">
           <p class="reg-privacy-note" data-i18n="regPrivacyNote">Your cat's information is stored securely. Only data you choose to make public will be visible to others.</p>
@@ -360,7 +360,7 @@ function buildSocialButtons(env: LogtoEnv): string {
 
   const note = googleConfigured
     ? ""
-    : `<p class="muted" style="font-size:.8rem;margin:.25rem 0">Social login not configured in this deployment.</p>`;
+    : `<p class="muted mp-note-sm">Social login not configured in this deployment.</p>`;
 
   return googleBtn + appleBtn + note;
 }
