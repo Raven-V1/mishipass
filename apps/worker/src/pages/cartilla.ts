@@ -112,7 +112,7 @@ export async function handleCartillaPage(
   <main class="page-shell">
     ${renderTopNav(lang, { authenticated: true, active: "dashboard" })}
   <section class="mp-card cartilla-shell">
-    <div class="nav"><a class="mp-back" href="/dashboard?lang=${lang}">&larr; ${t(lang, "backToDashboard")}</a></div>
+    <div class="nav"><a class="mp-back" href="/dashboard/cats/${safeId}?lang=${lang}">&larr; ${safeName}</a></div>
     <h1>${t(lang, "cartilla")}</h1>
     <p class="intro-copy">${safeName} ${t(lang, "cartillaPrivateRecords")}</p>
     ${isEmpty ? `<section class="empty-grid">

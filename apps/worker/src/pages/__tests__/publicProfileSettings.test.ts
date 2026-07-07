@@ -13,7 +13,7 @@ describe("handlePublicProfileSettingsPage", () => {
     vi.resetAllMocks();
   });
 
-  it("redirects the retired public profile settings route into the settings privacy section", async () => {
+  it("renders the public profile and QR settings page for an authenticated owner", async () => {
     vi.mocked(getCatForOwner).mockResolvedValue({
       public_id: "MP-US-TEST-0001",
       name: "Mishi",
@@ -42,7 +42,11 @@ describe("handlePublicProfileSettingsPage", () => {
       "https://example.com",
       "en",
     );
-    expect(response.status).toBe(302);
-    expect(response.headers.get("Location")).toBe("/dashboard/settings?lang=en#privacy-MP-US-TEST-0001");
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain("Public Profile");
+    expect(html).toContain("QR Code");
+    expect(html).toContain("MP-US-TEST-0001");
+    expect(html).toContain("Mishi");
   });
 });

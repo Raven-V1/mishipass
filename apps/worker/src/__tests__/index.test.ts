@@ -187,10 +187,10 @@ describe("GET /dashboard", () => {
     expect(body).toContain("Mexico (MX)");
   });
 
-  it("removes the standalone Contact and Privacy dashboard card while keeping settings entry points", async () => {
+  it("contains Contact and Privacy tab, Settings, and Missing Cat Board on dashboard", async () => {
     const res = await worker.fetch(new Request("https://example.com/dashboard"), fakeEnv);
     const body = await res.text();
-    expect(body).not.toContain("Contact &amp; Privacy");
+    expect(body).toContain("Contact &amp; Privacy");
     expect(body).toContain("Settings");
     expect(body).toContain("Missing Cat Board");
   });
