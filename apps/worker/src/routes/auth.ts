@@ -63,8 +63,10 @@ export async function handleRegister(
   try {
     await insertOwner(db, { email: normalizedEmail, password_hash: passwordHash });
   } catch (err: unknown) {
+    // Silently handle duplicate email to prevent account enumeration.
+    // Return success response regardless of whether email already exists.
     if (err instanceof Error && err.message.includes("UNIQUE")) {
-      return jsonResponse({ error: "Email already registered" }, 409);
+      return jsonResponse({}, 201);
     }
     throw err;
   }
