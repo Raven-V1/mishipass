@@ -18,16 +18,6 @@ export async function handleRecoveryBoardPage(request: Request, db: D1Database):
   const ageDays = ageRaw ? Number.parseInt(ageRaw, 10) : undefined;
   const validAge = Number.isSafeInteger(ageDays) && ageDays! > 0 && ageDays! <= 365 ? ageDays : undefined;
   const alerts = await listRecoveryBoardAlerts(db, city, validAge);
-  const STOCK_CAT_PHOTOS = [
-    "https://cdn2.thecatapi.com/images/MTY3ODIyMQ.jpg",
-    "https://cdn2.thecatapi.com/images/OOD3VXAQn.jpg",
-    "https://cdn2.thecatapi.com/images/ai6Jps4sx.jpg",
-    "https://cdn2.thecatapi.com/images/-Zfz5z2jK.jpg",
-    "https://cdn2.thecatapi.com/images/O3btzLlsO.png",
-    "https://cdn2.thecatapi.com/images/0XYvRd7oD.jpg",
-    "https://cdn2.thecatapi.com/images/3bkZAzhd1.jpg",
-    "https://cdn2.thecatapi.com/images/dbMTzZhE_.jpg",
-  ];
   const boardHeader = isAuthenticated
     ? `<a class="mp-back" href="/dashboard?lang=${lang}">&larr; ${t(lang, "backToDashboard")}</a>`
     : `${brandLockupHtml(`/?lang=${lang}`)}`;
@@ -59,10 +49,10 @@ export async function handleRecoveryBoardPage(request: Request, db: D1Database):
       <input name="ageDays" type="number" min="1" max="365" placeholder="${t(lang, "alertAgeDays")}" value="${validAge ? String(validAge) : ""}" />
       <button class="mp-btn mp-btn-primary" type="submit">${t(lang, "filter")}</button>
     </form>
-    <div class="grid">${alerts.length === 0 ? `<div class="empty mp-card"><p class="empty-title">${t(lang, "noMatches")}</p><p class="empty-copy">${t(lang, "recoveryBoardSummary")}</p></div>` : alerts.map((a, i) => `<article class="card">
-      ${a.photo_r2_key ? `<img src="/media/cats/${escapeHtml(a.public_id)}/photo" alt="${escapeHtml(a.name)}" loading="lazy" />` : `<img src="${STOCK_CAT_PHOTOS[i % STOCK_CAT_PHOTOS.length]}" alt="${t(lang, "noPhoto")}" loading="lazy" style="opacity:.78" />`}
+    <div class="grid">${alerts.length === 0 ? `<div class="empty mp-card"><p class="empty-title">${t(lang, "noMatches")}</p><p class="empty-copy">${t(lang, "recoveryBoardSummary")}</p></div>` : alerts.map((a) => `<article class="card">
+      ${a.photo_r2_key ? `<img src="/media/cats/${escapeHtml(a.public_id)}/photo" alt="${escapeHtml(a.name)}" loading="lazy" />` : `<div class="placeholder" style="background:#fff7f0;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:.875rem;font-weight:700">${t(lang, "noPhoto")}</div>`}
       <div class="location-copy">
-        <span class="status-chip">${i < 2 ? "New" : "Reviewed"}</span>
+        <span class="status-chip">Missing</span>
         <strong>${escapeHtml(a.city || t(lang, "unknown"))}${a.area ? `, ${escapeHtml(a.area)}` : ""}</strong>
         <p>${escapeHtml(a.name)}</p>
         <div class="meta-inline">

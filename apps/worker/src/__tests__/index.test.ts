@@ -187,12 +187,13 @@ describe("GET /dashboard", () => {
     expect(body).toContain("Mexico (MX)");
   });
 
-  it("contains Contact and Privacy tab, Settings, and Missing Cat Board on dashboard", async () => {
+  it("contains Settings, Missing Cat Board, and Adoption Requests links on dashboard", async () => {
     const res = await worker.fetch(new Request("https://example.com/dashboard"), fakeEnv);
     const body = await res.text();
-    expect(body).toContain("Contact &amp; Privacy");
+    expect(body).not.toContain("Contact &amp; Privacy");
     expect(body).toContain("Settings");
     expect(body).toContain("Missing Cat Board");
+    expect(body).toContain("Adoption Requests");
   });
 
   it("contains board photo, language, and assisted breed/color controls without exposing API keys", async () => {

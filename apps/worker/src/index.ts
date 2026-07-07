@@ -17,6 +17,7 @@ import { handleRequestTransfer, handleListTransferRequests, handleAcceptTransfer
 import { handleRecoveryBoardOptIn, handleRecoveryBoardPage } from "./routes/recoveryBoard.js";
 import { handleHistory, handleRoot } from "./pages/root.js";
 import { handleDashboard, handleDashboardRegister } from "./pages/dashboard.js";
+import { handleTransfersPage } from "./pages/transfers.js";
 import { handleCatDetail } from "./pages/catDetail.js";
 import { handleCartillaPage, handleVetVisitDetailPage } from "./pages/cartilla.js";
 import { handlePublicProfileSettingsPage } from "./pages/publicProfileSettings.js";
@@ -122,6 +123,10 @@ export default {
 
     if (method === "GET" && pathname === "/dashboard/register") {
       return handleDashboardRegister(env);
+    }
+
+    if (method === "GET" && pathname === "/dashboard/transfers") {
+      return handleTransfersPage(request, env.DB);
     }
 
     if (method === "GET" && DASHBOARD_SETTINGS.test(pathname)) {
