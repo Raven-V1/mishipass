@@ -65,8 +65,10 @@ function getConfig(env: LogtoEnv): LogtoConfig | null {
 
 // ── PKCE / OIDC cookie helpers ────────────────────────────────────────────────
 
-const OIDC_COOKIE_ATTRS = "HttpOnly; Secure; SameSite=Lax; Path=/api/auth/logto/callback; Max-Age=600";
-const OIDC_COOKIE_CLEAR = "HttpOnly; Secure; SameSite=Lax; Path=/api/auth/logto/callback; Max-Age=0";
+// SameSite=None is required for iOS Safari (ITP drops SameSite=Lax cookies in
+// cross-site redirect chains). CSRF protection is provided by the state parameter.
+const OIDC_COOKIE_ATTRS = "HttpOnly; Secure; SameSite=None; Path=/api/auth/logto/callback; Max-Age=600";
+const OIDC_COOKIE_CLEAR = "HttpOnly; Secure; SameSite=None; Path=/api/auth/logto/callback; Max-Age=0";
 
 function setCookies(values: Record<string, string>): string[] {
   return Object.entries(values).map(([k, v]) => `${k}=${v}; ${OIDC_COOKIE_ATTRS}`);
