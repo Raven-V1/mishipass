@@ -9,6 +9,7 @@ import {
   transferCatOwnership,
 } from "../db/index.js";
 import { sendEmail } from "../utils/email.js";
+import { escapeHtml } from "../utils/html.js";
 import type { RequestContext } from "../middleware/session.js";
 
 // ── POST /api/cats/:catId/request-transfer ─────────────────────────────────
@@ -71,8 +72,8 @@ export async function handleRequestTransfer(
       subject: `Someone wants to adopt ${cat.name} — MishiPass`,
       html: `
         <p>Hi,</p>
-        <p><strong>${requester?.email ?? "Someone"}</strong> has requested to adopt <strong>${cat.name}</strong>.</p>
-        ${message ? `<p>Their message: <em>${message}</em></p>` : ""}
+        <p><strong>${escapeHtml(requester?.email ?? "Someone")}</strong> has requested to adopt <strong>${escapeHtml(cat.name)}</strong>.</p>
+        ${message ? `<p>Their message: <em>${escapeHtml(message)}</em></p>` : ""}
         <p>Log in to your dashboard to accept or decline: <a href="${publicBaseUrl}/dashboard">${publicBaseUrl}/dashboard</a></p>
         <p>— MishiPass</p>
       `,
@@ -127,7 +128,7 @@ export async function handleAcceptTransfer(
       subject: `Your adoption request was accepted — MishiPass`,
       html: `
         <p>Hi,</p>
-        <p>Your request to adopt <strong>${cat?.name ?? "the cat"}</strong> has been accepted!</p>
+        <p>Your request to adopt <strong>${escapeHtml(cat?.name ?? "the cat")}</strong> has been accepted!</p>
         <p>The cat is now in your MishiPass account: <a href="${publicBaseUrl}/dashboard">${publicBaseUrl}/dashboard</a></p>
         <p>— MishiPass</p>
       `,
@@ -162,7 +163,7 @@ export async function handleDeclineTransfer(
       subject: `Adoption request update — MishiPass`,
       html: `
         <p>Hi,</p>
-        <p>Your request to adopt <strong>${cat?.name ?? "the cat"}</strong> was not accepted at this time.</p>
+        <p>Your request to adopt <strong>${escapeHtml(cat?.name ?? "the cat")}</strong> was not accepted at this time.</p>
         <p>— MishiPass</p>
       `,
     }, resendApiKey);
