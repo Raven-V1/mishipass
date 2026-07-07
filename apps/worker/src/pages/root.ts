@@ -172,7 +172,7 @@ function buildRootHtml(request: Request, env: LogtoEnv = {}): string {
               <div class="form-row"><label for="home-password">Password</label><input id="home-password" type="password" autocomplete="current-password" placeholder="Enter your password" required /></div>
               <p class="auth-note">Password reset is not available in this beta yet.</p>
               <button class="mp-btn" type="submit">Log In</button>
-              <p id="home-login-error" class="home-error" style="display:none;color:#991b1b;font-size:.875rem;margin:var(--space-1) 0 0"></p>
+              <p id="home-login-error" class="home-error mp-error-msg"></p>
             </form>
             <aside class="social-panel">
               <div class="divider">OR</div>

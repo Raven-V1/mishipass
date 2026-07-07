@@ -418,7 +418,7 @@ function renderVetForm(
           <div class="field"><label for="visit_time">${t(lang, "visitTime")}</label><input type="time" id="visit_time" name="visit_time" /></div>
         </div>
         <div class="visit-grid-right">
-          <h2 class="section-title" style="visibility:hidden">${t(lang, "addNewVisit")}</h2>
+          <h2 class="section-title mp-visually-hidden">${t(lang, "addNewVisit")}</h2>
           <div class="field"><label for="reason">${t(lang, "reasonForVisit")}</label><textarea id="reason" name="reason" maxlength="500" rows="3"></textarea></div>
           <div class="field"><label for="diagnosis">${t(lang, "diagnosis")}</label><textarea id="diagnosis" name="diagnosis" maxlength="500" rows="3"></textarea></div>
           <div class="field"><label for="treatment">${t(lang, "treatment")}</label><textarea id="treatment" name="treatment" maxlength="500" rows="3"></textarea></div>
@@ -447,7 +447,7 @@ function renderVetForm(
             <div class="field"><label for="medication_notes">${t(lang, "instructions")}</label><input type="text" id="medication_notes" name="medication_notes" maxlength="500" /></div>
           </div>
         </div>
-        <div class="form-grid" style="margin-top:var(--space-2)">
+        <div class="form-grid mp-mt-2">
           <div class="field"><label for="follow_up_date">${t(lang, "followUpDate")}</label><input type="date" id="follow_up_date" name="follow_up_date" /></div>
           <div class="field"><label for="notes">${t(lang, "notes")}</label><textarea id="notes" name="notes" maxlength="500" rows="3"></textarea></div>
           <div class="field field-wide"><label>${t(lang, "uploadDocuments")}</label><div class="upload-drop">${t(lang, "uploadDocuments")}</div><div class="photo-picker"><div class="photo-picker-actions"><label class="photo-action" for="vaccine_sticker_photo_upload">${t(lang, "photoUpload")}</label></div><input class="photo-input-visually-hidden" type="file" id="vaccine_sticker_photo_upload" name="vaccine_sticker_photo_upload" accept="image/*" data-photo-status="vaccine-sticker-status" /><div id="vaccine-sticker-status" class="photo-status">${t(lang, "noPhotoSelected")}</div></div></div>

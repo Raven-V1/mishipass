@@ -22,24 +22,42 @@ export function htmlResponse(body: string, status = 200): Response {
   });
 }
 
-const CSP = [
-  "default-src 'none'",
-  "script-src 'self' 'unsafe-inline'",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
-  "font-src 'self'",
-  "connect-src 'self'",
-  "form-action 'self'",
-  "frame-ancestors 'none'",
-  "base-uri 'self'",
-  "object-src 'none'",
-].join("; ");
+function buildCsp(nonce: string): string {
+  return [
+    "default-src 'none'",
+    `script-src 'self' 'nonce-${nonce}'`,
+    `style-src 'self' 'nonce-${nonce}'`,
+    "img-src 'self' data: blob:",
+    "font-src 'self'",
+    "connect-src 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "object-src 'none'",
+  ].join("; ");
+}
 
-export function applySecurityHeaders(response: Response): Response {
+function generateNonce(): string {
+  const arr = crypto.getRandomValues(new Uint8Array(16));
+  return btoa(String.fromCharCode(...Array.from(arr)));
+}
+
+export async function applySecurityHeaders(response: Response): Promise<Response> {
   const ct = response.headers.get("Content-Type") ?? "";
-  if (!ct.startsWith("text/html")) return response;
-  const next = new Response(response.body, response);
-  next.headers.set("Content-Security-Policy", CSP);
+  if (!ct.startsWith("text/html")) {
+    const next = new Response(response.body, response);
+    next.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    return next;
+  }
+  const nonce = generateNonce();
+  const html = await response.text();
+  const patched = html
+    .replace(/<script(?=[\s>])/g, `<script nonce="${nonce}"`)
+    .replace(/<style(?=[\s>])/g, `<style nonce="${nonce}"`);
+  const next = new Response(patched, { status: response.status, headers: response.headers });
+  next.headers.delete("Content-Length");
+  next.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  next.headers.set("Content-Security-Policy", buildCsp(nonce));
   next.headers.set("X-Frame-Options", "DENY");
   next.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   return next;
@@ -117,6 +135,20 @@ textarea{min-height:96px;resize:vertical}
 .provider-pending{opacity:.72}
 @media(max-width:768px){.mp-container,.mp-narrow{padding:0 var(--space-2)}.mp-section{padding:var(--space-6) 0}.mp-grid{grid-template-columns:repeat(8,minmax(0,1fr));gap:var(--space-2)}}
 @media(max-width:430px){.mp-container,.mp-narrow{padding:0 var(--space-2)}.mp-section{padding:var(--space-4) 0}.mp-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-2)}.brand-lockup{grid-template-columns:56px minmax(0,1fr);width:clamp(144px,54vw,176px)}.brand-logo{width:56px}.brand-word{font-size:1.5rem}.brand-sub{font-size:.625rem}.mp-header-inner{min-height:64px;gap:var(--space-1)}}
+.mp-field-hint{margin:var(--space-1) 0 0;font-size:.875rem}
+.mp-photo-preview{display:none;width:100%;height:100%;object-fit:cover;border-radius:50%}
+.mp-warn-bar{background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:var(--space-2) var(--space-3);display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);flex-wrap:wrap}
+.mp-warn-label{font-weight:700;font-size:.9375rem}
+.mp-btn-group{display:flex;gap:var(--space-1)}
+.mp-note-sm{font-size:.8rem;margin:.25rem 0}
+.mp-error-msg{display:none;color:#991b1b;font-size:.875rem;margin:var(--space-1) 0 0}
+.mp-text-85{font-size:.85rem}
+.mp-action-row{display:flex;gap:.5rem;margin-top:.5rem}
+.mp-status-hint{font-size:.85rem;margin:.5rem 0 0}
+.mp-col-full{grid-column:1/-1}
+.mp-photo-slot{background:#fff7f0;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:.875rem;font-weight:700}
+.mp-visually-hidden{visibility:hidden}
+.mp-mt-2{margin-top:var(--space-2)}
 `;
 
 export function brandLogoHtml(className = "brand-logo"): string {

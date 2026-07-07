@@ -61,7 +61,7 @@ export async function handleMissingCardPage(
           ${alert.last_seen_at ? `<div class="detail-card"><strong>${t(lang, "missingSince")}</strong><span>${escapeHtml(alert.last_seen_at)}</span></div>` : ""}
           ${alert.reward_visible === 1 && alert.reward_amount ? `<div class="detail-card"><strong>${t(lang, "reward")}</strong><span>${escapeHtml(alert.reward_amount)}</span></div>` : ""}
           <div class="detail-card"><strong>${t(lang, "contact")}</strong><span>${contact?.contact_mode === "phone" && contact.public_phone ? escapeHtml(contact.public_phone) : t(lang, "contactThroughMishipass")}</span></div>
-          <div class="detail-card" style="grid-column:1/-1"><strong>${t(lang, "openPublicAlert")}</strong><a href="/c/${escapeHtml(publicId)}?lang=${lang}">${escapeHtml(publicAlertUrl)}</a></div>
+          <div class="detail-card mp-col-full"><strong>${t(lang, "openPublicAlert")}</strong><a href="/c/${escapeHtml(publicId)}?lang=${lang}">${escapeHtml(publicAlertUrl)}</a></div>
         </div>
       </div>
     </div>
