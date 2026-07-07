@@ -309,6 +309,7 @@ export interface VaccineRow {
   cat_id: number;
   vaccine_name: string;
   date_given: string | null;
+  next_due_date: string | null;
   sticker_photo_r2_key: string | null;
   created_at: string;
 }
@@ -317,6 +318,7 @@ export interface VaccineEntry {
   id: number;
   vaccine_name: string;
   date_given: string | null;
+  next_due_date: string | null;
   sticker_photo_r2_key: string | null;
   created_at: string;
 }
@@ -324,6 +326,7 @@ export interface VaccineEntry {
 export interface VaccineInsert {
   vaccine_name: string;
   date_given?: string | null;
+  next_due_date?: string | null;
   sticker_photo_r2_key?: string | null;
 }
 

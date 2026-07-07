@@ -15,6 +15,24 @@ import { checkMagicBytes } from "./photos.js";
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_STICKER_PHOTO_SIZE = 2 * 1024 * 1024;
 
+function missingStickerPlaceholder(): Response {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160" role="img" aria-label="Vaccine sticker unavailable">
+    <rect width="240" height="160" rx="18" fill="#fff7f0"/>
+    <rect x="16" y="16" width="208" height="128" rx="14" fill="#ffffff" stroke="#ead8d0" stroke-width="2" stroke-dasharray="8 8"/>
+    <circle cx="64" cy="80" r="24" fill="#e8faf7"/>
+    <path d="M56 80h16M64 72v16" stroke="#24776e" stroke-width="4" stroke-linecap="round"/>
+    <text x="104" y="72" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#24776e">Sticker unavailable</text>
+    <text x="104" y="98" font-family="Inter, Arial, sans-serif" font-size="13" fill="#667674">Upload or replace the vaccine proof image.</text>
+  </svg>`;
+  return new Response(svg, {
+    headers: {
+      "Content-Type": "image/svg+xml; charset=utf-8",
+      "Cache-Control": "private, max-age=300",
+      "X-Content-Type-Options": "nosniff",
+    },
+  });
+}
+
 function clean(value: unknown, max: number): string | null {
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
@@ -48,6 +66,7 @@ export async function handleCreateVaccine(
   await insertVaccine(db, publicId, ctx.ownerId, {
     vaccine_name: vaccineName,
     date_given: clean(body.date_given, 30),
+    next_due_date: clean(body.next_due_date, 30),
   });
   return Response.json({ status: "created" }, { status: 201 });
 }
@@ -146,7 +165,7 @@ export async function handleVaccineStickerServe(
   const vaccine = await getVaccineForOwner(db, publicId, ctx.ownerId, vaccineId);
   if (!vaccine?.sticker_photo_r2_key) return new Response("Not Found", { status: 404 });
   const object = await photos.get(vaccine.sticker_photo_r2_key);
-  if (!object) return new Response("Not Found", { status: 404 });
+  if (!object) return missingStickerPlaceholder();
   return new Response(object.body, {
     headers: {
       "Content-Type": object.httpMetadata?.contentType || "application/octet-stream",

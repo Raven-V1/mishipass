@@ -103,7 +103,7 @@ export async function handleCatDetail(
           <p class="id-line">${safeId}</p>
           <div class="hero-stat-grid">${statCards}</div>
           <div class="nav-links">
-            <a href="/dashboard/cats/${safeId}/public-profile?lang=${lang}">${t(lang, "viewPublicProfile")}</a>
+            <a href="/c/${safeId}?lang=${lang}">${t(lang, "viewPublicProfile")}</a>
             <a href="/dashboard/cats/${safeId}/qr?lang=${lang}">${t(lang, "qrCard")}</a>
             <a href="/dashboard/cats/${safeId}/cartilla?lang=${lang}">${t(lang, "cartilla")}</a>
         ${cat.current_mode === "missing" ? `<a href="/dashboard/cats/${safeId}/sightings?lang=${lang}">${t(lang, "reports")}</a>` : ""}

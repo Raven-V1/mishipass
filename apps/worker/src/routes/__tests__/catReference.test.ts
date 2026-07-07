@@ -17,6 +17,7 @@ describe("cat reference proxy", () => {
   });
 
   it("maps TheCatAPI breed response using image.url, known refs, or CDN pattern — never exposes API key", async () => {
+    vi.unstubAllGlobals();
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json([
       { id: "beng", name: "Bengal", reference_image_id: "O3btzLlsO" },
       { id: "siam", name: "Siamese", reference_image_id: "ai6Jps4sx" },

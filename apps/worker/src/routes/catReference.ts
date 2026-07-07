@@ -86,9 +86,14 @@ export async function handleCatReferenceBreeds(apiKey?: string): Promise<Respons
     return Response.json({ source: "cache", ...cachedPayload }, { status: 200 });
   }
 
+  if (!apiKey) {
+    return Response.json({ source: "fallback", ...withFeaturedBreeds(FALLBACK_BREEDS) }, { status: 200 });
+  }
+
   try {
-    const init = apiKey ? { headers: { "x-api-key": apiKey } } : undefined;
-    const response = await fetch("https://api.thecatapi.com/v1/breeds", init);
+    const response = await fetch("https://api.thecatapi.com/v1/breeds", {
+      headers: { "x-api-key": apiKey },
+    });
     if (!response.ok) throw new Error("TheCatAPI unavailable");
     const raw = await response.json();
     if (!Array.isArray(raw)) throw new Error("Unexpected TheCatAPI response");

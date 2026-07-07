@@ -63,6 +63,7 @@ export async function handleCartillaPage(
     .panel-heading{display:flex;align-items:center;gap:var(--space-1);margin-bottom:var(--space-2)}
     .panel-subcopy{margin:0;color:var(--muted);font-weight:700;font-size:.9rem}
     .timeline{display:grid;gap:var(--space-2)}
+    .timeline-scroll{max-height:320px;overflow-y:auto;padding-right:4px}
     .timeline .record{position:relative;padding-left:var(--space-3)}
     .timeline .record:before{content:"";position:absolute;left:10px;top:22px;bottom:-22px;width:2px;background:#d9efe9}
     .timeline .record:last-child:before{display:none}
@@ -111,7 +112,7 @@ export async function handleCartillaPage(
   <main class="page-shell">
     ${renderTopNav(lang, { authenticated: true, active: "dashboard" })}
   <section class="mp-card cartilla-shell">
-    <div class="nav"><a class="mp-back" href="/dashboard/cats/${safeId}?lang=${lang}">&larr; ${safeName}</a></div>
+    <div class="nav"><a class="mp-back" href="/dashboard?lang=${lang}">&larr; ${t(lang, "backToDashboard")}</a></div>
     <h1>${t(lang, "cartilla")}</h1>
     <p class="intro-copy">${safeName} ${t(lang, "cartillaPrivateRecords")}</p>
     ${isEmpty ? `<section class="empty-grid">
@@ -143,7 +144,7 @@ export async function handleCartillaPage(
     (function(){
       function postJson(url, payload){ return fetch(url,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}); }
       var vaccineForm=document.getElementById("vaccine-form");
-      vaccineForm.addEventListener("submit",function(e){e.preventDefault();var f=e.target;postJson("/api/cats/${safeId}/vaccines",{vaccine_name:f.vaccine_name.value,date_given:f.date_given.value}).then(function(r){if(r.ok)location.reload();else r.text().then(alert);});});
+      vaccineForm.addEventListener("submit",function(e){e.preventDefault();var f=e.target;postJson("/api/cats/${safeId}/vaccines",{vaccine_name:f.vaccine_name.value,date_given:f.date_given.value,next_due_date:f.next_due_date.value}).then(function(r){if(r.ok)location.reload();else r.text().then(alert);});});
       var medForm=document.getElementById("medication-form");
       medForm.addEventListener("submit",function(e){e.preventDefault();var f=e.target;postJson("/api/cats/${safeId}/medications",{medication_name:f.medication_name.value,dose:f.dose.value,duration:f.duration.value,start_date:f.start_date.value,prescriber_name:f.prescriber_name.value,notes:f.notes.value}).then(function(r){if(r.ok) location.reload(); else r.text().then(alert);});});
       document.querySelectorAll(".photo-input-visually-hidden").forEach(function(input){input.addEventListener("change",function(){var status=document.getElementById(input.getAttribute("data-photo-status"));if(status) status.textContent=input.files&&input.files[0]?input.files[0].name:${JSON.stringify(t(lang, "noPhotoSelected"))};});});
@@ -203,7 +204,7 @@ function renderVetVisits(publicId: string, visits: VetVisitEntry[], lang: Langua
 function renderVaccines(publicId: string, vaccines: VaccineEntry[], _nextVaccineDate: string | null, lang: LanguageCode): string {
   const history = vaccines.length === 0
     ? `<p class="muted">${t(lang, "noMatches")}</p>`
-    : `<div class="timeline">${vaccines.map(v => `<div class="record history-card"><div class="history-icon">+</div><div class="history-meta"><strong>${escapeHtml(v.vaccine_name)}</strong><p>${t(lang, "dateGiven")}: ${dateOrEmpty(v.date_given, lang)}</p><p>${t(lang, "nextDue")}: ${t(lang, "unknown")}</p>${v.sticker_photo_r2_key ? `<img class="sticker" src="/media/cats/${publicId}/vaccines/${v.id}/sticker-photo" alt="${t(lang, "vaccineSticker")}" />` : ""}<form class="sticker-form" action="/api/cats/${publicId}/vaccines/${v.id}/sticker-photo"><div class="photo-picker"><div class="photo-picker-actions"><label class="photo-action" for="sticker-upload-${v.id}">${t(lang, "photoUpload")}</label></div><input class="photo-input-visually-hidden" id="sticker-upload-${v.id}" type="file" name="photo" accept="image/*" data-photo-status="sticker-status-${v.id}" /><div id="sticker-status-${v.id}" class="photo-status">${t(lang, "noPhotoSelected")}</div></div><button class="btn secondary" type="submit">${t(lang, "save")}</button></form></div><div class="history-chevron">›</div></div>`).join("")}</div>`;
+    : `<div class="timeline-scroll"><div class="timeline">${vaccines.map(v => `<div class="record history-card"><div class="history-icon">+</div><div class="history-meta"><strong>${escapeHtml(v.vaccine_name)}</strong><p>${t(lang, "dateGiven")}: ${dateOrEmpty(v.date_given, lang)}</p><p>${t(lang, "nextDue")}: ${dateOrEmpty(v.next_due_date ?? null, lang)}</p>${v.sticker_photo_r2_key ? `<img class="sticker" src="/media/cats/${publicId}/vaccines/${v.id}/sticker-photo" alt="${t(lang, "vaccineSticker")}" />` : ""}<form class="sticker-form" action="/api/cats/${publicId}/vaccines/${v.id}/sticker-photo"><div class="photo-picker"><div class="photo-picker-actions"><label class="photo-action" for="sticker-upload-${v.id}">${t(lang, "photoUpload")}</label></div><input class="photo-input-visually-hidden" id="sticker-upload-${v.id}" type="file" name="photo" accept="image/*" data-photo-status="sticker-status-${v.id}" /><div id="sticker-status-${v.id}" class="photo-status">${t(lang, "noPhotoSelected")}</div></div><button class="btn secondary" type="submit">${t(lang, "save")}</button></form></div><div class="history-chevron">›</div></div>`).join("")}</div></div>`;
   return `<section class="split-section">
     <div class="panel-card">
       <div class="panel-heading"><h2>${t(lang, "addNewVaccine")}</h2></div>
@@ -211,6 +212,7 @@ function renderVaccines(publicId: string, vaccines: VaccineEntry[], _nextVaccine
         <div class="form-grid">
           <label class="field">${t(lang, "vaccineName")}<input name="vaccine_name" required maxlength="100" /></label>
           <label class="field">${t(lang, "dateGiven")}<input name="date_given" type="date" /></label>
+          <label class="field">${t(lang, "nextDue")}<input name="next_due_date" type="date" /></label>
         </div>
         <p class="form-note">Save the vaccine entry first, then upload the sticker photo from that vaccine's history card.</p>
         <div class="form-actions">

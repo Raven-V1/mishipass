@@ -107,14 +107,15 @@ export async function insertVaccine(
 ): Promise<void> {
   await db
     .prepare(
-      `INSERT INTO vaccines (cat_id, vaccine_name, date_given, sticker_photo_r2_key)
-       VALUES (${OWNED_CAT_ID}, ?, ?, ?)`,
+      `INSERT INTO vaccines (cat_id, vaccine_name, date_given, next_due_date, sticker_photo_r2_key)
+       VALUES (${OWNED_CAT_ID}, ?, ?, ?, ?)`,
     )
     .bind(
       catPublicId,
       ownerId,
       data.vaccine_name,
       data.date_given ?? null,
+      data.next_due_date ?? null,
       data.sticker_photo_r2_key ?? null,
     )
     .run();
@@ -131,10 +132,10 @@ export async function listVaccines(
 ): Promise<VaccineEntry[]> {
   const result = await db
     .prepare(
-      `SELECT v.id, v.vaccine_name, v.date_given, v.sticker_photo_r2_key, v.created_at
+      `SELECT v.id, v.vaccine_name, v.date_given, v.next_due_date, v.sticker_photo_r2_key, v.created_at
        FROM vaccines v
        WHERE v.cat_id = ${OWNED_CAT_ID}
-       ORDER BY v.date_given DESC, v.created_at DESC`,
+       ORDER BY COALESCE(v.next_due_date, v.date_given) DESC, v.created_at DESC`,
     )
     .bind(catPublicId, ownerId)
     .all<VaccineEntry>();
@@ -149,7 +150,7 @@ export async function getVaccineForOwner(
 ): Promise<VaccineEntry | null> {
   return db
     .prepare(
-      `SELECT v.id, v.vaccine_name, v.date_given, v.sticker_photo_r2_key, v.created_at
+      `SELECT v.id, v.vaccine_name, v.date_given, v.next_due_date, v.sticker_photo_r2_key, v.created_at
        FROM vaccines v
        WHERE v.cat_id = ${OWNED_CAT_ID} AND v.id = ?`,
     )

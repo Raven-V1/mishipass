@@ -57,9 +57,18 @@ describe("cartilla routes", () => {
 
   it("creates vaccine records for owned cats", async () => {
     mockGetCatForOwner.mockResolvedValue({ public_id: TEST_ID });
-    const res = await handleCreateVaccine(TEST_ID, jsonRequest({ vaccine_name: "FVRCP", date_given: "2026-07-01" }), fakeDb, authed);
+    const res = await handleCreateVaccine(
+      TEST_ID,
+      jsonRequest({ vaccine_name: "FVRCP", date_given: "2026-07-01", next_due_date: "2027-07-01" }),
+      fakeDb,
+      authed,
+    );
     expect(res.status).toBe(201);
-    expect(mockInsertVaccine).toHaveBeenCalledWith(fakeDb, TEST_ID, 3, { vaccine_name: "FVRCP", date_given: "2026-07-01" });
+    expect(mockInsertVaccine).toHaveBeenCalledWith(fakeDb, TEST_ID, 3, {
+      vaccine_name: "FVRCP",
+      date_given: "2026-07-01",
+      next_due_date: "2027-07-01",
+    });
   });
 
   it("rejects advice-like medication fields", async () => {

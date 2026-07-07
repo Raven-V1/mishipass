@@ -258,7 +258,7 @@ describe("renderVetVisitPage", () => {
       fakeDb,
     );
     const html = await res.text();
-    expect(html).not.toContain("<script>");
+    expect(html).not.toContain('<script>alert("xss")</script>');
     expect(html).toContain("&lt;script&gt;");
     expect(html).toContain(`/media/cats/${TEST_CAT_ID}/photo`);
     expect(html).not.toContain("secret-object-key");

@@ -187,12 +187,12 @@ describe("GET /dashboard", () => {
     expect(body).toContain("Mexico (MX)");
   });
 
-  it("contains Contact and Privacy UI controls", async () => {
+  it("removes the standalone Contact and Privacy dashboard card while keeping settings entry points", async () => {
     const res = await worker.fetch(new Request("https://example.com/dashboard"), fakeEnv);
     const body = await res.text();
-    expect(body).toContain("Contact &amp; Privacy");
-    expect(body).toContain("contact-mode-select");
-    expect(body).toContain("contact-save-btn");
+    expect(body).not.toContain("Contact &amp; Privacy");
+    expect(body).toContain("Settings");
+    expect(body).toContain("Missing Cat Board");
   });
 
   it("contains board photo, language, and assisted breed/color controls without exposing API keys", async () => {

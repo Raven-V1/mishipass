@@ -252,10 +252,16 @@ export async function handleVetVisitFinish(
     }
     await db
       .prepare(
-        `INSERT INTO vaccines (cat_id, vaccine_name, date_given, sticker_photo_r2_key)
-         VALUES ((SELECT id FROM cats WHERE public_id = ?), ?, ?, ?)`,
+        `INSERT INTO vaccines (cat_id, vaccine_name, date_given, next_due_date, sticker_photo_r2_key)
+         VALUES ((SELECT id FROM cats WHERE public_id = ?), ?, ?, ?, ?)`,
       )
-      .bind(publicId, vaccineName, indexedValue(body, "vaccine_date", i)?.slice(0, 30) ?? null, stickerKey)
+      .bind(
+        publicId,
+        vaccineName,
+        indexedValue(body, "vaccine_date", i)?.slice(0, 30) ?? null,
+        indexedValue(body, "vaccine_next_due_date", i)?.slice(0, 30) ?? null,
+        stickerKey,
+      )
       .run();
   }
 
@@ -363,6 +369,11 @@ function renderVetForm(
     .section-title{font-size:1.25rem;line-height:1.2;color:var(--teal);margin:0}
     .section-note{margin:0;color:var(--muted);font-size:.875rem}
     .form-section{display:grid;gap:var(--space-2);padding:var(--space-3);border:1px solid var(--line);border-radius:8px;background:#fff;box-shadow:0 10px 24px rgba(56,38,26,.05)}
+    .record-toggle{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2)}
+    .record-toggle input{position:absolute;opacity:0;pointer-events:none}
+    .record-toggle label{display:flex;align-items:center;justify-content:center;min-height:48px;padding:0 var(--space-2);border-radius:999px;border:1px solid var(--line);background:#fffaf6;color:var(--teal);font-weight:900;cursor:pointer}
+    .record-toggle input:checked + label{background:var(--brand-coral);border-color:var(--brand-coral);color:#fff}
+    .record-panel.hidden{display:none}
     .form-section.visit-shell{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:var(--space-3)}
     .form-section.visit-shell .section-title,
     .form-section.visit-shell .section-note,
@@ -417,15 +428,24 @@ function renderVetForm(
       <section class="form-section">
         <h2 class="section-title">${t(lang, "medicationRecord")}</h2>
         <p class="section-note">${t(lang, "medicationDocNote")}</p>
-        <div class="form-grid">
-          <div class="field"><label for="vaccine_name">${t(lang, "vaccineName")} (${t(lang, "optional")})</label><input type="text" id="vaccine_name" name="vaccine_name" maxlength="100" /></div>
-          <div class="field"><label for="vaccine_date">${t(lang, "dateGiven")} (${t(lang, "optional")})</label><input type="date" id="vaccine_date" name="vaccine_date" /></div>
+        <div class="record-toggle">
+          <div><input type="radio" id="record-kind-vaccine" name="record_kind" value="vaccine" /><label for="record-kind-vaccine">${t(lang, "vaccineName")}</label></div>
+          <div><input type="radio" id="record-kind-medication" name="record_kind" value="medication" checked /><label for="record-kind-medication">${t(lang, "medicationRecord")}</label></div>
         </div>
-        <div class="med-grid">
-          <div class="field"><label for="medication_name">${t(lang, "medicationName")}</label><input type="text" id="medication_name" name="medication_name" maxlength="100" /></div>
-          <div class="field"><label for="medication_dose">${t(lang, "doseAsRecorded")}</label><input type="text" id="medication_dose" name="medication_dose" maxlength="100" /></div>
-          <div class="field"><label for="medication_duration">${t(lang, "duration")}</label><input type="text" id="medication_duration" name="medication_duration" maxlength="100" /></div>
-          <div class="field"><label for="medication_notes">${t(lang, "instructions")}</label><input type="text" id="medication_notes" name="medication_notes" maxlength="500" /></div>
+        <div id="record-panel-vaccine" class="record-panel hidden">
+          <div class="form-grid">
+            <div class="field"><label for="vaccine_name">${t(lang, "vaccineName")}</label><input type="text" id="vaccine_name" name="vaccine_name" maxlength="100" /></div>
+            <div class="field"><label for="vaccine_date">${t(lang, "dateGiven")}</label><input type="date" id="vaccine_date" name="vaccine_date" /></div>
+            <div class="field"><label for="vaccine_next_due_date">${t(lang, "nextDue")}</label><input type="date" id="vaccine_next_due_date" name="vaccine_next_due_date" /></div>
+          </div>
+        </div>
+        <div id="record-panel-medication" class="record-panel">
+          <div class="med-grid">
+            <div class="field"><label for="medication_name">${t(lang, "medicationName")}</label><input type="text" id="medication_name" name="medication_name" maxlength="100" /></div>
+            <div class="field"><label for="medication_dose">${t(lang, "doseAsRecorded")}</label><input type="text" id="medication_dose" name="medication_dose" maxlength="100" /></div>
+            <div class="field"><label for="medication_duration">${t(lang, "duration")}</label><input type="text" id="medication_duration" name="medication_duration" maxlength="100" /></div>
+            <div class="field"><label for="medication_notes">${t(lang, "instructions")}</label><input type="text" id="medication_notes" name="medication_notes" maxlength="500" /></div>
+          </div>
         </div>
         <div class="form-grid" style="margin-top:var(--space-2)">
           <div class="field"><label for="follow_up_date">${t(lang, "followUpDate")}</label><input type="date" id="follow_up_date" name="follow_up_date" /></div>
@@ -441,6 +461,27 @@ function renderVetForm(
     </form>
   </section>
   </main>
+  <script>
+    (() => {
+      const vaccineToggle = document.getElementById("record-kind-vaccine");
+      const medicationToggle = document.getElementById("record-kind-medication");
+      const vaccinePanel = document.getElementById("record-panel-vaccine");
+      const medicationPanel = document.getElementById("record-panel-medication");
+      if (!(vaccineToggle instanceof HTMLInputElement) || !(medicationToggle instanceof HTMLInputElement) || !vaccinePanel || !medicationPanel) {
+        return;
+      }
+
+      const setPanelState = () => {
+        const showVaccine = vaccineToggle.checked;
+        vaccinePanel.classList.toggle("hidden", !showVaccine);
+        medicationPanel.classList.toggle("hidden", showVaccine);
+      };
+
+      vaccineToggle.addEventListener("change", setPanelState);
+      medicationToggle.addEventListener("change", setPanelState);
+      setPanelState();
+    })();
+  </script>
 </body>
 </html>`;
 }
