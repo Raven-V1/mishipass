@@ -22,6 +22,29 @@ export function htmlResponse(body: string, status = 200): Response {
   });
 }
 
+const CSP = [
+  "default-src 'none'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self'",
+  "connect-src 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "object-src 'none'",
+].join("; ");
+
+export function applySecurityHeaders(response: Response): Response {
+  const ct = response.headers.get("Content-Type") ?? "";
+  if (!ct.startsWith("text/html")) return response;
+  const next = new Response(response.body, response);
+  next.headers.set("Content-Security-Policy", CSP);
+  next.headers.set("X-Frame-Options", "DENY");
+  next.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  return next;
+}
+
 export const MISHIPASS_DESIGN_CSS = `
 :root{
   --space-1:8px;

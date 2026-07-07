@@ -28,6 +28,7 @@ import { getLanguageFromRequest, resolveOwnerLang } from "./utils/i18n.js";
 import { handleBrandAsset } from "./utils/brandAssets.js";
 import { ILLUSTRATION_NOT_FOUND_SRC } from "./utils/designAssets.js";
 import { renderIllustratedStatePage } from "./utils/designPages.js";
+import { applySecurityHeaders } from "./utils/html.js";
 
 export interface Env {
   DB: D1Database;
@@ -99,8 +100,7 @@ const CAT_UPDATE = /^\/api\/cats\/([^/]+)\/update$/;
 const CAT_PHOTO_TOGGLE_PUBLIC = /^\/api\/cats\/([^/]+)\/photos\/(\d+)\/visibility$/;
 const CAT_PUBLIC_GALLERY_SERVE = /^\/media\/cats\/([^/]+)\/photos\/([0-9A-HJKMNP-TV-Z]{16})\/public$/;
 
-export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+async function dispatch(request: Request, env: Env): Promise<Response> {
     const { method, url } = request;
     const { pathname } = new URL(url);
 
@@ -489,5 +489,10 @@ export default {
         },
       },
     );
+}
+
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    return applySecurityHeaders(await dispatch(request, env));
   },
 };
