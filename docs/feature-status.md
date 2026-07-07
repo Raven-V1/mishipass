@@ -7,7 +7,7 @@ Auditor: Kiro (Phase 0, autonomous task set)
 
 | Feature | Status | Notes |
 |---|---|---|
-| Owner auth (session-based, PBKDF2) | verified | Login, register, logout, session middleware all functional. 244 tests passing. |
+| Owner auth (session-based, PBKDF2) | verified | Login, register, logout, session middleware all functional. 279 Worker tests passing (43 shared-validation). |
 | Cat registration | verified | POST /api/cats creates cat with public ID, country, name, profile fields. |
 | Public ID generation (MP-XX-XXXX-XXXX) | verified | CSPRNG Crockford Base32, UNIQUE constraint + retry. Shared-validation 43 tests. |
 | QR URL (/c/:publicId) | verified | Static QR resolves to mode-routed page. QR SVG generation present. |
@@ -43,10 +43,10 @@ Auditor: Kiro (Phase 0, autonomous task set)
 | No vet form section selector | P2 | All sections (visit, vaccine, medication) shown simultaneously, no toggle. |
 | Mode badge color not reflecting state | P2 | Mode badge always same styling regardless of active/missing/vet. |
 | Text overflow in stat tiles | P2 | Four-tile stat row collides at narrow widths, no wrapping. |
-| Login form on home page non-functional | P1 | Home page login form action="GET /dashboard" does not submit credentials. |
+| Login form on home page non-functional | P1 — FIXED | Fixed 2026-07-03 (toast null-guard). See docs/hotfix-login-report.md. |
 | Missing "Back to Dashboard" on some pages | P2 | Some authenticated pages missing consistent back navigation. |
 
-## Features Not Built (Out of Scope for Beta 1.5)
+## Optional and Deferred Features
 
 | Feature | Status | Notes |
 |---|---|---|

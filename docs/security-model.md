@@ -174,8 +174,9 @@ wrangler 4.107.0. No high or critical findings remain in the dependency tree.
   TypeScript typecheck across all three workspaces, the full test suite, and a
   targeted dependency audit that distinguishes new findings from known-deferred
   packages. New high or critical vulnerabilities fail the build.
-- **Aikido** security scan: not in scope for Beta 1.5. Replaced by the manual
-  security audit completed 2026-07-02 (`docs/security-audit/2026-07-02/`).
+- **Aikido** security scan: completed 2026-07-07 (AI Code Audit + AutoFix remediation
+  cycle). Findings and evidence in `docs/aikido/`. The manual security audit completed
+  2026-07-02 (`docs/security-audit/2026-07-02/`) remains the primary pre-submission audit.
 
 ---
 
@@ -187,7 +188,7 @@ wrangler 4.107.0. No high or critical findings remain in the dependency tree.
 |---|---|
 | Govern | Constitution v1.0 defines roles, decision authority, and a documented review protocol. Major security, privacy, architecture, and scope decisions receive advisory review before the project owner makes the final decision and records it in `docs/decision-log.md`. Beta risk tolerance is stated explicitly. |
 | Identify | Public identifiers use entropy-based uniqueness. Dependency vulnerabilities are tracked via Dependabot and the CI audit gate. Asset inventory: TypeScript Worker, D1 database, R2 storage, React web app, Python tooling layer. |
-| Protect | Type-safe TypeScript with `tsc --noEmit` enforced in CI. No internal IDs on public surfaces. Default-private for sensitive data. Input validation enforced at all trust boundaries. HMAC-SHA256 IP hashing. Magic-byte file validation. D1-backed rate limiting. |
+| Protect | Type-safe TypeScript with `tsc --noEmit` enforced in CI. No internal IDs on public surfaces. Default-private for sensitive data. Input validation enforced at all trust boundaries. HMAC-SHA256 IP hashing. Magic-byte file validation. D1-backed rate limiting. CSP with per-request nonces (replaces unsafe-inline). HSTS header enforced. |
 | Detect | CI is configured to enforce typecheck, tests, and a targeted dependency audit on every PR. Dependabot monitors the dependency graph weekly. |
 | Respond | Incident response plan not yet formalized for Beta. Production issues addressed via CI + manual review. |
 | Recover | Data persistence relies on Cloudflare's infrastructure; migrations are version-controlled and reproducible. |
@@ -278,7 +279,10 @@ pre-submission documentation synchronization pass.
 | Recovery Board | Missing-mode only, city/age filters, public-safe fields only | Active |
 | Owner auth backend | PBKDF2-SHA256, opaque session token, HttpOnly cookie | Active |
 | Logto OIDC (Google login) | Authorization Code + PKCE, server-side | Active — secrets set in production 2026-07-05 |
-| Aikido security scan | — | Not in Beta 1.5 scope; replaced by manual audit 2026-07-02 |
+| Content-Security-Policy header | Per-request nonces; replaces unsafe-inline for scripts and styles | Active — added 2026-07-06 (PR #121, PR #123) |
+| HSTS header | `Strict-Transport-Security: max-age=31536000; includeSubDomains` | Active — added 2026-07-06 (PR #123) |
+| SameSite=None on OIDC cookies | Required for iOS cross-site OIDC callback | Active — added 2026-07-07 (PR #124) |
+| Aikido security scan | AI Code Audit + AutoFix cycle; 3 issue groups remediated | Completed 2026-07-07; evidence in `docs/aikido/` |
 | Manual security audit | `docs/security-audit/2026-07-02/` | Completed 2026-07-02 |
 
 ### Known gaps — Tier 2
@@ -354,7 +358,7 @@ are confirmed set in the production Worker deployment as of 2026-07-05.
 Google login is operational; Apple login requires Apple Developer Program
 connector configuration in Logto before activation.
 
-**Aikido security scan:** not in scope for Beta 1.5; replaced by manual audit completed 2026-07-02.
+**Aikido security scan:** completed 2026-07-07. See `docs/aikido/` for the AI Code Audit evidence and remediation report.
 
 ---
 

@@ -8,8 +8,8 @@ TypeScript Worker reads the cat's current mode from D1 and returns the appropria
 interface.
 
 **Verification status:** The demo flow steps below have NOT been run end-to-end
-against the current production deployment (Version ID `b7f8b204-5b79-4a6a-b61a-8f3eb1fdfd56`,
-deployed 2026-07-05). The Constitution Section 21 demo flow (9 original steps,
+against the current production deployment (Version ID `017054e3-ec85-48bf-b4c8-57b4aca3c398`,
+deployed 2026-07-06). The Constitution Section 21 demo flow (9 original steps,
 expanded to 16 implementation-accurate steps below) is pending live verification.
 
 ## Constitution Section 21 — 9-step demo verification

@@ -761,9 +761,27 @@ Decided by: Carlos
 
 ---
 
-## 2026-07-05 - Commit attribution correction and history rewrite on main
+## 2026-07-05 — Commit attribution correction and history rewrite on main
 
-Decision: Rewrite author/committer of ce0eb78 (redesign -> Zhanerke Askerbekova) and 4fe0158 (Playwright scaffold -> Raven-V1), strip incorrect Co-Authored-By trailers, back up pre-rewrite state, force-push main and dev.
-Reason: [PLACEHOLDER - Carlos to fill in his own wording]
-Alternatives considered: (1) .mailmap remap only - rejected, does not change authorship GitHub attributes to the commits. (2) Forward-only fix - rejected, leaves design and tooling work misattributed on main.
+Decision: Rewrite author/committer of ce0eb78 (redesign → Zhanerke Askerbekova) and 4fe0158 (Playwright scaffold → Raven-V1), strip incorrect Co-Authored-By trailers, back up pre-rewrite state, force-push main and dev.
+Reason: Design work must be attributed to Zhanerke Askerbekova; implementation work to Raven-V1. Misattribution creates incorrect contributor history on GitHub.
+Alternatives considered: (1) .mailmap remap only — rejected, does not change authorship GitHub attributes to commits. (2) Forward-only fix — rejected, leaves design and tooling work misattributed on main.
+Decided by: Carlos
+
+---
+
+## [2026-07-07] — Kiro documentation consolidated into docs/kiro/
+
+Decision: Move all Kiro run reports and checklist from the docs/ root into a dedicated docs/kiro/ subfolder.
+Reason: Six Kiro files (run reports rounds 1–4, alignment report, track checklist) accumulated in the docs/ root. Grouping them mirrors the existing docs/audits/ and docs/security-audit/ structure and keeps the root navigable.
+Executor: Claude Code (commit be590c8)
+Decided by: Carlos
+
+---
+
+## [2026-07-07] — Aikido security documentation added to docs/aikido/
+
+Decision: Add docs/aikido/ containing the Aikido threat model (aikido-threat-model.md) and the Belvenar Analytics security audit evidence report (mishipass-security-audit-remediation-report.pdf, dated 7 July 2026). Also add documentation/ folder at repo root containing the hackathon project report (mishipass-project-report.pdf) per the #hackthekitty submission structure.
+Reason: Aikido AI Code Audit was completed 2026-07-07. AutoFix PRs were merged. The evidence report documents the full scan lifecycle (initial findings, AutoFix previews, PR merges, repository scan, live domain scan). The project report is a required hackathon submission artefact in documentation/.
+Executor: Claude Code (commit f168ac1)
 Decided by: Carlos
