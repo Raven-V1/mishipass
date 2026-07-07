@@ -76,6 +76,11 @@ export async function handleRegister(
 
 // -- Login ------------------------------------------------------------------
 
+// Dummy hash for timing-attack mitigation: valid PHC format with 100k iterations.
+// When no owner is found, we verify against this to ensure constant-time behavior.
+const DUMMY_PASSWORD_HASH =
+  "$pbkdf2-sha256$100000$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+
 export async function handleLogin(
   request: Request,
   db: D1Database,
@@ -96,12 +101,13 @@ export async function handleLogin(
   const normalizedEmail = email.toLowerCase();
   const owner = await findOwnerByEmail(db, normalizedEmail);
 
-  if (!owner) {
-    return jsonResponse({ error: "Invalid email or password" }, 401);
-  }
+  // Timing-attack mitigation: always perform password verification, even when
+  // the owner doesn't exist. Use a dummy hash to ensure both code paths execute
+  // the expensive PBKDF2 operation, preventing account enumeration via timing.
+  const hashToVerify = owner ? owner.password_hash : DUMMY_PASSWORD_HASH;
+  const valid = await verifyPassword(password, hashToVerify);
 
-  const valid = await verifyPassword(password, owner.password_hash);
-  if (!valid) {
+  if (!owner || !valid) {
     return jsonResponse({ error: "Invalid email or password" }, 401);
   }
 
