@@ -1,5 +1,9 @@
 # MishiPass Threat Model
 
+**Aikido scan status:** Retest complete — all findings resolved, clean scan confirmed (2026-07-07).
+All three scan surfaces (AI Code Audit, domain, repository) show 0 open issues.
+Full evidence report: [mishipass-security-audit-remediation-report.pdf](mishipass-security-audit-remediation-report.pdf)
+
 ## 1. Overview
 
 MishiPass is a cat registry and digital health-passport web application running as a Cloudflare Worker. Pet owners register accounts, enroll cats, manage each cat's status (active, missing, adoption, vet-visit), and maintain digital medical records. Unauthenticated third parties interact through public pages: scanning QR codes, submitting sighting reports for missing cats, completing veterinary-visit records on a mode-gated form, and browsing a public recovery board.
