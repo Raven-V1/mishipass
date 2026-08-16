@@ -1,1 +1,1 @@
-["@cloudflare/vitest-pool-workers","miniflare","wrangler","ws"]
+["@cloudflare/vitest-pool-workers","miniflare","nanoid","postcss","sharp","undici","wrangler","ws"]

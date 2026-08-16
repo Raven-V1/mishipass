@@ -767,3 +767,44 @@ Decision: Rewrite author/committer of ce0eb78 (redesign -> Zhanerke Askerbekova)
 Reason: [PLACEHOLDER - Carlos to fill in his own wording]
 Alternatives considered: (1) .mailmap remap only - rejected, does not change authorship GitHub attributes to the commits. (2) Forward-only fix - rejected, leaves design and tooling work misattributed on main.
 Decided by: Carlos
+
+---
+
+## [2026-08-16] — One-time authorization for agent to complete PR #129 end-to-end
+Decision: Grant Claude Code explicit, session-scoped authority to (a) change
+PR #129 base branch from `main` to `dev`, (b) push the audit-allowlist fix
+commit to the feature branch, (c) wait for CI to pass, and (d) merge PR #129
+into `dev` via the GitHub API.
+Reason: PR #129 has two mechanical blockers (wrong base branch, CI red on
+four new dev-tooling transitive vulns) that require several coordinated
+actions across the GitHub API and the local repository. Serializing these
+through owner-in-the-loop confirmations at each gate adds no oversight
+value because the underlying change (Block A: CSP nonce enforcement) has
+already been browser-verified and reviewed. This authorization does not
+extend to `main`, does not authorize any wrangler operation against
+production, and expires on completion of PR #129.
+Scope limits: `dev` branch only. No push to `main`. No wrangler against
+remote D1 or remote R2. No production deploy step.
+Alternatives considered: (1) Owner executes each step manually via GitHub
+UI — rejected as unnecessary friction on a fully-verified change.
+(2) Grant standing merge authority — rejected as overreach; this remains
+per-PR only.
+Decided by: Carlos
+
+---
+
+## [2026-08-16] — Audit allowlist expanded with four dev-tooling transitives
+Decision: Add `nanoid`, `postcss`, `sharp`, `undici` to `.audit-known-issues.json`
+alongside the existing entries (`@cloudflare/vitest-pool-workers`,
+`miniflare`, `wrangler`, `ws`).
+Reason: Each of the four is a transitive dependency of dev/test tooling
+(vite build for apps/web, wrangler asset pipeline, miniflare local dev
+server) and does not appear on the Worker production request path. This
+extends the policy already established on 2026-06-30 for the Cloudflare
+Workers / Vitest / Wrangler test-tooling chain. Production Worker runtime
+exposure is unchanged.
+Alternatives considered: (1) Major-version upgrades of vite / wrangler /
+miniflare — rejected as scope creep on a targeted CSP fix; will be
+revisited in the Block D audit sweep. (2) Merging with red CI — rejected
+as it would undermine the gate.
+Decided by: Carlos
