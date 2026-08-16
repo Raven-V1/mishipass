@@ -216,7 +216,7 @@ describe("GET /dashboard", () => {
     expect(body).toContain('id="cat-breed"');
     expect(body).toContain('id="color-swatch-grid"');
     expect(body).toContain('id="cat-color"');
-    expect(body).toContain("onerror=");
+    expect(body).toContain("breed-fallback");
     expect(body).toContain("/api/cat-reference/breeds");
     expect(body).not.toContain("THE_CAT_API_KEY");
     expect(body).not.toContain("x-api-key");

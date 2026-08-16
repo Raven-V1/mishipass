@@ -133,7 +133,7 @@ export async function handlePublicProfileSettingsPage(
         <p class="qr-note">Scan to open ${safeName}&apos;s public profile.</p>
         <div class="button-row no-print">
           <button class="mp-btn mp-btn-secondary" type="button" id="download-qr-btn">Download QR</button>
-          <button class="mp-btn mp-btn-secondary" type="button" onclick="window.print()">Print QR</button>
+          <button class="mp-btn mp-btn-secondary" type="button" id="print-qr-btn">Print QR</button>
           <button class="mp-btn mp-btn-secondary" type="button" id="copy-link-btn">Copy Link</button>
         </div>
       </section>
@@ -214,6 +214,7 @@ export async function handlePublicProfileSettingsPage(
     var contactFields=document.getElementById("contact-fields");
     var contactMode=document.getElementById("contact-mode-select");
     var publicPhone=document.getElementById("public-phone-input");
+    var printBtn=document.getElementById("print-qr-btn");
     var copyBtn=document.getElementById("copy-link-btn");
     var downloadBtn=document.getElementById("download-qr-btn");
     var saveBtn=document.getElementById("save-contact-btn");
@@ -244,6 +245,8 @@ export async function handlePublicProfileSettingsPage(
     });
     publicPhone.disabled=contactMode.value!=="phone";
     syncContactFields();
+
+    if(printBtn){printBtn.addEventListener("click",function(){window.print();})}
 
     copyBtn.addEventListener("click",function(){
       var done=function(){copyBtn.textContent="Link Copied";setTimeout(function(){copyBtn.textContent="Copy Link";},1800);};
