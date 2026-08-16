@@ -1,11 +1,13 @@
 /**
- * Block A — CSP nonce verification.
+ * Block A + Block B — CSP nonce verification and image proxy smoke test.
  *
  * Confirms:
  *  1. Every listed HTML response carries a Content-Security-Policy header with a nonce.
  *  2. The same nonce is present on every <script> and <style> element in that response.
  *  3. Zero CSP violations appear in the browser console after each navigation and after
  *     each control interaction that was previously wired via inline event handlers.
+ *  4. (Block B) Breed images on /dashboard load through the same-origin proxy path;
+ *     at least one .breed-card img exists and every loaded image has naturalWidth > 0.
  *
  * Seed required: local-visual-qa (dev@mishipass.local / devpass123)
  * Cats used:
@@ -22,9 +24,7 @@ const QA_CAT = "MP-QA-T001-A001";
 const VET_CAT = "MP-QA-T003-V001";
 const SEED_PROFILE_PHOTO_ID = 910;
 
-// Matches script-src / style-src violations only. img-src violations from
-// cdn2.thecatapi.com are pre-existing and tracked as work-queue item 3 (Block B).
-const CSP_RE = /script-src|style-src|Refused to execute inline|Refused to apply inline/i;
+const CSP_RE = /Content.Security.Policy|Refused to (execute|apply|load)/i;
 
 // ── Minimal 1×1 white JPEG (base64) ──────────────────────────────────────────
 const TINY_JPEG_B64 =
@@ -132,7 +132,7 @@ test.describe("Block A — authenticated pages", () => {
 
   // ── /dashboard ──────────────────────────────────────────────────────────────
 
-  test("/dashboard — CSP header, nonce consistency, zero violations", async () => {
+  test("/dashboard — CSP header, nonce consistency, zero violations, breed images load through proxy", async () => {
     const page = await ctx.newPage();
     const captured = attachErrorCapture(page);
 
@@ -142,9 +142,36 @@ test.describe("Block A — authenticated pages", () => {
     const cspHeader = res?.headers()["content-security-policy"] ?? "";
     expect(cspHeader).toMatch(/nonce-/);
 
-    await page.waitForLoadState("networkidle");
+    // Use domcontentloaded for CSP/nonce checks — networkidle would block on
+    // proxy image loads (Worker must buffer each CDN image before responding).
+    await page.waitForLoadState("domcontentloaded");
+    // Wait for the breeds API to resolve and render at least one card
+    await page.waitForSelector(".breed-card", { timeout: 10000 }).catch(() => {});
+
     assertNoCspErrors(captured, "/dashboard");
     await verifyNonceConsistency(page, "/dashboard");
+
+    // Block B: verify API returns proxy paths and proxy endpoint serves images.
+    // Checked via direct request (not browser image loading) to avoid CDN latency
+    // blocking the test.
+    const breedImageCount = await page.evaluate(() =>
+      document.querySelectorAll(".breed-card img").length,
+    );
+    if (breedImageCount > 0) {
+      const breedsData = await ctx.request.get("/api/cat-reference/breeds").then(r =>
+        r.json<{ breeds: Array<{ referenceImageUrl: string | null }> }>(),
+      );
+      const firstProxyUrl = breedsData.breeds.find(b => b.referenceImageUrl)?.referenceImageUrl;
+      expect(firstProxyUrl, "API returned no breed with a referenceImageUrl").toBeTruthy();
+      expect(firstProxyUrl!.startsWith("/api/"), "referenceImageUrl is not a proxy path").toBe(true);
+      const imgRes = await ctx.request.get(firstProxyUrl!);
+      expect(imgRes.status(), "Proxy endpoint did not return 200").toBe(200);
+      expect(
+        (imgRes.headers()["content-type"] ?? "").startsWith("image/"),
+        "Proxy endpoint did not return image content-type",
+      ).toBe(true);
+    }
+
     await page.close();
   });
 

@@ -12,6 +12,7 @@ import { handleStartVetVisit, handleCancelVetVisit, handleVetVisitFinish } from 
 import { handleCartillaSummaryJson, handleCreateMedication, handleCreateVaccine, handleVaccineStickerServe, handleVaccineStickerUpload } from "./routes/cartilla.js";
 import { handleGetOwnerSettings, handleUpsertOwnerSettings } from "./routes/ownerSettings.js";
 import { handleCatReferenceBreeds } from "./routes/catReference.js";
+import { handleBreedImageProxy } from "./routes/breedImageProxy.js";
 import { handleMissingCardPage } from "./routes/missingCard.js";
 import { handleRequestTransfer, handleListTransferRequests, handleAcceptTransfer, handleDeclineTransfer } from "./routes/transferRequests.js";
 import { handleRecoveryBoardOptIn, handleRecoveryBoardPage } from "./routes/recoveryBoard.js";
@@ -229,6 +230,10 @@ async function dispatch(request: Request, env: Env): Promise<Response> {
 
     if (method === "GET" && pathname === "/api/cat-reference/breeds") {
       return handleCatReferenceBreeds(env.THE_CAT_API_KEY);
+    }
+
+    if (method === "GET" && pathname === "/api/cat-reference/breeds/image") {
+      return handleBreedImageProxy(request);
     }
 
     // -- Cat mode API --

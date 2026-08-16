@@ -25,6 +25,22 @@ const KNOWN_REFERENCE_IMAGE_URLS: Record<string, string> = Object.fromEntries(
     }),
 );
 
+function toProxyPath(cdnUrl: string | null): string | null {
+  if (cdnUrl === null || cdnUrl === "") return cdnUrl;
+  if (cdnUrl.startsWith("/api/")) return cdnUrl;
+  if (cdnUrl.startsWith("https://cdn2.thecatapi.com/")) {
+    return `/api/cat-reference/breeds/image?url=${encodeURIComponent(cdnUrl)}`;
+  }
+  return cdnUrl;
+}
+
+function applyProxyPaths(payload: { breeds: BreedReference[]; featuredBreeds: BreedReference[] }) {
+  return {
+    breeds: payload.breeds.map(b => ({ ...b, referenceImageUrl: toProxyPath(b.referenceImageUrl) })),
+    featuredBreeds: payload.featuredBreeds.map(b => ({ ...b, referenceImageUrl: toProxyPath(b.referenceImageUrl) })),
+  };
+}
+
 let cachedPayload: { breeds: BreedReference[]; featuredBreeds: BreedReference[] } | null = null;
 let cacheExpiresAt = 0;
 
@@ -83,11 +99,11 @@ function withFeaturedBreeds(breeds: BreedReference[]): { breeds: BreedReference[
 export async function handleCatReferenceBreeds(apiKey?: string): Promise<Response> {
   const now = Date.now();
   if (cachedPayload && now < cacheExpiresAt) {
-    return Response.json({ source: "cache", ...cachedPayload }, { status: 200 });
+    return Response.json({ source: "cache", ...applyProxyPaths(cachedPayload) }, { status: 200 });
   }
 
   if (!apiKey) {
-    return Response.json({ source: "fallback", ...withFeaturedBreeds(FALLBACK_BREEDS) }, { status: 200 });
+    return Response.json({ source: "fallback", ...applyProxyPaths(withFeaturedBreeds(FALLBACK_BREEDS)) }, { status: 200 });
   }
 
   try {
@@ -102,8 +118,8 @@ export async function handleCatReferenceBreeds(apiKey?: string): Promise<Respons
       .filter((item): item is BreedReference => item !== null);
     cachedPayload = breeds.length > 0 ? withFeaturedBreeds(breeds) : withFeaturedBreeds(FALLBACK_BREEDS);
     cacheExpiresAt = now + 6 * 60 * 60 * 1000;
-    return Response.json({ source: "thecatapi", ...cachedPayload }, { status: 200 });
+    return Response.json({ source: "thecatapi", ...applyProxyPaths(cachedPayload) }, { status: 200 });
   } catch {
-    return Response.json({ source: "fallback", ...withFeaturedBreeds(FALLBACK_BREEDS) }, { status: 200 });
+    return Response.json({ source: "fallback", ...applyProxyPaths(withFeaturedBreeds(FALLBACK_BREEDS)) }, { status: 200 });
   }
 }
