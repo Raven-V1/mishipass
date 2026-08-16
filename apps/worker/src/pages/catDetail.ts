@@ -125,9 +125,9 @@ export async function handleCatDetail(
         <div class="edit-bar">
           <p class="edit-status hidden" id="edit-status"></p>
           <div class="edit-actions">
-            <button class="mp-btn mp-btn-secondary" id="edit-btn" onclick="startEdit()">${t(lang, "editInfo")}</button>
-            <button class="mp-btn mp-btn-primary hidden" id="save-btn" onclick="saveInfo()">${t(lang, "saveChanges")}</button>
-            <button class="mp-btn mp-btn-secondary hidden" id="cancel-btn" onclick="cancelEdit()">${t(lang, "cancelEdit")}</button>
+            <button class="mp-btn mp-btn-secondary" id="edit-btn">${t(lang, "editInfo")}</button>
+            <button class="mp-btn mp-btn-primary hidden" id="save-btn">${t(lang, "saveChanges")}</button>
+            <button class="mp-btn mp-btn-secondary hidden" id="cancel-btn">${t(lang, "cancelEdit")}</button>
           </div>
         </div>
       </section>
@@ -182,9 +182,9 @@ export async function handleCatDetail(
           +'<span class="public-badge">'+(p.isPublic?TR.photoPublic:TR.photoPrivate)+'</span>'
           +'<img src="'+imgUrl+'" alt="cat photo" loading="lazy" />'
           +'<div class="gallery-item-actions">'
-          +(p.isProfile?'':'<button class="mp-btn mp-btn-secondary" onclick="setProfile('+p.id+')">'+TR.setAsProfile+'</button>')
-          +'<button class="mp-btn mp-btn-secondary" onclick="togglePublic('+p.id+','+(!p.isPublic)+')">'+(p.isPublic?TR.makePrivate:TR.makePublic)+'</button>'
-          +'<button class="mp-btn btn-danger gallery-item-delete" onclick="deletePhoto('+p.id+')">'+TR.deletePhoto+'</button>'
+          +(p.isProfile?'':'<button class="mp-btn mp-btn-secondary" data-action="set-profile" data-photo-id="'+p.id+'">'+TR.setAsProfile+'</button>')
+          +'<button class="mp-btn mp-btn-secondary" data-action="toggle-public" data-photo-id="'+p.id+'" data-make-public="'+(!p.isPublic)+'">'+(p.isPublic?TR.makePrivate:TR.makePublic)+'</button>'
+          +'<button class="mp-btn btn-danger gallery-item-delete" data-action="delete-photo" data-photo-id="'+p.id+'">'+TR.deletePhoto+'</button>'
           +'</div></div>';
       }).join("");
     }
@@ -204,6 +204,18 @@ export async function handleCatDetail(
       fetch("/api/cats/"+encodeURIComponent(safeId)+"/photos/"+photoId+"/delete",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:"{}"})
         .then(function(r){if(r.ok)loadGallery();});
     }
+
+    // Event delegation for gallery buttons — survives grid innerHTML replacements
+    var galleryGrid=document.getElementById("gallery-grid");
+    galleryGrid.addEventListener("click",function(e){
+      var btn=e.target.closest("[data-action]");
+      if(!btn)return;
+      var action=btn.getAttribute("data-action");
+      var photoId=parseInt(btn.getAttribute("data-photo-id"),10);
+      if(action==="set-profile")setProfile(photoId);
+      else if(action==="toggle-public")togglePublic(photoId,btn.getAttribute("data-make-public")==="true");
+      else if(action==="delete-photo")deletePhoto(photoId);
+    });
 
     var uploadInput=document.getElementById("gallery-upload-input");
     var uploadStatus=document.getElementById("upload-status");
@@ -279,13 +291,9 @@ export async function handleCatDetail(
         .catch(function(){saveBtn.disabled=false;status.classList.remove("hidden");status.textContent=TR.error;});
     }
 
-    // expose to onclick handlers
-    window.setProfile=setProfile;
-    window.togglePublic=togglePublic;
-    window.deletePhoto=deletePhoto;
-    window.startEdit=startEdit;
-    window.cancelEdit=cancelEdit;
-    window.saveInfo=saveInfo;
+    document.getElementById("edit-btn").addEventListener("click",startEdit);
+    document.getElementById("save-btn").addEventListener("click",saveInfo);
+    document.getElementById("cancel-btn").addEventListener("click",cancelEdit);
 
     loadGallery();
   })();

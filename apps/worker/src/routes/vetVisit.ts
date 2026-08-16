@@ -404,7 +404,7 @@ function renderVetForm(
       <div class="status-copy">
         <strong>${t(lang, "noVetVisitsYet")}</strong>
         <p>${t(lang, "noVetVisitsSummary")}</p>
-        <button type="button" class="mp-btn mp-btn-primary status-btn" onclick="document.getElementById('clinic_name').focus()">${t(lang, "addVetVisit")}</button>
+        <button type="button" class="mp-btn mp-btn-primary status-btn">${t(lang, "addVetVisit")}</button>
       </div>
     </div>
   </section>
@@ -463,6 +463,14 @@ function renderVetForm(
   </main>
   <script>
     (() => {
+      const statusBtn = document.querySelector(".status-btn");
+      if (statusBtn) {
+        statusBtn.addEventListener("click", function() {
+          const clinicInput = document.getElementById("clinic_name");
+          if (clinicInput) clinicInput.focus();
+        });
+      }
+
       const vaccineToggle = document.getElementById("record-kind-vaccine");
       const medicationToggle = document.getElementById("record-kind-medication");
       const vaccinePanel = document.getElementById("record-panel-vaccine");
