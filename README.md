@@ -86,6 +86,14 @@ QR never changes.
 | Dependency monitoring | Dependabot |
 | Optional breed assist | TheCatAPI (free tier, not required) |
 
+### Repository setup
+
+After cloning, run once to activate the commit-msg hook that rejects
+`Co-Authored-By` trailers:
+
+- macOS/Linux: `git config core.hooksPath .githooks`
+- Windows: `powershell -ExecutionPolicy Bypass -File scripts/setup-hooks.ps1`
+
 ## Prerequisites
 
 - Node.js 18+
