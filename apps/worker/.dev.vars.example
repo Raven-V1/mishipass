@@ -8,6 +8,10 @@ SIGHTING_IP_HMAC_SECRET = "local-dev-hmac-secret-change-in-production"
 # Optional — TheCatAPI key (free tier at thecatapi.com)
 # THE_CAT_API_KEY = ""
 
+# Optional — Resend API key for transactional email (transfer notifications).
+# Worker runs without this; email features are silently skipped when absent.
+# RESEND_API_KEY = ""
+
 # ── Logto OIDC (Google / Apple login) ──────────────────────────────────────
 # All six required for social login to activate in local dev.
 # For production, set via: wrangler secret put <NAME>

@@ -95,6 +95,11 @@ QR never changes.
 
 ## Local development
 
+> **Required:** After copying `.dev.vars.example`, set `SIGHTING_IP_HMAC_SECRET`
+> to any non-empty string (e.g. `local-dev-hmac-secret`). Without it, sighting
+> report submissions return `503` and the public cat lookup rate limiter is
+> skipped. The Worker logs a warning on first request if the secret is absent.
+
 ```bash
 cd apps/worker
 cp .dev.vars.example .dev.vars   # fill in local secrets
