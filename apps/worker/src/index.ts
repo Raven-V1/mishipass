@@ -67,8 +67,8 @@ const CAT_ACTIVE_PATH = /^\/api\/cats\/([^/]+)\/active$/;
 const CAT_ADOPTION_PATH = /^\/api\/cats\/([^/]+)\/adoption$/;
 const CAT_REQUEST_TRANSFER_PATH = /^\/api\/cats\/([^/]+)\/request-transfer$/;
 const TRANSFER_REQUESTS_PATH = /^\/api\/transfer-requests$/;
-const TRANSFER_ACCEPT_PATH = /^\/api\/transfer-requests\/(\d+)\/accept$/;
-const TRANSFER_DECLINE_PATH = /^\/api\/transfer-requests\/(\d+)\/decline$/;
+const TRANSFER_ACCEPT_PATH = /^\/api\/transfer-requests\/([^/]+)\/accept$/;
+const TRANSFER_DECLINE_PATH = /^\/api\/transfer-requests\/([^/]+)\/decline$/;
 const CONTACT_SETTINGS_PATH = /^\/api\/cats\/([^/]+)\/contact$/;
 const CAT_PHOTO_UPLOAD = /^\/api\/cats\/([^/]+)\/photo$/;
 const CAT_PHOTO_SERVE = /^\/media\/cats\/([^/]+)\/photo$/;
@@ -265,13 +265,13 @@ async function dispatch(request: Request, env: Env): Promise<Response> {
     const acceptTransferMatch = TRANSFER_ACCEPT_PATH.exec(pathname);
     if (method === "POST" && acceptTransferMatch) {
       const ctx = await resolveSession(request, env.DB);
-      return handleAcceptTransfer(parseInt(acceptTransferMatch[1]!, 10), env.DB, ctx, env.RESEND_API_KEY, env.PUBLIC_BASE_URL);
+      return handleAcceptTransfer(acceptTransferMatch[1]!, env.DB, ctx, env.RESEND_API_KEY, env.PUBLIC_BASE_URL);
     }
 
     const declineTransferMatch = TRANSFER_DECLINE_PATH.exec(pathname);
     if (method === "POST" && declineTransferMatch) {
       const ctx = await resolveSession(request, env.DB);
-      return handleDeclineTransfer(parseInt(declineTransferMatch[1]!, 10), env.DB, ctx, env.RESEND_API_KEY);
+      return handleDeclineTransfer(declineTransferMatch[1]!, env.DB, ctx, env.RESEND_API_KEY);
     }
 
     // -- Contact settings API --

@@ -1,5 +1,6 @@
 export interface TransferRequestRow {
   id: number;
+  public_id: string;
   cat_public_id: string;
   requester_owner_id: number;
   current_owner_id: number;
@@ -10,7 +11,7 @@ export interface TransferRequestRow {
 }
 
 export interface TransferRequestView {
-  id: number;
+  public_id: string;
   cat_public_id: string;
   cat_name: string;
   requester_email: string;
@@ -18,23 +19,38 @@ export interface TransferRequestView {
   created_at: string;
 }
 
-/** Create a new transfer request. Returns the new request id. */
+const CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+
+function generateTransferPublicId(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(5)); // 40 bits → 8 × 5-bit chars
+  let n = 0n;
+  for (const b of bytes) n = (n << 8n) | BigInt(b);
+  let s = "";
+  for (let i = 0; i < 8; i++) {
+    s = CROCKFORD[Number(n & 31n)]! + s;
+    n >>= 5n;
+  }
+  return `TR-${s}`;
+}
+
+/** Create a new transfer request. Returns the new public_id. */
 export async function insertTransferRequest(
   db: D1Database,
   catPublicId: string,
   requesterOwnerId: number,
   currentOwnerId: number,
   message: string | null,
-): Promise<number> {
-  const result = await db
+): Promise<string> {
+  const publicId = generateTransferPublicId();
+  await db
     .prepare(
       `INSERT INTO transfer_requests
-         (cat_public_id, requester_owner_id, current_owner_id, message)
-       VALUES (?, ?, ?, ?)`,
+         (public_id, cat_public_id, requester_owner_id, current_owner_id, message)
+       VALUES (?, ?, ?, ?, ?)`,
     )
-    .bind(catPublicId, requesterOwnerId, currentOwnerId, message)
+    .bind(publicId, catPublicId, requesterOwnerId, currentOwnerId, message)
     .run();
-  return result.meta.last_row_id as number;
+  return publicId;
 }
 
 /** True if a pending request already exists from this requester for this cat. */
@@ -60,7 +76,7 @@ export async function getTransferRequestsForOwner(
 ): Promise<TransferRequestView[]> {
   const result = await db
     .prepare(
-      `SELECT tr.id, tr.cat_public_id, c.name AS cat_name,
+      `SELECT tr.public_id, tr.cat_public_id, c.name AS cat_name,
               o.email AS requester_email, tr.message, tr.created_at
        FROM transfer_requests tr
        JOIN cats c ON c.public_id = tr.cat_public_id
@@ -73,25 +89,25 @@ export async function getTransferRequestsForOwner(
   return result.results;
 }
 
-/** Fetch a single request (ownership verified). */
+/** Fetch a single request by public_id (ownership verified). */
 export async function getTransferRequest(
   db: D1Database,
-  requestId: number,
+  publicId: string,
   currentOwnerId: number,
 ): Promise<TransferRequestRow | null> {
   return db
     .prepare(
       `SELECT * FROM transfer_requests
-       WHERE id = ? AND current_owner_id = ? AND status = 'pending'`,
+       WHERE public_id = ? AND current_owner_id = ? AND status = 'pending'`,
     )
-    .bind(requestId, currentOwnerId)
+    .bind(publicId, currentOwnerId)
     .first<TransferRequestRow>();
 }
 
 /** Mark a request resolved (accepted or declined). */
 export async function resolveTransferRequest(
   db: D1Database,
-  requestId: number,
+  publicId: string,
   currentOwnerId: number,
   status: "accepted" | "declined",
 ): Promise<boolean> {
@@ -99,9 +115,9 @@ export async function resolveTransferRequest(
     .prepare(
       `UPDATE transfer_requests
        SET status = ?, resolved_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now')
-       WHERE id = ? AND current_owner_id = ? AND status = 'pending'`,
+       WHERE public_id = ? AND current_owner_id = ? AND status = 'pending'`,
     )
-    .bind(status, requestId, currentOwnerId)
+    .bind(status, publicId, currentOwnerId)
     .run();
   return result.meta.changes > 0;
 }

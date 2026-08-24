@@ -48,7 +48,7 @@ export async function handleTransfersPage(request: Request, db: D1Database): Pro
           var reqs=d.requests||[];
           if(!reqs.length){tl.innerHTML="<p class='muted'>No pending adoption requests.</p>";return}
           tl.innerHTML=reqs.map(function(r){
-            return '<div class="contact-card"><strong>'+esc(r.cat_name)+'</strong><p class="muted mp-text-85">Request from: '+esc(r.requester_email)+'</p>'+(r.message?'<p class="mp-text-85">'+esc(r.message)+'</p>':'')+'<div class="mp-action-row"><button class="btn-primary accept-btn" data-id="'+esc(r.id)+'">Accept</button><button class="btn-warn decline-btn" data-id="'+esc(r.id)+'">Decline</button></div><p class="muted status-msg mp-status-hint"></p></div>'
+            return '<div class="contact-card"><strong>'+esc(r.cat_name)+'</strong><p class="muted mp-text-85">Request from: '+esc(r.requester_email)+'</p>'+(r.message?'<p class="mp-text-85">'+esc(r.message)+'</p>':'')+'<div class="mp-action-row"><button class="btn-primary accept-btn" data-id="'+esc(r.public_id)+'">Accept</button><button class="btn-warn decline-btn" data-id="'+esc(r.public_id)+'">Decline</button></div><p class="muted status-msg mp-status-hint"></p></div>'
           }).join("");
           document.querySelectorAll(".accept-btn").forEach(function(b){b.addEventListener("click",function(){
             var id=b.getAttribute("data-id"),card=b.closest(".contact-card"),status=card&&card.querySelector(".status-msg"),declineBtn=card&&card.querySelector(".decline-btn");
