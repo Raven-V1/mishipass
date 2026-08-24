@@ -491,8 +491,18 @@ async function dispatch(request: Request, env: Env): Promise<Response> {
     );
 }
 
+let _secretMissingWarned = false;
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
+    if (!env.SIGHTING_IP_HMAC_SECRET && !_secretMissingWarned) {
+      console.warn(
+        "[MishiPass] SIGHTING_IP_HMAC_SECRET is not set. " +
+        "Sighting report submissions will return 503 and the public cat lookup rate limiter is disabled. " +
+        "Set this secret in .dev.vars (local) or via `wrangler secret put SIGHTING_IP_HMAC_SECRET` (production)."
+      );
+      _secretMissingWarned = true;
+    }
     return applySecurityHeaders(await dispatch(request, env));
   },
 };
