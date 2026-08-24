@@ -199,7 +199,7 @@ async function dispatch(request: Request, env: Env): Promise<Response> {
       return handleRegister(request, env.DB);
     }
     if (method === "POST" && pathname === "/api/auth/login") {
-      return handleLogin(request, env.DB);
+      return handleLogin(request, env.DB, env.SIGHTING_IP_HMAC_SECRET);
     }
     if (method === "POST" && pathname === "/api/auth/logout") {
       return handleLogout(request, env.DB);

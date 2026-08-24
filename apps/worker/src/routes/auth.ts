@@ -13,7 +13,8 @@ import {
   insertSession,
 } from "../db/index.js";
 import { parseCookieValue } from "../middleware/session.js";
-import { hashPassword, sha256Hex, verifyPassword } from "../utils/crypto.js";
+import { checkDurableRateLimit } from "../middleware/durableRateLimit.js";
+import { hashPassword, hmacSha256Hex, sha256Hex, verifyPassword } from "../utils/crypto.js";
 
 // -- Helpers ----------------------------------------------------------------
 
@@ -84,6 +85,7 @@ const DUMMY_PASSWORD_HASH =
 export async function handleLogin(
   request: Request,
   db: D1Database,
+  secret?: string,
 ): Promise<Response> {
   let body: unknown;
   try {
@@ -99,6 +101,22 @@ export async function handleLogin(
   }
 
   const normalizedEmail = email.toLowerCase();
+
+  if (secret) {
+    const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
+    const rateLimitKey = `login:${await hmacSha256Hex(`${ip}:${normalizedEmail}`, secret)}`;
+    try {
+      const allowed = await checkDurableRateLimit(db, rateLimitKey, 5, 15);
+      if (!allowed) {
+        return jsonResponse({ error: "Too many login attempts. Please try again later." }, 429, {
+          "Retry-After": "900",
+        });
+      }
+    } catch {
+      // fail-open: D1 error during rate check — allow through to avoid locking out users
+    }
+  }
+
   const owner = await findOwnerByEmail(db, normalizedEmail);
 
   // Timing-attack mitigation: always perform password verification, even when
