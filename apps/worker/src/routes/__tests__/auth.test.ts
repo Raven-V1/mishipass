@@ -23,6 +23,12 @@ vi.mock("../../db/index.js", () => ({
   deleteSession: (...args: unknown[]) => mockDeleteSession(...args),
 }));
 
+const mockCheckDurableRateLimit = vi.fn().mockResolvedValue(true);
+
+vi.mock("../../middleware/durableRateLimit.js", () => ({
+  checkDurableRateLimit: (...args: unknown[]) => mockCheckDurableRateLimit(...args),
+}));
+
 const fakeDb = {} as D1Database;
 
 // Pre-computed PBKDF2 hash for "testpass123" used in login tests.
@@ -63,16 +69,21 @@ beforeEach(() => {
   mockFindOwnerByEmail.mockReset();
   mockInsertSession.mockReset();
   mockDeleteSession.mockReset();
+  mockCheckDurableRateLimit.mockReset();
+  mockCheckDurableRateLimit.mockResolvedValue(true);
 });
 
 // -- Helpers ----------------------------------------------------------------
 
-function jsonRequest(body: unknown, cookie?: string): Request {
+function jsonRequest(body: unknown, cookie?: string, ip?: string): Request {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
   if (cookie) {
     headers["Cookie"] = cookie;
+  }
+  if (ip) {
+    headers["CF-Connecting-IP"] = ip;
   }
   return new Request("https://example.com/api/auth", {
     method: "POST",
@@ -556,6 +567,100 @@ describe("handleLogin", () => {
     // the verification completed (even though it returned false).
     const body = await res.json() as { error: string };
     expect(body.error).toBe("Invalid email or password");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/auth/login — rate limiting
+// ---------------------------------------------------------------------------
+
+describe("handleLogin — rate limiting", () => {
+  it("returns 429 with Retry-After when rate limit is exceeded", async () => {
+    mockCheckDurableRateLimit.mockResolvedValue(false);
+
+    const res = await handleLogin(
+      jsonRequest({ email: "attacker@example.com", password: "anypass" }, undefined, "1.2.3.4"),
+      fakeDb,
+      "test-secret",
+    );
+
+    expect(res.status).toBe(429);
+    expect(res.headers.get("Retry-After")).toBe("900");
+    const body = await res.json() as { error: string };
+    expect(body.error).toContain("Too many login attempts");
+    expect(mockFindOwnerByEmail).not.toHaveBeenCalled();
+  });
+
+  it("proceeds normally when rate limit is not exceeded", async () => {
+    mockCheckDurableRateLimit.mockResolvedValue(true);
+    mockFindOwnerByEmail.mockResolvedValue({
+      id: 1,
+      email: "user@test.com",
+      password_hash: validPasswordHash,
+    });
+    mockInsertSession.mockResolvedValue(undefined);
+
+    const res = await handleLogin(
+      jsonRequest({ email: "user@test.com", password: "testpass123" }, undefined, "5.6.7.8"),
+      fakeDb,
+      "test-secret",
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockCheckDurableRateLimit).toHaveBeenCalledOnce();
+    expect(mockCheckDurableRateLimit.mock.calls[0]![2]).toBe(5);
+    expect(mockCheckDurableRateLimit.mock.calls[0]![3]).toBe(15);
+  });
+
+  it("skips rate limiting when secret is absent and proceeds normally", async () => {
+    mockFindOwnerByEmail.mockResolvedValue({
+      id: 1,
+      email: "user@test.com",
+      password_hash: validPasswordHash,
+    });
+    mockInsertSession.mockResolvedValue(undefined);
+
+    const res = await handleLogin(
+      jsonRequest({ email: "user@test.com", password: "testpass123" }, undefined, "9.9.9.9"),
+      fakeDb,
+      // no secret
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockCheckDurableRateLimit).not.toHaveBeenCalled();
+  });
+
+  it("rate limit key does not contain raw IP or email (privacy)", async () => {
+    mockCheckDurableRateLimit.mockResolvedValue(true);
+    mockFindOwnerByEmail.mockResolvedValue(null);
+
+    await handleLogin(
+      jsonRequest({ email: "probe@example.com", password: "any" }, undefined, "1.2.3.4"),
+      fakeDb,
+      "test-secret",
+    );
+
+    expect(mockCheckDurableRateLimit).toHaveBeenCalledOnce();
+    const key = mockCheckDurableRateLimit.mock.calls[0]![1] as string;
+    expect(key).not.toContain("1.2.3.4");
+    expect(key).not.toContain("probe@example.com");
+    expect(key).toMatch(/^login:[0-9a-f]{64}$/);
+  });
+
+  it("returns 503 fail-closed when D1 throws during rate limit check", async () => {
+    mockCheckDurableRateLimit.mockRejectedValue(new Error("D1 connection error"));
+
+    const res = await handleLogin(
+      jsonRequest({ email: "user@test.com", password: "testpass123" }, undefined, "1.2.3.4"),
+      fakeDb,
+      "test-secret",
+    );
+
+    expect(res.status).toBe(503);
+    const body = await res.json() as { error: string };
+    expect(body.error).toBeTruthy();
+    expect(body.error).not.toContain("D1");
+    expect(mockFindOwnerByEmail).not.toHaveBeenCalled();
   });
 });
 
