@@ -793,6 +793,58 @@ Decided by: Carlos
 
 ---
 
+## [2026-08-23] — Alpha 1.0 remediation sequence authorized and executed
+
+Decision: Authorize Raven-V1 (Claude Code) to execute five sequential fixes
+as a single session on branches off dev, open PRs into dev (not merge), and
+write audit documentation — without per-commit owner confirmation.
+FIX 1: commit-msg hook rejecting Co-Authored-By trailers.
+FIX 2: .dev.vars.example completeness (RESEND_API_KEY added) and startup warning.
+FIX 3: D1-backed rate limiting on handleLogin (5 attempts / 15 min).
+FIX 4: transfer_requests public_id replacing internal integer in URLs.
+FIX 5: security-model.md honesty update and decision-log entry.
+Reason: Five identified blocking items from the 2026-08-23 Alpha 1.0 readiness
+audit (A1–A5). Items A3 and A4 are Constitution §7 LOCKED violations that must
+be resolved before public-ready submission. Batching into a single autonomous
+session minimizes context-switch overhead during the Alpha window.
+Alternatives considered: (1) Per-fix owner review before each commit — rejected
+as unnecessary given clear specs and test coverage. (2) Merge directly to dev
+instead of PR — rejected; all merges require explicit owner action.
+Scope limits: feature branches only; open PRs into dev; no merge; no push to main;
+no wrangler remote commands; no .audit-known-issues.json modification.
+Decided by: Carlos
+
+## [2026-08-23] — Seven dirty commits with Co-Authored-By trailers accepted as historical
+
+Decision: The seven commits on the dev branch that carry `Co-Authored-By: Claude
+Sonnet 4.6 <noreply@anthropic.com>` trailers (committed before the commit-msg
+hook was installed on 2026-08-23) are accepted as part of the dev branch
+historical record. No rewrite of dev history will be performed.
+Commits: e9776ed7, 4f247785, b7d4b06a, 897743ae, 673175414, d80b6bd4, e83fa563.
+All are security and fix commits from July–August 2026; the code is correct.
+Reason: Force-pushing dev to rewrite history would require re-synchronization
+from all contributors and CI caches, risks breaking open PR base refs (PR #130),
+and provides no functional benefit during the Alpha 1.0 window. The hook
+installed on 2026-08-23 prevents recurrence on all future commits.
+Alternatives considered: Interactive rebase to strip trailers — rejected due to
+force-push risk, PR base-ref invalidation, and high disruption cost relative to
+benefit. The audit document (docs/audit/fix-1-commit-msg-hook-2026-08-23.md)
+captures the full analysis.
+Decided by: Carlos
+
+## [2026-08-23] — Logto / Google login production status reconfirmed
+
+Decision: Confirm that Google login via Logto OIDC is live in the production
+MishiPass Worker deployment. No change to the implementation — this entry records
+the reconfirmation from the 2026-08-23 Alpha 1.0 readiness audit.
+Reason: The 2026-08-23 audit reviewed docs/security-model.md Section 10 and
+confirmed the five required Logto secrets are set in production. The audit
+updated Section 10 to use unambiguous language ("confirmed LIVE") and added the
+2026-08-23 reconfirmation date.
+Alternatives considered: No update (rejected — documentation honesty requires
+the audit date be recorded).
+Decided by: Carlos
+
 ## [2026-08-16] — Audit allowlist expanded with four dev-tooling transitives
 Decision: Add `nanoid`, `postcss`, `sharp`, `undici` to `.audit-known-issues.json`
 alongside the existing entries (`@cloudflare/vitest-pool-workers`,

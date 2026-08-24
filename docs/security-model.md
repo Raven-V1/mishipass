@@ -284,14 +284,14 @@ pre-submission documentation synchronization pass.
 ### Known gaps — Tier 2
 
 The following items were identified in the 2026-07-02 manual security audit
-(TRIAGE-07, TRIAGE-08) and remain unresolved. Both require the Constitution
-Section 10 alignment loop before implementation — they are not approved for
-build.
+(TRIAGE-07, TRIAGE-08).
 
-- **Login-endpoint rate limiting (PROPOSED):** Adding per-IP rate limiting to
-  `/api/auth/login` would mitigate brute-force attempts beyond PBKDF2's
-  per-attempt CPU cost. Requires design decision: D1-backed rate limit vs
-  Cloudflare WAF rule.
+- **Login-endpoint rate limiting — RESOLVED 2026-08-23:** D1-backed rate
+  limiting (`checkDurableRateLimit`, 5 attempts per 15-minute window) was added
+  to `handleLogin` in the Alpha 1.0 remediation sequence (FIX 3, PR #132).
+  Rate limit key is `HMAC-SHA256(ip:email, SIGHTING_IP_HMAC_SECRET)`. The raw
+  IP and email are never stored in the `rate_limits` table. Fail-open when the
+  secret is absent to avoid locking out legitimate users.
 - **CORS posture for deferred web split (DEFERRED):** Applicable only if/when
   `apps/web` becomes a deployed React app at a separate origin. Not needed
   while the Worker serves all authenticated surfaces.
@@ -347,12 +347,14 @@ as Worker secrets.
   vars are absent, so the error is safe to display.
 - OIDC cookies are cleared (Max-Age=0) on both success and failure paths.
 
-**Production status:** Logto secrets (`LOGTO_ENDPOINT`, `LOGTO_APP_ID`,
-`LOGTO_CLIENT_SECRET`, `LOGTO_REDIRECT_URI`, `LOGTO_GOOGLE_CONNECTOR_TARGET`)
-are confirmed set in the production Worker deployment as of 2026-07-05.
-`LOGTO_APPLE_CONNECTOR_TARGET` is not currently set — Apple login is not active.
-Google login is operational; Apple login requires Apple Developer Program
-connector configuration in Logto before activation.
+**Production status — confirmed LIVE:** Google login (`LOGTO_GOOGLE_CONNECTOR_TARGET`
+via Logto) is active in the production Worker deployment. The five required secrets
+(`LOGTO_ENDPOINT`, `LOGTO_APP_ID`, `LOGTO_CLIENT_SECRET`, `LOGTO_REDIRECT_URI`,
+`LOGTO_GOOGLE_CONNECTOR_TARGET`) were confirmed set as of 2026-07-05 and
+reconfirmed in the 2026-08-23 Alpha 1.0 readiness audit.
+`LOGTO_APPLE_CONNECTOR_TARGET` is not set — Apple login is not active.
+Apple login requires Apple Developer Program connector configuration in Logto
+before activation.
 
 **Aikido security scan:** not in scope for Beta 1.5; replaced by manual audit completed 2026-07-02.
 
