@@ -1,0 +1,2 @@
+# Force LF line endings for shell scripts so bash hooks work on all platforms
+.githooks/commit-msg text eol=lf

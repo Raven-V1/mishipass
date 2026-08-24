@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Reject commit messages that contain Co-Authored-By trailers.
+# Installed by FIX 1 of the Alpha 1.0 remediation sequence.
+if grep -qi "^Co-Authored-By:" "$1"; then
+  echo "ERROR: Co-Authored-By trailers are prohibited in this repo." >&2
+  echo "See docs/decision-log.md for governance rationale." >&2
+  exit 1
+fi
