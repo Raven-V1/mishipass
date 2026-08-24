@@ -56,7 +56,7 @@ export async function handleRequestTransfer(
     }
   } catch { /* message is optional */ }
 
-  const requestId = await insertTransferRequest(
+  const publicId = await insertTransferRequest(
     db, catPublicId, ctx.ownerId, catOwner.owner_id, message,
   );
 
@@ -80,7 +80,7 @@ export async function handleRequestTransfer(
     }, resendApiKey);
   }
 
-  return Response.json({ requestId }, { status: 201 });
+  return Response.json({ publicId }, { status: 201 });
 }
 
 // ── GET /api/transfer-requests ─────────────────────────────────────────────
@@ -96,10 +96,10 @@ export async function handleListTransferRequests(
   return Response.json({ requests }, { status: 200 });
 }
 
-// ── POST /api/transfer-requests/:id/accept ─────────────────────────────────
+// ── POST /api/transfer-requests/:publicId/accept ───────────────────────────
 
 export async function handleAcceptTransfer(
-  requestId: number,
+  publicId: string,
   db: D1Database,
   ctx: RequestContext,
   resendApiKey: string | undefined,
@@ -109,7 +109,7 @@ export async function handleAcceptTransfer(
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const transferReq = await getTransferRequest(db, requestId, ctx.ownerId);
+  const transferReq = await getTransferRequest(db, publicId, ctx.ownerId);
   if (!transferReq) return new Response("Not Found", { status: 404 });
 
   const transferred = await transferCatOwnership(
@@ -117,7 +117,7 @@ export async function handleAcceptTransfer(
   );
   if (!transferred) return new Response("Transfer failed", { status: 500 });
 
-  await resolveTransferRequest(db, requestId, ctx.ownerId, "accepted");
+  await resolveTransferRequest(db, publicId, ctx.ownerId, "accepted");
 
   // Notify requester
   const requester = await findOwnerById(db, transferReq.requester_owner_id);
@@ -138,10 +138,10 @@ export async function handleAcceptTransfer(
   return Response.json({ success: true }, { status: 200 });
 }
 
-// ── POST /api/transfer-requests/:id/decline ────────────────────────────────
+// ── POST /api/transfer-requests/:publicId/decline ──────────────────────────
 
 export async function handleDeclineTransfer(
-  requestId: number,
+  publicId: string,
   db: D1Database,
   ctx: RequestContext,
   resendApiKey: string | undefined,
@@ -150,10 +150,10 @@ export async function handleDeclineTransfer(
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const transferReq = await getTransferRequest(db, requestId, ctx.ownerId);
+  const transferReq = await getTransferRequest(db, publicId, ctx.ownerId);
   if (!transferReq) return new Response("Not Found", { status: 404 });
 
-  await resolveTransferRequest(db, requestId, ctx.ownerId, "declined");
+  await resolveTransferRequest(db, publicId, ctx.ownerId, "declined");
 
   const requester = await findOwnerById(db, transferReq.requester_owner_id);
   if (requester) {

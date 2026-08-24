@@ -187,7 +187,7 @@ describe("handleRequestTransfer - HTML injection mitigation", () => {
       photo_r2_key: null,
     });
     mockHasPendingTransferRequest.mockResolvedValue(false);
-    mockInsertTransferRequest.mockResolvedValue(123);
+    mockInsertTransferRequest.mockResolvedValue("TR-TESTINSERT");
     mockFindOwnerById.mockImplementation((db: unknown, ownerId: number) => {
       if (ownerId === 1) return Promise.resolve({ id: 1, email: "requester@example.com" });
       if (ownerId === 2) return Promise.resolve({ id: 2, email: "owner@example.com" });
@@ -224,7 +224,7 @@ describe("handleRequestTransfer - HTML injection mitigation", () => {
       photo_r2_key: null,
     });
     mockHasPendingTransferRequest.mockResolvedValue(false);
-    mockInsertTransferRequest.mockResolvedValue(123);
+    mockInsertTransferRequest.mockResolvedValue("TR-TESTINSERT");
     mockFindOwnerById.mockImplementation((db: unknown, ownerId: number) => {
       if (ownerId === 1) return Promise.resolve({ id: 1, email: "requester@example.com" });
       if (ownerId === 2) return Promise.resolve({ id: 2, email: "owner@example.com" });
@@ -259,7 +259,7 @@ describe("handleRequestTransfer - HTML injection mitigation", () => {
       photo_r2_key: null,
     });
     mockHasPendingTransferRequest.mockResolvedValue(false);
-    mockInsertTransferRequest.mockResolvedValue(123);
+    mockInsertTransferRequest.mockResolvedValue("TR-TESTINSERT");
     mockFindOwnerById.mockImplementation((db: unknown, ownerId: number) => {
       if (ownerId === 1) return Promise.resolve({ id: 1, email: '<a href="evil.com">click</a>' });
       if (ownerId === 2) return Promise.resolve({ id: 2, email: "owner@example.com" });
@@ -293,7 +293,7 @@ describe("handleRequestTransfer - HTML injection mitigation", () => {
       photo_r2_key: null,
     });
     mockHasPendingTransferRequest.mockResolvedValue(false);
-    mockInsertTransferRequest.mockResolvedValue(123);
+    mockInsertTransferRequest.mockResolvedValue("TR-TESTINSERT");
     mockFindOwnerById.mockImplementation((db: unknown, ownerId: number) => {
       if (ownerId === 1) return Promise.resolve({ id: 1, email: "requester@example.com" });
       if (ownerId === 2) return Promise.resolve({ id: 2, email: "owner@example.com" });
@@ -330,7 +330,7 @@ describe("handleRequestTransfer - HTML injection mitigation", () => {
       photo_r2_key: null,
     });
     mockHasPendingTransferRequest.mockResolvedValue(false);
-    mockInsertTransferRequest.mockResolvedValue(123);
+    mockInsertTransferRequest.mockResolvedValue("TR-TESTINSERT");
     mockFindOwnerById.mockImplementation((db: unknown, ownerId: number) => {
       if (ownerId === 1) return Promise.resolve({ id: 1, email: "requester@example.com" });
       if (ownerId === 2) return Promise.resolve({ id: 2, email: "owner@example.com" });
@@ -363,7 +363,7 @@ describe("handleRequestTransfer - HTML injection mitigation", () => {
       photo_r2_key: null,
     });
     mockHasPendingTransferRequest.mockResolvedValue(false);
-    mockInsertTransferRequest.mockResolvedValue(123);
+    mockInsertTransferRequest.mockResolvedValue("TR-TESTINSERT");
     mockFindOwnerById.mockImplementation((db: unknown, ownerId: number) => {
       if (ownerId === 1) return Promise.resolve({ id: 1, email: "requester@example.com" });
       if (ownerId === 2) return Promise.resolve({ id: 2, email: "owner@example.com" });
@@ -399,7 +399,7 @@ describe("handleRequestTransfer - HTML injection mitigation", () => {
       photo_r2_key: null,
     });
     mockHasPendingTransferRequest.mockResolvedValue(false);
-    mockInsertTransferRequest.mockResolvedValue(123);
+    mockInsertTransferRequest.mockResolvedValue("TR-TESTINSERT");
     mockFindOwnerById.mockImplementation((db: unknown, ownerId: number) => {
       if (ownerId === 1) return Promise.resolve({ id: 1, email: "requester@example.com" });
       if (ownerId === 2) return Promise.resolve({ id: 2, email: "owner@example.com" });
@@ -435,7 +435,8 @@ describe("handleAcceptTransfer - HTML injection mitigation", () => {
 
   it("escapes HTML in cat name when sending acceptance email", async () => {
     mockGetTransferRequest.mockResolvedValue({
-      id: 123,
+      id: 1,
+      public_id: "TR-TESTACCEPT",
       cat_public_id: "MP-MX-0000-0001",
       requester_owner_id: 1,
       current_owner_id: 2,
@@ -454,7 +455,7 @@ describe("handleAcceptTransfer - HTML injection mitigation", () => {
     });
 
     const res = await handleAcceptTransfer(
-      123,
+      "TR-TESTACCEPT",
       fakeDb,
       owner,
       RESEND_API_KEY,
@@ -472,7 +473,8 @@ describe("handleAcceptTransfer - HTML injection mitigation", () => {
 
   it("handles null cat name gracefully", async () => {
     mockGetTransferRequest.mockResolvedValue({
-      id: 123,
+      id: 1,
+      public_id: "TR-TESTNULL01",
       cat_public_id: "MP-MX-0000-0001",
       requester_owner_id: 1,
       current_owner_id: 2,
@@ -485,7 +487,7 @@ describe("handleAcceptTransfer - HTML injection mitigation", () => {
     mockGetCatPublicProfile.mockResolvedValue(null);
 
     const res = await handleAcceptTransfer(
-      123,
+      "TR-TESTNULL01",
       fakeDb,
       owner,
       RESEND_API_KEY,
@@ -509,7 +511,8 @@ describe("handleDeclineTransfer - HTML injection mitigation", () => {
 
   it("escapes HTML in cat name when sending decline email", async () => {
     mockGetTransferRequest.mockResolvedValue({
-      id: 123,
+      id: 1,
+      public_id: "TR-TESTDECL1",
       cat_public_id: "MP-MX-0000-0001",
       requester_owner_id: 1,
       current_owner_id: 2,
@@ -527,7 +530,7 @@ describe("handleDeclineTransfer - HTML injection mitigation", () => {
     });
 
     const res = await handleDeclineTransfer(
-      123,
+      "TR-TESTDECL1",
       fakeDb,
       owner,
       RESEND_API_KEY,
@@ -547,7 +550,8 @@ describe("handleDeclineTransfer - HTML injection mitigation", () => {
     // An attacker creates a cat with HTML in the name, then when a transfer
     // request is declined, that HTML should be escaped in the email sent to the requester.
     mockGetTransferRequest.mockResolvedValue({
-      id: 456,
+      id: 2,
+      public_id: "TR-TESTDECL2",
       cat_public_id: "MP-MX-0000-0002",
       requester_owner_id: 3,
       current_owner_id: 2,
@@ -556,7 +560,7 @@ describe("handleDeclineTransfer - HTML injection mitigation", () => {
     });
     mockResolveTransferRequest.mockResolvedValue(undefined);
     mockFindOwnerById.mockResolvedValue({ id: 3, email: "victim@example.com" });
-    
+
     // Attacker-controlled cat name with HTML injection payload
     mockGetCatPublicProfile.mockResolvedValue({
       public_id: "MP-MX-0000-0002",
@@ -567,7 +571,7 @@ describe("handleDeclineTransfer - HTML injection mitigation", () => {
     });
 
     const res = await handleDeclineTransfer(
-      456,
+      "TR-TESTDECL2",
       fakeDb,
       owner,
       RESEND_API_KEY,
@@ -594,7 +598,8 @@ describe("handleDeclineTransfer - HTML injection mitigation", () => {
 
   it("escapes HTML in cat name with script tags in decline email", async () => {
     mockGetTransferRequest.mockResolvedValue({
-      id: 789,
+      id: 3,
+      public_id: "TR-TESTDECL3",
       cat_public_id: "MP-MX-0000-0003",
       requester_owner_id: 4,
       current_owner_id: 2,
@@ -603,7 +608,7 @@ describe("handleDeclineTransfer - HTML injection mitigation", () => {
     });
     mockResolveTransferRequest.mockResolvedValue(undefined);
     mockFindOwnerById.mockResolvedValue({ id: 4, email: "user@example.com" });
-    
+
     // Cat name with script tag injection attempt
     mockGetCatPublicProfile.mockResolvedValue({
       public_id: "MP-MX-0000-0003",
@@ -614,7 +619,7 @@ describe("handleDeclineTransfer - HTML injection mitigation", () => {
     });
 
     const res = await handleDeclineTransfer(
-      789,
+      "TR-TESTDECL3",
       fakeDb,
       owner,
       RESEND_API_KEY,
@@ -637,7 +642,7 @@ describe("handleDeclineTransfer - HTML injection mitigation", () => {
     mockGetTransferRequest.mockResolvedValue(null);
 
     const res = await handleDeclineTransfer(
-      999,
+      "TR-NOTFOUND1",
       fakeDb,
       owner,
       RESEND_API_KEY,
