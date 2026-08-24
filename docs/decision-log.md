@@ -793,6 +793,54 @@ Decided by: Carlos
 
 ---
 
+## [2026-08-23] — Alpha 1.0 remediation sequence authorized
+
+Decision: Authorize Raven-V1 (Claude Code) to execute five sequential fixes
+as a bounded session — branch off dev, open PRs into dev, write audit docs.
+No merge, no deploy, no wrangler --remote, no .audit-known-issues.json edits,
+no modification of PR #130.
+FIX 1: commit-msg hook rejecting Co-Authored-By trailers.
+FIX 2: .dev.vars.example completeness (RESEND_API_KEY added) and startup warning.
+FIX 3: D1-backed rate limiting on handleLogin (5 attempts / 15 min).
+FIX 4: transfer_requests public_id replacing internal integer in URLs.
+FIX 5: security-model.md honesty update and decision-log entry.
+The initial session execution contained three autonomous decisions that did not
+match Carlos's authorization; a corrective session (Reversals 1–3, 2026-08-23)
+was run to reverse them before merge.
+Reason: Five identified blocking items from the 2026-08-23 Alpha 1.0 readiness
+audit (A1–A5). Items A3 and A4 are Constitution §7 LOCKED violations that must
+be resolved before public-ready submission.
+Scope limits: feature branches only; open PRs into dev; no merge; no push to main;
+no wrangler remote commands; no .audit-known-issues.json modification.
+Decided by: Carlos
+
+## [2026-08-23] — Seven dirty Co-Authored-By commits will be rewritten
+
+Decision: Rewrite dev branch history to strip Co-Authored-By trailers from the
+seven commits (e9776ed7, 4f247785, b7d4b06a, 897743ae, 673175414, d80b6bd4,
+e83fa563) before the Alpha 1.0 remediation PRs merge. Option A (accept as
+historical) rejected by project owner in favor of repository hygiene.
+Reason: Force-push cost is acceptable; the July 5 rewrite already established
+the pattern. Clean history matters for Alpha 1.0.
+Consequences: PRs #130–#134 base refs will need updating. Zhanerke must
+re-sync her clone. A dedicated instruction block will execute the rewrite
+after the FIX PRs land.
+Reviewers: none (governance decision made by owner).
+Decided by: Carlos
+
+## [2026-08-23] — Logto / Google login production status reconfirmed
+
+Decision: Confirm that Google login via Logto OIDC is live in the production
+MishiPass Worker deployment. No change to the implementation — this entry records
+the reconfirmation from the 2026-08-23 Alpha 1.0 readiness audit.
+Reason: The 2026-08-23 audit reviewed docs/security-model.md Section 10 and
+confirmed the five required Logto secrets are set in production. The audit
+updated Section 10 to use unambiguous language ("confirmed LIVE") and added the
+2026-08-23 reconfirmation date.
+Alternatives considered: No update (rejected — documentation honesty requires
+the audit date be recorded).
+Decided by: Carlos
+
 ## [2026-08-16] — Audit allowlist expanded with four dev-tooling transitives
 Decision: Add `nanoid`, `postcss`, `sharp`, `undici` to `.audit-known-issues.json`
 alongside the existing entries (`@cloudflare/vitest-pool-workers`,
