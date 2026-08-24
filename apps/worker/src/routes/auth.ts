@@ -113,7 +113,7 @@ export async function handleLogin(
         });
       }
     } catch {
-      // fail-open: D1 error during rate check — allow through to avoid locking out users
+      return jsonResponse({ error: "Login temporarily unavailable. Please try again." }, 503);
     }
   }
 

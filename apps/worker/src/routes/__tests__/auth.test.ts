@@ -647,9 +647,8 @@ describe("handleLogin — rate limiting", () => {
     expect(key).toMatch(/^login:[0-9a-f]{64}$/);
   });
 
-  it("proceeds fail-open when D1 throws during rate limit check", async () => {
+  it("returns 503 fail-closed when D1 throws during rate limit check", async () => {
     mockCheckDurableRateLimit.mockRejectedValue(new Error("D1 connection error"));
-    mockFindOwnerByEmail.mockResolvedValue(null);
 
     const res = await handleLogin(
       jsonRequest({ email: "user@test.com", password: "testpass123" }, undefined, "1.2.3.4"),
@@ -657,8 +656,11 @@ describe("handleLogin — rate limiting", () => {
       "test-secret",
     );
 
-    // fail-open: D1 error should not block login; 401 because password is wrong
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(503);
+    const body = await res.json() as { error: string };
+    expect(body.error).toBeTruthy();
+    expect(body.error).not.toContain("D1");
+    expect(mockFindOwnerByEmail).not.toHaveBeenCalled();
   });
 });
 
