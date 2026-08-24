@@ -290,8 +290,14 @@ The following items were identified in the 2026-07-02 manual security audit
   limiting (`checkDurableRateLimit`, 5 attempts per 15-minute window) was added
   to `handleLogin` in the Alpha 1.0 remediation sequence (FIX 3, PR #132).
   Rate limit key is `HMAC-SHA256(ip:email, SIGHTING_IP_HMAC_SECRET)`. The raw
-  IP and email are never stored in the `rate_limits` table. Fail-open when the
-  secret is absent to avoid locking out legitimate users.
+  IP and email are never stored in the `rate_limits` table.
+  Two distinct error cases with different behaviors:
+  (a) `SIGHTING_IP_HMAC_SECRET` absent: rate limiting is **skipped** and login
+  proceeds normally (fail-open). Intentional for local dev where the secret is
+  not set; matches the sighting-submit behavior when the secret is absent.
+  (b) D1 throws during rate check: **fail-closed** — return 503 Service
+  Unavailable. The login path does not proceed. Rate limiting is a Tier-1
+  defensive control; a broken backend must not silently allow unlimited attempts.
 - **CORS posture for deferred web split (DEFERRED):** Applicable only if/when
   `apps/web` becomes a deployed React app at a separate origin. Not needed
   while the Worker serves all authenticated surfaces.
